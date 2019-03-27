@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# amass, subfinder, snapd, aquatone, gobuster, masscan, nmap, sensitive.py, curl, libcurl4-openssl-dev
+# amass, subfinder, snapd, aquatone, gobuster, masscan, nmap, sensitive.py, curl, CRLF-Injection-Scanner, DirSearch
 
 telegram_bot=""
 passwordx=""
@@ -64,6 +64,10 @@ touch $1/$1-ip.txt
 
 all=`cat $1/$1-final.txt | wc -l`
 curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=Almost%20$all%20Collected%20Subdomain(s)%20for%20$1" --silent
+
+echo "[+] SCANNING CRLF [+]"
+python3 ~/CRLF-Injection-Scanner/crlf_scan.py -i $1/$1-final.txt -o $1/$1-crlf.txt
+curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=CRLF%20Scanning%20done%20for%20$1" --silent
 
 cp $1/$1-final.txt $1/ports.txt
 for ipx in `cat $1/ports.txt`; do i="${ipx%:*}"; echo $i >> $1/$1-ips.txt;done
