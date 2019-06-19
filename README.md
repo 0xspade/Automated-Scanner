@@ -13,7 +13,9 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 * GoBuster
 
 **CRLF Injection Scan**
+
 **Virtual Hosts Scan**
+
 **Scan All Alive Hosts**
 
 **Port Scanning**
