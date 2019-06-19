@@ -11,7 +11,7 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 * Subfinder
 * Aquatone (old)
 * Sublist3r
-* GoBuster using Jason Haddix's [all.txt](https://mega.nz/#!v5hSyQJB!d8EO0wztmpBEi4ysxfWSaM_e0E7Lf4Ip5SYL4ZFP9TU) wordlist
+* GoBuster using Jason Haddix's [all.txt](https://gist.githubusercontent.com/jhaddix/86a06c5dc309d08580a018c66354a056/raw/96f4e51d96b2203f19f6381c8c545b278eaa0837/all.txt) wordlist
 
 **Virtual Hosts Scan**
 
