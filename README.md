@@ -13,11 +13,13 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 * Sublist3r
 * GoBuster using Jason Haddix's [all.txt](https://mega.nz/#!v5hSyQJB!d8EO0wztmpBEi4ysxfWSaM_e0E7Lf4Ip5SYL4ZFP9TU) wordlist
 
-**CRLF Injection Scan**
-
 **Virtual Hosts Scan**
 
 **Scan All Alive Hosts**
+
+**CRLF Injection Scan**
+
+**Angular CLient-Based Injection Scan**
 
 **Port Scanning**
 * Aquatone (New)
