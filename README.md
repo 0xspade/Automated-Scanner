@@ -3,6 +3,7 @@
 Usage: `~$ bash scanner.sh example.com`
 
 Running in background in VPS using nohup
+
 Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 
 **Subdomain Scanning**
