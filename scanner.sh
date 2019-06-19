@@ -191,7 +191,6 @@ sleep 5
 echo "[+] DirSearch Scanning for Sensitive Files [+]"
 for u in `cat $1/$1-allz.txt`;do python3 ~/dirsearch/dirsearch.py -u $u --ext php,bak,txt,asp,aspx,jsp,html,zip,jar,sql -b -w newlist.txt >> $1/dirsearch/$u-dirsearch.txt;done
 curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=DirSearch%20Done%20for%20$1" --silent
-rm $1/$1-all.txt
 sleep 5
 
 curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=Scanner%20Done%20for%20$1" --silent
