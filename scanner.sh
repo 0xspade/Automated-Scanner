@@ -11,6 +11,7 @@ if [ ! -f $1 ]; then
 fi
 mkdir $1/dirsearch
 mkdir $1/virtual-hosts
+mkdir $1/CSTI
 sleep 5
 
 echo "[+] AMASS SCANNING [+]"
@@ -88,10 +89,7 @@ sleep 5
 all=`cat $1/$1-final.txt | wc -l`
 curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=Almost%20$all%20Collected%20Subdomain(s)%20for%20$1" --silent
 sleep 3
-echo "[+] SCANNING CRLF [+]"
-python3 ~/CRLF-Injection-Scanner/crlf_scan.py -i $1/$1-final.txt -o $1/$1-crlf.txt
-curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=CRLF%20Scanning%20done%20for%20$1" --silent
-sleep 5
+
 
 
 cp $1/$1-final.txt $1/ports.txt
@@ -147,6 +145,17 @@ done
 alivesu=`cat $1/$1-allx.txt | sort -u | wc -l`
 cat $1/$1-allx.txt | sort -u > $1/$1-allz.txt
 curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=$alivesu%20alive%20domains%20out%20of%20$all%20domains%20in%20$1" --silent
+sleep 5
+
+echo "[+] SCANNING CRLF [+]"
+python3 ~/CRLF-Injection-Scanner/crlf_scan.py -i $1/$1-allz.txt -o $1/$1-crlf.txt
+curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=CRLF%20Scanning%20done%20for%20$1" --silent
+sleep 5
+
+echo "[+] SCANNING ANGULAR CSTI [+]"
+for url in `cat $1/$1-allz.txt`; do acstis -c -vp --iic -vrl $1/CSTI/$url.log -d $url; done
+curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=Angular%20CSTI%20Scanning%20done%20for%20$1" --silent
+sleep 5
 
 echo "[+] PORT SCANNING [+]"
 cat $1/$1-allz.txt | aquatone -ports xlarge -out $1/$1-ports
