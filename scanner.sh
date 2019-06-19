@@ -9,6 +9,8 @@ telegram_id=""
 if [ ! -f $1 ]; then
 	mkdir $1
 fi
+mkdir $1/dirsearch
+mkdir $1/virtual-hosts
 sleep 5
 
 echo "[+] AMASS SCANNING [+]"
@@ -120,7 +122,7 @@ for test in `cat $1/$1-all.txt`; do
 						continue
 					else
 						count=`curl $proton://$test --silent| wc -c`
-						echo "$proton://$test is open in $h:$p with a content-length of $count and response of $response" >> $1/$1-virtualhosts.log
+						echo "$proton://$test is open in $h:$p with a content-length of $count and response of $response" >> $1/virtual-hosts/$test-virtualhosts.log
 					fi
 				fi
 			done
@@ -187,7 +189,7 @@ curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram
 rm $1-sensitive.txt
 sleep 5
 echo "[+] DirSearch Scanning for Sensitive Files [+]"
-for u in `cat $1/$1-allz.txt`;do python3 ~/dirsearch/dirsearch.py -u $u --ext php,bak,txt,asp,aspx,jsp,html,zip,jar,sql -b -w newlist.txt >> $1/$u-dirsearch.txt;done
+for u in `cat $1/$1-allz.txt`;do python3 ~/dirsearch/dirsearch.py -u $u --ext php,bak,txt,asp,aspx,jsp,html,zip,jar,sql -b -w newlist.txt >> $1/dirsearch/$u-dirsearch.txt;done
 curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=DirSearch%20Done%20for%20$1" --silent
 rm $1/$1-all.txt
 sleep 5
