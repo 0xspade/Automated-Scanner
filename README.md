@@ -1,5 +1,10 @@
 # Automated-Scanner
 
+Usage: `~$ bash scanner.sh example.com`
+
+Running in background in VPS using nohup
+Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
+
 **Subdomain Scanning**
 * Amass
 * Subfinder
@@ -18,4 +23,6 @@
 
 **File/Dir Discovery**
 * sensitive.py
-& DirSearch
+* DirSearch
+
+I hope that someone could help me to add more useful automated scanning technique :)
