@@ -9,9 +9,19 @@ telegram_id=""
 if [ ! -f $1 ]; then
 	mkdir $1
 fi
-mkdir $1/dirsearch
-mkdir $1/virtual-hosts
-mkdir $1/CSTI
+
+if [ ! -f $1/dirsearch ]; then
+	mkdir $1/dirsearch
+fi
+
+if [ ! -f mkdir $1/virtual-hosts ]; then
+	mkdir $1/virtual-hosts
+fi
+
+if [ ! -f mkdir $1/CSTI ]; then
+	mkdir $1/CSTI
+fi
+
 sleep 5
 
 echo "[+] AMASS SCANNING [+]"
@@ -107,15 +117,14 @@ sleep 5
 declare -a protocol=("https" "http")
 echo "[+] Scanning for Virtual Hosts Resolution [+]"
 declare -a home=("127.0.0.1" "proxy" "intranet" "localhost" "mail" "exchange" "ad" "fw" "reverse-proxy")
+response=`curl -s -o /dev/null -w "%{http_code}" $proton://$test -H "Host: $h:$p" --max-time 10 --silent`
 for test in `cat $1/$1-all.txt`; do
 	for proton in ${protocol[@]}; do
 		for h in ${home[@]}; do
 			for p in {1..65535}; do
-				response=`curl -s -o /dev/null -w "%{http_code}" $proton://$test -H "Host: $h:$p" --max-time 10`
-				if [ $response == 000]; then
+				if [ $response -eq 000 ]; then
 					continue
-				else
-					
+				else			
 					if curl $proton://$test | grep -q 'cloudflare|Cloudflare|CloudFlare'; then
 						continue
 					else
