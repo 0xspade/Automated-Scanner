@@ -14,11 +14,11 @@ if [ ! -f $1/dirsearch ]; then
 	mkdir $1/dirsearch
 fi
 
-if [ ! -f mkdir $1/virtual-hosts ]; then
+if [ ! -f $1/virtual-hosts ]; then
 	mkdir $1/virtual-hosts
 fi
 
-if [ ! -f mkdir $1/CSTI ]; then
+if [ ! -f $1/CSTI ]; then
 	mkdir $1/CSTI
 fi
 
@@ -114,18 +114,22 @@ rm $1/$1-ipf.txt
 cat $1/$1-ip.txt $1/$1-final.txt > $1/$1-all.txt
 sleep 5
 
-declare -a protocol=("https" "http")
+declare -a protocol=("http" "https")
+
 echo "[+] Scanning for Virtual Hosts Resolution [+]"
 declare -a home=("127.0.0.1" "proxy" "intranet" "localhost" "mail" "exchange" "ad" "fw" "reverse-proxy")
-response=`curl -s -o /dev/null -w "%{http_code}" $proton://$test -H "Host: $h:$p" --max-time 10 --silent`
 for test in `cat $1/$1-all.txt`; do
 	for proton in ${protocol[@]}; do
 		for h in ${home[@]}; do
 			for p in {1..65535}; do
-				if [ $response -eq 000 ]; then
+				response=$(curl -s -o /dev/null -w "%{http_code}" $proton://$test -H "Host: $h:$p" --max-time 10 --silent)
+				if [ $response == 000 ]
+				then
+					sleep 1
 					continue
-				else			
-					if curl $proton://$test | grep -q 'cloudflare|Cloudflare|CloudFlare'; then
+				else
+					if curl -iL $proton://$test --silent | egrep 'cloudflare|Cloudflare|CloudFlare'
+					then
 						continue
 					else
 						count=`curl $proton://$test --silent| wc -c`
@@ -136,14 +140,15 @@ for test in `cat $1/$1-all.txt`; do
 		done
 	done
 done
-vt=`cat $1/$1-virtualhosts.log | wc -l`
+vt=`cat $1/virtual-hosts/$1-virtualhosts.log | wc -l`
 curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=Virtual%20Host(s)%20found%20$vt" --silent
 sleep 5
 
 echo "[+] Scanning for Alive Hosts [+]"
 for alive in `cat $1/$1-all.txt`; do
 	for proto in ${protocol[@]}; do
-		if [ $(curl -s -o /dev/null -w "%{http_code}" $proto://$alive --max-time 10) == 000 ]; then
+		if [ $(curl -s -o /dev/null -w "%{http_code}" $proto://$alive --max-time 10) == 000 ]
+		then
 			echo "$alive tango down!"
 		else
 			echo "$alive is up!"
