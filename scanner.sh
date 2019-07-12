@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# amass, subfinder, snapd, aquatone, gobuster, masscan, nmap, sensitive.py, curl, CRLF-Injection-Scanner, DirSearch
+# amass, subfinder, aquatone, gobuster, masscan, nmap, sensitive.py, curl, CRLF-Injection-Scanner, DirSearch, LinkFinder
 
 telegram_bot=""
 passwordx=""
@@ -20,6 +20,10 @@ fi
 
 if [ ! -f $1/CSTI ]; then
 	mkdir $1/CSTI
+fi
+
+if [ ! -f $1/endpoints ]; then
+	mkdir $1/endpoints
 fi
 
 sleep 5
@@ -164,6 +168,15 @@ sleep 5
 echo "[+] SCANNING CRLF [+]"
 python3 ~/CRLF-Injection-Scanner/crlf_scan.py -i $1/$1-allz.txt -o $1/$1-crlf.txt
 curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=CRLF%20Scanning%20done%20for%20$1" --silent
+sleep 5
+
+echo "[+] COLLECTING ENDPOINTS [+]"
+for urlz in `cat $1/$1-allz.txt`; do 
+	for protoc in ${protocol[@]}; do
+		python ~/LinkFinder/linkfinder.py -i $protoc://$urlz -d -o $1/endpoints/$protoc_$urlz-result.html
+	done
+done
+curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=Done%20collecting%20endpoint%20in%20$1" --silent
 sleep 5
 
 echo "[+] SCANNING ANGULAR CSTI [+]"
