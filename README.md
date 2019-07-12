@@ -19,6 +19,9 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 
 **[CRLF Injection](https://github.com/random-robbie/CRLF-Injection-Scanner) Scan**
 
+**Collecting Endpoints thru [Linkfinder](https://github.com/GerbenJavado/LinkFinder/)**
+*Just comment out the line 253 to 256 in linkfinder.py file*
+
 **[Angular CLient-Based Injection](https://github.com/tijme/angularjs-csti-scanner) Scan**
 
 **Port Scanning**
