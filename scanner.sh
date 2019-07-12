@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# amass, subfinder, aquatone, gobuster, masscan, nmap, sensitive.py, curl, CRLF-Injection-Scanner, DirSearch, LinkFinder
+# amass, subfinder, snapd, aquatone, gobuster, masscan, nmap, sensitive.py, curl, CRLF-Injection-Scanner, DirSearch, LinkFinder
 
 telegram_bot=""
 passwordx=""
@@ -132,11 +132,11 @@ for test in `cat $1/$1-all.txt`; do
 					sleep 1
 					continue
 				else
-					if curl -iL $proton://$test --silent | egrep 'cloudflare|Cloudflare|CloudFlare'
+					if curl -iL $proton://$test --silent | egrep 'cloudflare|Cloudflare|CloudFlare' > /dev/null
 					then
 						continue
 					else
-						count=`curl $proton://$test --silent| wc -c`
+						count=`curl -iL $proton://$test --silent| wc -c`
 						echo "$proton://$test is open in $h:$p with a content-length of $count and response of $response" >> $1/virtual-hosts/$test-virtualhosts.log
 					fi
 				fi
