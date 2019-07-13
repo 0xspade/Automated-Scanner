@@ -126,7 +126,7 @@ for test in `cat $1/$1-all.txt`; do
 	for proton in ${protocol[@]}; do
 		for h in ${home[@]}; do
 			for p in {1..65535}; do
-				response=$(curl -s -o /dev/null -w "%{http_code}" $proton://$test -H "Host: $h:$p" --max-time 10 --silent)
+				response=$(curl -iL -s -o /dev/null -w "%{http_code}" $proton://$test -H "Host: $h:$p" --max-time 10 --silent)
 				if [ $response == 000 ]
 				then
 					sleep 1
