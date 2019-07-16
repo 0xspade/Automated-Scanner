@@ -80,7 +80,7 @@ sleep 5
 
 echo "[+] GOBUSTER SCANNING [+]"
 if [ ! -f $1/$1-gobuster.txt ]; then
-	gobuster dns -d $1 -t 100 -w all.txt -o $1/$1-gobust.txt
+	gobuster -m dns -u $1 -t 100 -w all.txt -o $1/$1-gobust.txt -fw
 	gobusterscan=`cat $1/$1-gobust.txt | wc -l`
 	curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=Gobuster%20Found%20$gobusterscan%20subdomain(s)%20for%20$1" --silent > /dev/null
 	echo "[+] Done"
@@ -120,34 +120,6 @@ sleep 5
 
 declare -a protocol=("http" "https")
 
-echo "[+] Scanning for Virtual Hosts Resolution [+]"
-declare -a home=("127.0.0.1" "proxy" "intranet" "localhost" "mail" "exchange" "ad" "fw" "reverse-proxy")
-for test in `cat $1/$1-all.txt`; do
-	for proton in ${protocol[@]}; do
-		for h in ${home[@]}; do
-			for p in {1..65535}; do
-				response=$(curl -iL -s -o /dev/null -w "%{http_code}" $proton://$test -H "Host: $h:$p" --max-time 10 --silent)
-				if [ $response == 000 ]
-				then
-					sleep 1
-					continue
-				else
-					if curl -iL $proton://$test --silent | egrep 'cloudflare|Cloudflare|CloudFlare' > /dev/null
-					then
-						continue
-					else
-						count=`curl -iL $proton://$test --silent| wc -c`
-						echo "$proton://$test is open in $h:$p with a content-length of $count and response of $response" >> $1/virtual-hosts/$test-virtualhosts.log
-					fi
-				fi
-			done
-		done
-	done
-done
-vt=`cat $1/virtual-hosts/$1-virtualhosts.log | wc -l`
-curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=Virtual%20Host(s)%20found%20$vt" --silent > /dev/null
-sleep 5
-
 echo "[+] Scanning for Alive Hosts [+]"
 for alive in `cat $1/$1-all.txt`; do
 	for proto in ${protocol[@]}; do
@@ -162,6 +134,7 @@ for alive in `cat $1/$1-all.txt`; do
 done
 alivesu=`cat $1/$1-allx.txt | sort -u | wc -l`
 cat $1/$1-allx.txt | sort -u > $1/$1-allz.txt
+rm $1/$1-allx.txt
 curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=$alivesu%20alive%20domains%20out%20of%20$all%20domains%20in%20$1" --silent > /dev/null
 sleep 5
 
@@ -227,6 +200,34 @@ sleep 5
 echo "[+] DirSearch Scanning for Sensitive Files [+]"
 for u in `cat $1/$1-allz.txt`;do python3 ~/dirsearch/dirsearch.py -u $u --ext php,bak,txt,asp,aspx,jsp,html,zip,jar,sql -b -w newlist.txt >> $1/dirsearch/$u-dirsearch.txt;done
 curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=DirSearch%20Done%20for%20$1" --silent > /dev/null
+sleep 5
+
+echo "[+] Scanning for Virtual Hosts Resolution [+]"
+declare -a home=("127.0.0.1" "proxy" "intranet" "localhost" "mail" "exchange" "ad" "fw" "reverse-proxy")
+for test in `cat $1/$1-all.txt`; do
+	for proton in ${protocol[@]}; do
+		for h in ${home[@]}; do
+			for p in {1..65535}; do
+				response=$(curl -s -o /dev/null -w "%{http_code}" $proton://$test -H "Host: $h:$p" --max-time 10 --silent)
+				if [ $response == 000 ]
+				then
+					sleep 1
+					continue
+				else
+					if curl -iL $proton://$test --silent | egrep 'cloudflare|Cloudflare|CloudFlare' > /dev/null
+					then
+						continue
+					else
+						count=`curl -iL $proton://$test --silent| wc -c`
+						echo "$proton://$test is open in $h:$p with a content-length of $count and response of $response" >> $1/virtual-hosts/$test-virtualhosts.log
+					fi
+				fi
+			done
+		done
+	done
+done
+vt=`cat $1/virtual-hosts/$1-virtualhosts.log | wc -l`
+curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=Virtual%20Host(s)%20found%20$vt" --silent > /dev/null
 sleep 5
 
 curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=Scanner%20Done%20for%20$1" --silent > /dev/null
