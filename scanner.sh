@@ -153,7 +153,7 @@ curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram
 sleep 5
 
 echo "[+] SCANNING ANGULAR CSTI [+]"
-for url in `cat $1/$1-allz.txt`; do acstis -c -vp --iic -vrl $1/CSTI/$url.log -d $url; done
+for url in `cat $1/$1-allz.txt`; do acstis -c -vp -iic -vrl $1/CSTI/$url.log -d $url; done
 curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=Angular%20CSTI%20Scanning%20done%20for%20$1" --silent > /dev/null
 sleep 5
 
