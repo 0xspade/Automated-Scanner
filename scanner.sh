@@ -123,11 +123,12 @@ declare -a protocol=("http" "https")
 echo "[+] Scanning for Alive Hosts [+]"
 for alive in `cat $1/$1-all.txt`; do
 	for proto in ${protocol[@]}; do
-		if [ $(curl -s -o /dev/null -w "%{http_code}" $proto://$alive --max-time 10) == 000 ]
+		iamalive=$(curl -s -o /dev/null -w "%{http_code}" $proto://$alive --max-time 10)
+		if [ $iamalive == 000 ]
 		then
-			echo "$alive tango down!"
+			echo "[$iamalive] $alive tango down!"
 		else
-			echo "$alive is up!"
+			echo "[$iamalive] $alive is up!"
 			echo $alive >> $1/$1-allx.txt
 		fi
 	done
