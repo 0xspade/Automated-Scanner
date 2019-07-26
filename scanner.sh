@@ -82,7 +82,7 @@ sleep 5
 
 echo "[+] GOBUSTER SCANNING [+]"
 if [ ! -f ~/$1/$1-gobuster.txt ]; then
-	gobuster dns -d $1 -t 100 -w all.txt -o ~/$1/$1-gobust.txt
+	gobuster dns -d $1 -t 100 -w all.txt --wildcard -o ~/$1/$1-gobust.txt
 	gobusterscan=`cat ~/$1/$1-gobust.txt | wc -l`
 	curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=Gobuster%20Found%20$gobusterscan%20subdomain(s)%20for%20$1" --silent > /dev/null
 	echo "[+] Done"
