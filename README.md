@@ -20,8 +20,6 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 **Collecting Endpoints thru [Linkfinder](https://github.com/GerbenJavado/LinkFinder/)**
 >*Just comment out the line 253 to 256 in linkfinder.py file*
 
-**[Angular Client-Based Injection](https://github.com/tijme/angularjs-csti-scanner) Scan**
-
 **Port Scanning**
 * [Aquatone](https://github.com/michenriksen/aquatone) (New)
 * NMAP
@@ -31,6 +29,6 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 * [sensitive.py](https://github.com/phspade/Sensitive-File-Explorer)
 * [DirSearch](https://github.com/maurosoria/dirsearch) using combined wordlist of nullenc0de and Jason Haddix [content discovery wordlist](https://mega.nz/#!Pgom0azQ!ZK9m085CpimYHp5Z9adqL9oFSIG3PGoTGj0kdxclgME)
 
-**Virtual Hosts Scan**
+**[Virtual Hosts](https://github.com/codingo/VHostScan) Scan**
 
 I hope that someone could help me to add more useful automated scanning technique :)
