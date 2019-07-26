@@ -185,8 +185,9 @@ else
 	curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=Skipping%20Nmap%20Scanning%20for%20$1" --silent > /dev/null
 	echo "[!] Skipping ..."
 fi
-
 sleep 5
+
+awk '{printf "%s\t", $2; for (i=4;i<=NF;i++) { split($i,a,"/"); if (a[2]=="open") printf ",%s",a[1];} print ""}' | sed -e 's/,//'
 
 echo "[+] Scanning for Sensitive Files [+]"
 cp ~/$1/$1-allz.txt ~/$1-sensitive.txt
@@ -201,10 +202,17 @@ for u in `cat ~/$1/$1-allz.txt`;do python3 ~/dirsearch/dirsearch.py -u $u --ext 
 curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=DirSearch%20Done%20for%20$1" --silent > /dev/null
 sleep 5
 
+NMAP_FILE=~/$1/$1-nmap.gnmap
+cat $NMAP_FILE | awk '{printf "%s\t", $2; for (i=4;i<=NF;i++) { split($i,a,"/"); if (a[2]=="open") printf ",%s",a[1];} print ""}' | sed -e 's/,//' | awk '{print $2}' | sort -u | tr ',' '\n' > ~/$1/tmp.txt
+MASSCAN_FILE=~/$1/$1-masscan.txt
+cat $MASSCAN_FILE | grep 'Ports: ' | awk '{print $5}' | sort -u >> ~/$1/tmp.txt
+for i in `cat ~/$1/tmp.txt`; do test="${i%/open*}"; echo $test >> ~/$1/temp.txt; done
+rm ~/$1/tmp.txt;cat ~/$1/temp.txt | sort -u >> ~/$1/tmp.txt; rm ~/$1/temp.txt
+
 echo "[+] Scanning for Virtual Hosts Resolution [+]"
 for test in `cat $1/$1-ip.txt`; do
-	for p in {1..65535}; do
-		VHostScan -t $test -b $1 -p $p -v --random-agent -oN ~/$1/virtual-hos ts/initial-$test_$p.txt
+	for p in `cat ~/$1/temp.txt`; do
+		VHostScan -t $test -b $1 -p $p -v --random-agent -oN ~/$1/virtual-hosts/initial-$test_$p.txt
 		VHostScan -t $test -b $1 -p $p -v --ssl --random-agent -oN ~/virtual-hosts/ssl-$test_$p.txt
 		cat ~/virtual-hosts/$test_$p.txt ~/$1/virtual-hosts/ssl-$test_$p.txt >> ~/$1/virtual-hosts/final-$test.txt
 		rm -rf ~/virtual-hosts/initial-* ~/virtual-hosts/ssl-*
@@ -212,7 +220,7 @@ for test in `cat $1/$1-ip.txt`; do
 done
 vt=`ls ~/$1/virtual-hosts/* | wc -l`
 curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=Virtual%20Host(s)%20found%20$vt" --silent > /dev/null
+rm ~/$1/tmp.txt
 sleep 5
 
 curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=Scanner%20Done%20for%20$1" --silent > /dev/null
-
