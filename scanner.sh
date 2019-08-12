@@ -30,7 +30,7 @@ sleep 5
 
 echo "[+] AMASS SCANNING [+]"
 if [ ! -f ~/$1/$1-amass.txt ]; then
-	amass enum -brute -active -d $1 -o ~/$1/$1-amass.txt
+	amass enum -brute -active -d $1 -o ~/$1/$1-amass.txt -config ~/amass/config.ini
 	amasscan=`cat ~/$1/$1-amass.txt | wc -l`
 	curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=Amass%20Found%20$amasscan%20subdomain(s)%20for%20$1" --silent > /dev/null
 	echo "[+] Done"
