@@ -38,3 +38,5 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 **[Virtual Hosts](https://github.com/codingo/VHostScan) Scan**
 
 I hope that someone could help me to add more useful automated scanning technique :)
+**ALL CREDIT GOES TO AMAZING CREATORS OF THIS WONDERFUL TOOLS :)**
+*cannot make to mention y'all co'z i'm to lazy to do that though :D (i'm being honest here)*
