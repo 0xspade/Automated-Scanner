@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# amass, subfinder, snapd, aquatone, gobuster, masscan, nmap, sensitive.py, curl, CRLF-Injection-Scanner, DirSearch, LinkFinder, VHostScan
+# amass, subfinder, snapd, aquatone, project sonar, gobuster, masscan, nmap, sensitive.py, curl, CRLF-Injection-Scanner, otxurls, waybackurls, DirSearch, LinkFinder, VHostScan
 
 telegram_bot=""
 passwordx=""
@@ -18,12 +18,16 @@ if [ ! -f ~/$1/virtual-hosts ]; then
 	mkdir ~/$1/virtual-hosts
 fi
 
-if [ ! -f ~/$1/CSTI ]; then
-	mkdir ~/$1/CSTI
-fi
-
 if [ ! -f ~/$1/endpoints ]; then
 	mkdir ~/$1/endpoints
+fi
+
+if [ ! -f ~/$1/otxurls ]; then
+	mkdir ~/$1/otxurls
+fi
+
+if [ ! -f ~/$1/waybackurls ]; then
+	mkdir ~/$1/waybackurls
 fi
 
 sleep 5
@@ -80,6 +84,19 @@ else
 fi
 sleep 5
 
+
+echo "[+] SCANNING SUBDOMAINS WITH PROJECT SONAR [+]"
+if [ ! -f ~/$1/$1-project-sonar.txt ]; then
+	pv ~/2019-07-26-1564183467-fdns_any.json.gz | pigz -dc | grep -e ".$1," | jq -r '.name' | sort -u | grep ".$1" >> ~/$1/$1-project-sonar.txt
+	projectsonar=`cat ~/$1/$1-project-sonar.txt | wc -l`
+	curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=Project%20Sonar%20Found%20$projectsonar%20subdomain(s)%20for%20$1" --silent > /dev/null
+	echo "[+] Done"
+else
+	curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=Skipping%20Project%20Sonar%20Scanning%20for%20$1" --silent > /dev/null
+	echo "[!] Skipping ..."
+fi
+sleep 5
+
 echo "[+] GOBUSTER SCANNING [+]"
 if [ ! -f ~/$1/$1-gobuster.txt ]; then
 	gobuster dns -d $1 -t 100 -w all.txt --wildcard -o ~/$1/$1-gobust.txt
@@ -91,13 +108,15 @@ else
 	echo "[!] Skipping ..."
 fi
 sleep 5
+
+
 cat ~/$1/$1-gobust.txt | grep "Found:" | awk {'print $2'} > ~/$1/$1-gobuster.txt
 rm ~/$1/$1-gobust.txt
 sleep 5
 
 
-cat ~/$1/$1-amass.txt ~/$1/$1-subfinder.txt ~/$1/$1-aquatone.txt ~/$1/$1-sublist3r.txt ~/$1/$1-gobuster.txt | sort -uf > ~/$1/$1-final.txt
-rm ~/$1/$1-amass.txt ~/$1/$1-subfinder.txt ~/$1/$1-aquatone.txt ~/$1/$1-sublist3r.txt ~/$1/$1-gobuster.txt
+cat ~/$1/$1-amass.txt ~/$1/$1-project-sonar.txt ~/$1/$1-subfinder.txt ~/$1/$1-aquatone.txt ~/$1/$1-sublist3r.txt ~/$1/$1-gobuster.txt | sort -uf > ~/$1/$1-final.txt
+rm ~/$1/$1-amass.txt ~/$1/$1-project-sonar.txt ~/$1/$1-subfinder.txt ~/$1/$1-aquatone.txt ~/$1/$1-sublist3r.txt ~/$1/$1-gobuster.txt
 touch ~/$1/$1-ip.txt
 sleep 5
 
@@ -105,7 +124,6 @@ sleep 5
 all=`cat ~/$1/$1-final.txt | wc -l`
 curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=Almost%20$all%20Collected%20Subdomain(s)%20for%20$1" --silent > /dev/null
 sleep 3
-
 
 
 cp ~/$1/$1-final.txt ~/$1/ports.txt
@@ -176,7 +194,7 @@ sleep 5
 
 echo "[+] NMAP PORT SCANNING [+]"
 if [ ! -f ~/$1/$1-nmap.txt ]; then
-	nmap -sTVC -A -Pn -p- -iL ~/$1/$1-ip.txt --stylesheet ~/nmap-bootstrap.xsl -oA $1/$1-nmap
+	nmap -sV -Pn -p- -iL ~/$1/$1-ip.txt --stylesheet ~/nmap-bootstrap.xsl -oA ~/$1/$1-nmap
 	nmaps=`cat ~/$1/$1-ip.txt | wc -l`
 	xsltproc -o ~/$1/$1-nmap.html ~/nmap-bootstrap.xsl ~/$1/$1-nmap.xml
 	curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=Nmap%20Scanned%20$nmaps%20IPs%20for%20$1" --silent > /dev/null
@@ -187,14 +205,24 @@ else
 fi
 sleep 5
 
-awk '{printf "%s\t", $2; for (i=4;i<=NF;i++) { split($i,a,"/"); if (a[2]=="open") printf ",%s",a[1];} print ""}' | sed -e 's/,//'
-
 echo "[+] Scanning for Sensitive Files [+]"
 cp ~/$1/$1-allz.txt ~/$1-sensitive.txt
 python ~/sensitive.py -u ~/$1-sensitive.txt
 sens=`cat ~/$1-sensitive.txt | wc -l`
 curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=Sensitive%20File%20Scanned%20$sens%20asset(s)%20for%20$1" --silent > /dev/null
 rm $1-sensitive.txt
+sleep 5
+
+echo "[+] OTXURL Scanning for Archived Endpoints [+]"
+for u in `cat ~/$1/$1-allz.txt`;do echo $u | otxurls >> ~/$1/otxurls/$u.txt; done
+cat ~/$1/otxurls/* | sort -u >> ~/$1/otxurls/$1.txt 
+curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=OTXURL%20Done%20for%20$1" --silent > /dev/null
+sleep 5
+
+echo "[+] WAYBACKURLS Scanning for Archived Endpoints [+]"
+for u in `cat ~/$1/$1-allz.txt`;do echo $u | waybackurls >> ~/$1/waybackurls/$u.txt; done
+cat ~/$1/waybackurls/* | sort -u >> ~/$1/waybackurls/$1.txt 
+curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=WAYBACKURLS%20Done%20for%20$1" --silent > /dev/null
 sleep 5
 
 echo "[+] DirSearch Scanning for Sensitive Files [+]"
