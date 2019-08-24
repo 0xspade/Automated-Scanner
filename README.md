@@ -7,7 +7,8 @@ Running in background in VPS using nohup
 Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 
 **Subdomain Scanning**
-* [Amass](https://github.com/OWASP/Amass) `you need to have a [config.ini](https://github.com/OWASP/Amass/blob/master/examples/config.ini) and fill those API keys type thing.`
+* [Amass](https://github.com/OWASP/Amass) 
+>you need to have a [config.ini](https://github.com/OWASP/Amass/blob/master/examples/config.ini) and fill those API keys type thing.
 * [Subfinder](https://github.com/subfinder/subfinder)
 * Aquatone (old) `gem install aquatone`
 * [Sublist3r](https://github.com/aboul3la/Sublist3r)
