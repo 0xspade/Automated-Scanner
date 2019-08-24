@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# amass, subfinder, snapd, aquatone, project sonar, gobuster, masscan, nmap, sensitive.py, curl, CRLF-Injection-Scanner, otxurls, waybackurls, DirSearch, LinkFinder, VHostScan
+# amass, subfinder, snapd, aquatone, project sonar, massdns, gobuster, masscan, nmap, sensitive.py, curl, CRLF-Injection-Scanner, otxurls, waybackurls, DirSearch, LinkFinder, VHostScan
 
 telegram_bot=""
 passwordx=""
@@ -171,6 +171,11 @@ for urlz in `cat ~/$1/$1-allz.txt`; do
 	done
 done
 curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=Done%20collecting%20endpoint%20in%20$1" --silent > /dev/null
+sleep 5
+
+echo "[+] MASSDNS SCANNING [+]"
+massdns -r ~/massdns/lists/resolvers.txt -t CNAME ~/$1/$1-allz.txt -o S > $1/$1-massdns.txt
+curl -g "https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text=Done%20Massdns%20CNAME%20Scanning%20for%20$1" --silent > /dev/null
 sleep 5
 
 echo "[+] PORT SCANNING [+]"
