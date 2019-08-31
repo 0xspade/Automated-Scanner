@@ -240,11 +240,6 @@ cat ~/$1/waybackurls/* | sort -u >> ~/$1/waybackurls/$1.txt
 message "WAYBACKURLS%20Done%20for%20$1"
 sleep 5
 
-echo "[+] DirSearch Scanning for Sensitive Files [+]"
-for u in `cat ~/$1/$1-allz.txt`;do python3 ~/dirsearch/dirsearch.py -u $u --ext php,bak,txt,asp,aspx,jsp,html,zip,jar,sql -b -w ~/newlist.txt >> ~/$1/dirsearch/$u-dirsearch.txt;done
-message "DirSearch%20Done%20for%20$1"
-sleep 5
-
 NMAP_FILE=~/$1/$1-nmap.gnmap
 cat $NMAP_FILE | awk '{printf "%s\t", $2; for (i=4;i<=NF;i++) { split($i,a,"/"); if (a[2]=="open") printf ",%s",a[1];} print ""}' | sed -e 's/,//' | awk '{print $2}' | sort -u | tr ',' '\n' > ~/$1/tmp.txt
 MASSCAN_FILE=~/$1/$1-masscan.txt
@@ -254,16 +249,21 @@ rm ~/$1/tmp.txt;cat ~/$1/temp.txt | sort -u >> ~/$1/tmp.txt; rm ~/$1/temp.txt
 
 echo "[+] Scanning for Virtual Hosts Resolution [+]"
 for test in `cat $1/$1-ip.txt`; do
-	for p in `cat ~/$1/tmp.txt`; do
-		VHostScan -t $test -b $1 -p $p -v --random-agent -oN ~/$1/virtual-hosts/initial-$test_$p.txt
-		VHostScan -t $test -b $1 -p $p -v --ssl --random-agent -oN ~/virtual-hosts/ssl-$test_$p.txt
-		cat ~/virtual-hosts/$test_$p.txt ~/$1/virtual-hosts/ssl-$test_$p.txt >> ~/$1/virtual-hosts/final-$test.txt
-		rm -rf ~/virtual-hosts/initial-* ~/virtual-hosts/ssl-*
-	done
+        for p in `cat ~/$1/tmp.txt`; do
+                VHostScan -t $test -b $1 -p $p -v --random-agent -oN ~/$1/virtual-hosts/initial-$test_$p.txt
+                VHostScan -t $test -b $1 -p $p -v --ssl --random-agent -oN ~/virtual-hosts/ssl-$test_$p.txt
+                cat ~/virtual-hosts/$test_$p.txt ~/$1/virtual-hosts/ssl-$test_$p.txt >> ~/$1/virtual-hosts/final-$test.txt
+                rm -rf ~/virtual-hosts/initial-* ~/virtual-hosts/ssl-*
+        done
 done
 vt=`ls ~/$1/virtual-hosts/* | wc -l`
 message "Virtual%20Host(s)%20found%20$vt"
 rm ~/$1/tmp.txt
+sleep 5
+
+echo "[+] DirSearch Scanning for Sensitive Files [+]"
+for u in `cat ~/$1/$1-allz.txt`;do python3 ~/dirsearch/dirsearch.py -u $u --ext php,bak,txt,asp,aspx,jsp,html,zip,jar,sql -b -w ~/newlist.txt >> ~/$1/dirsearch/$u-dirsearch.txt;done
+message "DirSearch%20Done%20for%20$1"
 sleep 5
 
 message "Scanner%20Done%20for%20$1"
