@@ -97,7 +97,7 @@ sleep 5
 
 echo "[+] SCANNING SUBDOMAINS WITH PROJECT SONAR [+]"
 if [ ! -f ~/$1/$1-project-sonar.txt ]; then
-	pv ~/2019-07-26-1564183467-fdns_any.json.gz | pigz -dc | grep -e ".$1\"," | jq -r '.name' | sort -u | grep ".$1" >> ~/$1/$1-project-sonar.txt
+	pv ~/2019-07-26-1564183467-fdns_any.json.gz | pigz -dc | grep -e ".$1\"," | jq -r '.name' | sort -u | grep -e ".$1" >> ~/$1/$1-project-sonar.txt
 	projectsonar=`scanned ~/$1/$1-project-sonar.txt`
 	message "Project%20Sonar%20Found%20$projectsonar%20subdomain(s)%20for%20$1"
 	echo "[+] Done"
