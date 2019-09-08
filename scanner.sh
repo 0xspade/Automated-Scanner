@@ -243,6 +243,8 @@ message "WAYBACKURLS%20Done%20for%20$1"
 sleep 5
 
 
+for u in `cat `
+
 NMAP_FILE=~/$1/$1-nmap.gnmap
 cat $NMAP_FILE | awk '{printf "%s\t", $2; for (i=4;i<=NF;i++) { split($i,a,"/"); if (a[2]=="open") printf ",%s",a[1];} print ""}' | sed -e 's/,//' | awk '{print $2}' | sort -u | tr ',' '\n' > ~/$1/tmp.txt
 MASSCAN_FILE=~/$1/$1-masscan.txt
@@ -265,9 +267,7 @@ rm ~/$1/tmp.txt
 sleep 5
 
 echo "[+] DirSearch Scanning for Sensitive Files [+]"
-for u in `cat ~/$1/$1-allz.txt`;do python3 ~/dirsearch/dirsearch.py -u $u --ext php,bak,txt,asp,aspx,jsp,html,zip,jar,sql -b -w ~/newlist.txt >> ~/$1/dirsearch/$u-dirsearch.txt;done
-message "DirSearch%20Done%20for%20$1"
+for u in `cat ~/$1/$1-allz.txt`;do python3 ~/dirsearch/dirsearch.py -u $u --ext php,bak,txt,asp,aspx,jsp,html,zip,jar,sql -t 100 -R 5 --http-method=POST -F -f --random-agents -b -w ~/newlist.txt --plain-text-report=~/$1/dirsearch/$u-dirsearch.txt;done
 sleep 5
 
 message "Scanner%20Done%20for%20$1"
-
