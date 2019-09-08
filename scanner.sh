@@ -97,7 +97,9 @@ sleep 5
 
 echo "[+] SCANNING SUBDOMAINS WITH PROJECT SONAR [+]"
 if [ ! -f ~/$1/$1-project-sonar.txt ]; then
-	pv ~/2019-07-26-1564183467-fdns_any.json.gz | pigz -dc | grep -e ".$1\"," | jq -r '.name' | sort -u | grep -e ".$1" >> ~/$1/$1-project-sonar.txt
+	dom=$1
+	domainss="${dom//./\\.}"
+	pv ~/2019-07-26-1564183467-fdns_any.json.gz | pigz -dc | grep -E ".\\$domainss\"," | jq -r '.name' | sort -u | grep -E ".\\$domainss" >> ~/$1/$1-project-sonar.txt
 	projectsonar=`scanned ~/$1/$1-project-sonar.txt`
 	message "Project%20Sonar%20Found%20$projectsonar%20subdomain(s)%20for%20$1"
 	echo "[+] Done"
@@ -267,7 +269,7 @@ rm ~/$1/tmp.txt
 sleep 5
 
 echo "[+] DirSearch Scanning for Sensitive Files [+]"
-for u in `cat ~/$1/$1-allz.txt`;do python3 ~/dirsearch/dirsearch.py -u $u --ext php,bak,txt,asp,aspx,jsp,html,zip,jar,sql -t 100 -R 5 --http-method=POST -F -f --random-agents -b -w ~/newlist.txt --plain-text-report=~/$1/dirsearch/$u-dirsearch.txt;done
+for u in `cat ~/$1/$1-allz.txt`;do python3 ~/dirsearch/dirsearch.py -u $u --ext php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,old -t 100 -R 5 --http-method=POST -F -f --random-agents -b -w ~/newlist.txt --plain-text-report=~/$1/dirsearch/$u-dirsearch.txt;done
 sleep 5
 
 message "Scanner%20Done%20for%20$1"
