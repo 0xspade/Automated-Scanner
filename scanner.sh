@@ -244,9 +244,6 @@ rm *.$1.txt
 message "WAYBACKURLS%20Done%20for%20$1"
 sleep 5
 
-
-for u in `cat `
-
 NMAP_FILE=~/$1/$1-nmap.gnmap
 cat $NMAP_FILE | awk '{printf "%s\t", $2; for (i=4;i<=NF;i++) { split($i,a,"/"); if (a[2]=="open") printf ",%s",a[1];} print ""}' | sed -e 's/,//' | awk '{print $2}' | sort -u | tr ',' '\n' > ~/$1/tmp.txt
 MASSCAN_FILE=~/$1/$1-masscan.txt
