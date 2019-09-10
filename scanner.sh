@@ -258,9 +258,8 @@ echo "[+] Scanning for Virtual Hosts Resolution [+]"
 for test in `cat $1/$1-ip.txt`; do
 	for p in `cat ~/$1/tmp.txt`; do
 		VHostScan -t $test -b $1 -p $p -v --random-agent -oN ~/$1/virtual-hosts/initial-$test_$p.txt
-		VHostScan -t $test -b $1 -p $p -v --ssl --random-agent -oN ~/virtual-hosts/ssl-$test_$p.txt
-		cat ~/virtual-hosts/$test_$p.txt ~/$1/virtual-hosts/ssl-$test_$p.txt >> ~/$1/virtual-hosts/final-$test.txt
-		rm -rf ~/virtual-hosts/initial-* ~/virtual-hosts/ssl-*
+		VHostScan -t $test -b $1 -p $p -v --ssl --random-agent -oN ~/$1/virtual-hosts/ssl-$test_$p.txt
+		cat ~/$1/virtual-hosts/$test_$p.txt ~/$1/virtual-hosts/ssl-$test_$p.txt >> ~/$1/virtual-hosts/final-$test.txt
 	done
 done
 vt=`ls ~/$1/virtual-hosts/* | wc -l`
