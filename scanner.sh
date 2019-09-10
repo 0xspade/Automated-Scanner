@@ -126,27 +126,36 @@ cat ~/$1/$1-gobust.txt | grep "Found:" | awk {'print $2'} > ~/$1/$1-gobuster.txt
 rm ~/$1/$1-gobust.txt
 sleep 5
 
-
+## Deleting all the results to less disk usage
 cat ~/$1/$1-amass.txt ~/$1/$1-project-sonar.txt ~/$1/$1-subfinder.txt ~/$1/$1-aquatone.txt ~/$1/$1-sublist3r.txt ~/$1/$1-gobuster.txt | sort -uf > ~/$1/$1-final.txt
 rm ~/$1/$1-amass.txt ~/$1/$1-project-sonar.txt ~/$1/$1-subfinder.txt ~/$1/$1-aquatone.txt ~/$1/$1-sublist3r.txt ~/$1/$1-gobuster.txt
-touch ~/$1/$1-ip.txt
+touch ~/$1/$1-ipz.txt
 sleep 5
 
 
-all=`cat ~/$1/$1-final.txt | wc -l`
-message "Almost%20$all%20Collected%20Subdomain(s)%20for%20$1"
+all=`scanned ~/$1/$1-final.txt`
+message "Almost%20$all%20Collected%20Subdomains%20for%20$1"
 sleep 3
 
 
 cp ~/$1/$1-final.txt ~/$1/ports.txt
 for ipx in `cat ~/$1/ports.txt`; do i="${ipx%:*}"; echo $i >> ~/$1/$1-ips.txt;done
 rm ~/$1/ports.txt
-
 sleep 5
+
+# collecting all IP from collected subdomains
 for ip in `cat ~/$1/$1-ips.txt`; do host $ip | grep "has address" | awk {'print $4'} >> ~/$1/$1-ipf.txt;done
-cat ~/$1/$1-ipf.txt | sort -u >> ~/$1/$1-ip.txt
+cat ~/$1/$1-ipf.txt | sort -u >> ~/$1/$1-ipz.txt
 rm ~/$1/$1-ipf.txt
 
+## segregating cloudflare IP from non-cloudflare IP
+## non-sense if I scan cloudflare IP. :(
+iprange="173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 141.101.64.0/18 108.162.192.0/18 190.93.240.0/20 188.114.96.0/20 197.234.240.0/22 198.41.128.0/17 162.158.0.0/15 104.16.0.0/12 172.64.0.0/13 131.0.72.0/22"
+for ip in `cat ~/$1/$1-ip.txt`; do
+	grepcidr "$iprange" <(echo "$ip") >/dev/null && echo "$ip is cloudflare" || echo "$ip" >> ~/$1/$1-ip.txt
+done
+ipz=`scanned ~/$1/$1-ip.txt`
+message "$ipz%20non-cloudflare%20IPs%20has%20been%20$collected%20in%20$1"
 cat ~/$1/$1-ip.txt ~/$1/$1-final.txt > ~/$1/$1-all.txt
 sleep 5
 
@@ -254,9 +263,10 @@ rm ~/$1/tmp.txt;cat ~/$1/temp.txt | sort -u >> ~/$1/tmp.txt; rm ~/$1/temp.txt
 echo "[+] Scanning for Virtual Hosts Resolution [+]"
 for test in `cat $1/$1-ip.txt`; do
 	for p in `cat ~/$1/tmp.txt`; do
-		VHostScan -t $test -b $1 -p $p -v --fuzzy-logic --waf --random-agent -oN ~/$1/virtual-hosts/initial-$test_$p.txt
-		VHostScan -t $test -b $1 -p $p -v --fuzzy-logic --waf --ssl --random-agent -oN ~/$1/virtual-hosts/ssl-$test_$p.txt
+		VHostScan -t $test -b $1 -p $p -v --fuzzy-logic --waf --random-agent -w ~/VHostScan/vhost-wordlist.txt -oN ~/$1/virtual-hosts/initial-$test_$p.txt
+		VHostScan -t $test -b $1 -p $p -v --fuzzy-logic --waf --ssl --random-agent -w ~/VHostScan/vhost-wordlist.txt -oN ~/$1/virtual-hosts/ssl-$test_$p.txt
 		cat ~/$1/virtual-hosts/$test_$p.txt ~/$1/virtual-hosts/ssl-$test_$p.txt >> ~/$1/virtual-hosts/final-$test.txt
+		rm -rf ~/$1/virtual-hosts/initial-* ~/$1/virtual-hosts/ssl-*
 	done
 done
 vt=`ls ~/$1/virtual-hosts/* | wc -l`
