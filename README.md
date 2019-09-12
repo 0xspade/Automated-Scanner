@@ -18,6 +18,9 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 
 **Scan All Alive Hosts**
 
+**Separating Cloudflare IPs to Non-Cloudflare IPs**
+>It's useless to scan Cloudflare IPs
+
 **[CRLF Injection](https://github.com/random-robbie/CRLF-Injection-Scanner) Scan**
 
 **Collecting Endpoints thru [Linkfinder](https://github.com/GerbenJavado/LinkFinder/)**
