@@ -1,3 +1,4 @@
+[![Follow on Twitter](https://img.shields.io/twitter/follow/phspades.svg?logo=twitter)](https://twitter.com/phspades)
 # Automated-Scanner
 
 Usage: `~$ bash scanner.sh example.com`
