@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# amass, subfinder, snapd, aquatone, project sonar, grepcidr, gobuster, masscan, nmap, sensitive.py, curl, CRLF-Injection-Scanner, otxurls, waybackurls, DirSearch, LinkFinder, VHostScan
+# amass, subfinder, snapd, aquatone, project sonar, grepcidr, altdns, gobuster, masscan, nmap, sensitive.py, curl, CRLF-Injection-Scanner, otxurls, waybackurls, DirSearch, LinkFinder, VHostScan
 
 passwordx=""
 
@@ -89,6 +89,28 @@ else
 fi
 sleep 5
 
+echo "[+] CRT.SH SCANNING [+]"
+if [ ! -f ~/$1/$1-crt.txt ]; then
+	curl 'https://crt.sh/?q=%.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl 'https://crt.sh/?q=%dev%.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl 'https://crt.sh/?q=%stg%.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl 'https://crt.sh/?q=%api%.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl 'https://crt.sh/?q=%staging%.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl 'https://crt.sh/?q=%mobile%.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl 'https://crt.sh/?q=%admin%.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl 'https://crt.sh/?q=%console%.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl 'https://crt.sh/?q=%portal%.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl 'https://crt.sh/?q=%internal%.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	cat ~/$1/$1-crt.txt | sort -u >> ~/$1/$1-crtx.txt && rm ~/$1/$1-crt.txt && mv ~/$1/$1-crtx.txt ~/$1/$1-crt.txt
+	crt=`scanned ~/$1/$1-crt.txt`
+	message "CRT.SH%20Found%20$crt%20subdomain(s)%20for%20$1"
+	echo "[+] Done"
+else
+	message "Skipping%20CRT.SH%20Scanning%20for%20$1"
+	echo "[!] Skipping ..."
+fi
+sleep 5
+
 echo "[+] GOBUSTER SCANNING [+]"
 if [ ! -f ~/$1/$1-gobuster.txt ] && [ ! -z $(which gobuster) ]; then
 	gobuster dns -d $1 -t 100 -w all.txt --wildcard -o ~/$1/$1-gobust.txt
@@ -106,11 +128,28 @@ rm ~/$1/$1-gobust.txt
 sleep 5
 
 ## Deleting all the results to less disk usage
-cat ~/$1/$1-amass.txt ~/$1/$1-project-sonar.txt ~/$1/$1-subfinder.txt ~/$1/$1-aquatone.txt ~/$1/$1-sublist3r.txt ~/$1/$1-gobuster.txt | sort -uf > ~/$1/$1-final.txt
-rm ~/$1/$1-amass.txt ~/$1/$1-project-sonar.txt ~/$1/$1-subfinder.txt ~/$1/$1-aquatone.txt ~/$1/$1-sublist3r.txt ~/$1/$1-gobuster.txt
+cat ~/$1/$1-amass.txt ~/$1/$1-project-sonar.txt ~/$1/$1-subfinder.txt ~/$1/$1-aquatone.txt ~/$1/$1-sublist3r.txt ~/$1/$1-crt.txt ~/$1/$1-gobuster.txt | sort -uf > ~/$1/$1-final.txt
+rm ~/$1/$1-amass.txt ~/$1/$1-project-sonar.txt ~/$1/$1-subfinder.txt ~/$1/$1-aquatone.txt ~/$1/$1-sublist3r.txt ~/$1/$1-crt.txt ~/$1/$1-gobuster.txt
 touch ~/$1/$1-ipz.txt
 sleep 5
 
+echo "[+] ALTDNS SCANNING [+]"
+if [ ! -f ~/$1/$1-altdns.txt ] && [ ! -z $(which altdns) ]; then
+	altdns -i ~/$1/$1-final.txt -w ~/altnds.txt -t 100 -e -r -o ~/$1/$1-altdns.txt -s ~/$1/$1-altdns-2.txt
+	sleep 3
+	rm ~/$1/$1-altdns.txt
+	for alt in `cat ~/$1/$1-altdns-2.txt`; do dns="${alt%:*}";echo $dns >> ~/$1/$1-altdns.txt
+	altdns=`scanned ~/$1/$1-altdns.txt`
+	message "SubFinder%20Found%20$subfinderscan%20subdomain(s)%20for%20$1"
+	echo "[+] Done"
+else
+	message "Skipping%20Subfinder%20Scanning%20for%20$1"
+	echo "[!] Skipping ..."
+fi
+sleep 5
+
+cat ~/$1/$1-altdns.txt ~/$1/$1-final.txt | sort -u >> ~/$1/$1-fin.txt
+rm ~/$1/$1-final.txt && mv ~/$1/$1-fin.txt ~/$1/$1-final.txt
 all=`scanned ~/$1/$1-final.txt`
 message "Almost%20$all%20Collected%20Subdomains%20for%20$1"
 sleep 3
@@ -254,7 +293,9 @@ rm ~/$1/tmp.txt ~/$1/$1-temp-vhost-wordlist.txt
 sleep 5
 
 echo "[+] DirSearch Scanning for Sensitive Files [+]"
-for u in `cat ~/$1/$1-allz.txt`;do python3 ~/dirsearch/dirsearch.py -u $u --ext php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,old -t 100 -R 5 --http-method=POST -F -f --random-agents -b -w ~/newlist.txt --plain-text-report ~/$1/dirsearch/$u-dirsearch.txt;done
+for u in `cat ~/$1/$1-allz.txt`;do python3 ~/dirsearch/dirsearch.py -u $u -e * -x 301,404,303,403 -t 200 -R 5 --http-method=POST -F -f --random-agents -b -w ~/newlist.txt --plain-text-report ~/$1/dirsearch/$u-dirsearch.txt;done
 sleep 5
 
 message "Scanner%20Done%20for%20$1"
+
+
