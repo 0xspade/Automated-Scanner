@@ -275,7 +275,7 @@ rm ~/$1/tmp.txt
 sleep 5
 
 echo "[+] DirSearch Scanning for Sensitive Files [+]"
-for u in `cat ~/$1/$1-allz.txt`;do python3 ~/dirsearch/dirsearch.py -u $u --ext php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,old -t 100 -R 5 --http-method=POST -F -f --random-agents -b -w ~/newlist.txt --plain-text-report=~/$1/dirsearch/$u-dirsearch.txt;done
+for u in `cat ~/$1/$1-allz.txt`;do python3 ~/dirsearch/dirsearch.py -u $u --ext php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,old -t 100 -R 5 --http-method=POST -F -f --random-agents -b -w ~/newlist.txt --plain-text-report ~/$1/dirsearch/$u-dirsearch.txt;done
 sleep 5
 
 message "Scanner%20Done%20for%20$1"
