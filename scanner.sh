@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# amass, subfinder, snapd, aquatone, project sonar, grepcidr, altdns, gobuster, masscan, nmap, sensitive.py, curl, CRLF-Injection-Scanner, otxurls, waybackurls, DirSearch, LinkFinder, VHostScan
+# amass, subfinder, snapd, aquatone, project sonar, grepcidr, gobuster, masscan, nmap, sensitive.py, curl, CRLF-Injection-Scanner, otxurls, waybackurls, DirSearch, LinkFinder, VHostScan
 
 passwordx=""
 
@@ -91,16 +91,16 @@ sleep 5
 
 echo "[+] CRT.SH SCANNING [+]"
 if [ ! -f ~/$1/$1-crt.txt ]; then
-	curl 'https://crt.sh/?q=%.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
-	curl 'https://crt.sh/?q=%dev%.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
-	curl 'https://crt.sh/?q=%stg%.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
-	curl 'https://crt.sh/?q=%api%.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
-	curl 'https://crt.sh/?q=%staging%.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
-	curl 'https://crt.sh/?q=%mobile%.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
-	curl 'https://crt.sh/?q=%admin%.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
-	curl 'https://crt.sh/?q=%console%.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
-	curl 'https://crt.sh/?q=%portal%.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
-	curl 'https://crt.sh/?q=%internal%.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl 'https://crt.sh/?q=%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl 'https://crt.sh/?q=%25dev%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl 'https://crt.sh/?q=%25stg%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl 'https://crt.sh/?q=%25api%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl 'https://crt.sh/?q=%25staging%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl 'https://crt.sh/?q=%25mobile%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl 'https://crt.sh/?q=%25admin%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl 'https://crt.sh/?q=%25console%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl 'https://crt.sh/?q=%25portal%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl 'https://crt.sh/?q=%%25internal%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
 	cat ~/$1/$1-crt.txt | sort -u >> ~/$1/$1-crtx.txt && rm ~/$1/$1-crt.txt && mv ~/$1/$1-crtx.txt ~/$1/$1-crt.txt
 	crt=`scanned ~/$1/$1-crt.txt`
 	message "CRT.SH%20Found%20$crt%20subdomain(s)%20for%20$1"
@@ -140,10 +140,10 @@ if [ ! -f ~/$1/$1-altdns.txt ] && [ ! -z $(which altdns) ]; then
 	rm ~/$1/$1-altdns.txt
 	for alt in `cat ~/$1/$1-altdns-2.txt`; do dns="${alt%:*}";echo $dns >> ~/$1/$1-altdns.txt
 	altdns=`scanned ~/$1/$1-altdns.txt`
-	message "SubFinder%20Found%20$subfinderscan%20subdomain(s)%20for%20$1"
+	message "Altdns%20Found%20$altdns%20subdomain(s)%20for%20$1"
 	echo "[+] Done"
 else
-	message "Skipping%20Subfinder%20Scanning%20for%20$1"
+	message "Skipping%20Altdns%20Scanning%20for%20$1"
 	echo "[!] Skipping ..."
 fi
 sleep 5
