@@ -1,33 +1,15 @@
 #!/bin/bash
 
-# amass, subfinder, snapd, aquatone, project sonar, gobuster, masscan, nmap, sensitive.py, curl, CRLF-Injection-Scanner, otxurls, waybackurls, DirSearch, LinkFinder, VHostScan
-
+# amass, subfinder, snapd, aquatone, project sonar, grepcidr, gobuster, masscan, nmap, sensitive.py, curl, CRLF-Injection-Scanner, otxurls, waybackurls, DirSearch, LinkFinder, VHostScan
 
 passwordx=""
 
-if [ ! -f ~/$1 ]; then
-	mkdir ~/$1
-fi
-
-if [ ! -f ~/$1/dirsearch ]; then
-	mkdir ~/$1/dirsearch
-fi
-
-if [ ! -f ~/$1/virtual-hosts ]; then
-	mkdir ~/$1/virtual-hosts
-fi
-
-if [ ! -f ~/$1/endpoints ]; then
-	mkdir ~/$1/endpoints
-fi
-
-if [ ! -f ~/$1/otxurls ]; then
-	mkdir ~/$1/otxurls
-fi
-
-if [ ! -f ~/$1/waybackurls ]; then
-	mkdir ~/$1/waybackurls
-fi
+[ ! -f ~/$1 ] && mkdir ~/$1
+[ ! -f ~/$1/dirsearch ] && mkdir ~/$1/dirsearch
+[ ! -f ~/$1/virtual-hosts ] && mkdir ~/$1/virtual-hosts
+[ ! -f ~/$1/endpoints ] && mkdir ~/$1/endpoints
+[ ! -f ~/$1/otxurls ] && mkdir ~/$1/otxurls
+[ ! -f ~/$1/waybackurls ] && mkdir ~/$1/waybackurls
 sleep 5
 
 message () {
@@ -41,9 +23,8 @@ scanned () {
 	cat $1 | sort -u | wc -l
 }
 
-
 echo "[+] AMASS SCANNING [+]"
-if [ ! -f ~/$1/$1-amass.txt ]; then
+if [ ! -f ~/$1/$1-amass.txt ] && [ ! -z $(which amass) ]; then
 	amass enum -brute -active -d $1 -o ~/$1/$1-amass.txt -config ~/amass/config.ini
 	amasscan=`scanned ~/$1/$1-amass.txt`
 	message "Amass%20Found%20$amasscan%20subdomain(s)%20for%20$1"
@@ -55,7 +36,7 @@ fi
 sleep 5
 
 echo "[+] SUBFINDER SCANNING [+]"
-if [ ! -f ~/$1/$1-subfinder.txt ]; then
+if [ ! -f ~/$1/$1-subfinder.txt ] && [ ! -z $(which subfinder) ]; then
 	subfinder -d $1 -o ~/$1/$1-subfinder.txt
 	subfinderscan=`scanned ~/$1/$1-subfinder.txt`
 	message "SubFinder%20Found%20$subfinderscan%20subdomain(s)%20for%20$1"
@@ -67,7 +48,7 @@ fi
 sleep 5
 
 echo "[+] AQUATONE SCANNING [+]"
-if [ ! -f ~/aquatone/$1/urls.txt ]; then
+if [ ! -f ~/aquatone/$1/urls.txt ] && [ ! -z $(which aquatone-discover) ] && [ ! -z $(which aquatone-scan) ]; then
 	aquatone-discover -d $1
 	aquatone-scan -d $1 -p huge
 	for domains in `cat ~/aquatone/$1/urls.txt`; do domain="${domains#*://}"; domainx="${domain%/*}"; echo $domainx >> ~/$1/$1-aquatone.txt;done
@@ -83,7 +64,7 @@ fi
 sleep 5
 
 echo "[+] SUBLIST3R SCANNING [+]"
-if [ ! -f ~/$1/$1-sublist3r.txt ]; then
+if [ ! -f ~/$1/$1-sublist3r.txt ] && [ ! -e ~/Sublist3r/sublist3r.py ]; then
 	python ~/Sublist3r/sublist3r.py -b -d $1 -o ~/$1/$1-sublist3r.txt
 	sublist3rscan=`scanned ~/$1/$1-sublist3r.txt`
 	message "Sublist3r%20Found%20$sublist3rscan%20subdomain(s)%20for%20$1"
@@ -94,12 +75,11 @@ else
 fi
 sleep 5
 
-
 echo "[+] SCANNING SUBDOMAINS WITH PROJECT SONAR [+]"
-if [ ! -f ~/$1/$1-project-sonar.txt ]; then
+if [ ! -f ~/$1/$1-project-sonar.txt ] && [ ! -e ~/2019-08-23-1566601070-fdns_any.json.gz ]; then
 	dom=$1
 	domainss="${dom//./\\.}"
-	pv ~/2019-07-26-1564183467-fdns_any.json.gz | pigz -dc | grep -E ".\\$domainss\"," | jq -r '.name' | sort -u | grep -E "*[.]$domainss" >> ~/$1/$1-project-sonar.txt
+	pv ~/2019-08-23-1566601070-fdns_any.json.gz | pigz -dc | grep -E ".\\$domainss\"," | jq -r '.name' | sort -u | grep -E "*[.]$domainss" >> ~/$1/$1-project-sonar.txt
 	projectsonar=`scanned ~/$1/$1-project-sonar.txt`
 	message "Project%20Sonar%20Found%20$projectsonar%20subdomain(s)%20for%20$1"
 	echo "[+] Done"
@@ -110,7 +90,7 @@ fi
 sleep 5
 
 echo "[+] GOBUSTER SCANNING [+]"
-if [ ! -f ~/$1/$1-gobuster.txt ]; then
+if [ ! -f ~/$1/$1-gobuster.txt ] && [ ! -z $(which gobuster) ]; then
 	gobuster dns -d $1 -t 100 -w all.txt --wildcard -o ~/$1/$1-gobust.txt
 	gobusterscan=`scanned ~/$1/$1-gobust.txt`
 	message "Gobuster%20Found%20$gobusterscan%20subdomain(s)%20for%20$1"
@@ -121,7 +101,6 @@ else
 fi
 sleep 5
 
-
 cat ~/$1/$1-gobust.txt | grep "Found:" | awk {'print $2'} > ~/$1/$1-gobuster.txt
 rm ~/$1/$1-gobust.txt
 sleep 5
@@ -131,7 +110,6 @@ cat ~/$1/$1-amass.txt ~/$1/$1-project-sonar.txt ~/$1/$1-subfinder.txt ~/$1/$1-aq
 rm ~/$1/$1-amass.txt ~/$1/$1-project-sonar.txt ~/$1/$1-subfinder.txt ~/$1/$1-aquatone.txt ~/$1/$1-sublist3r.txt ~/$1/$1-gobuster.txt
 touch ~/$1/$1-ipz.txt
 sleep 5
-
 
 all=`scanned ~/$1/$1-final.txt`
 message "Almost%20$all%20Collected%20Subdomains%20for%20$1"
@@ -206,7 +184,7 @@ sleep 5
 
 
 echo "[+] MASSCAN PORT SCANNING [+]"
-if [ ! -f ~/$1/$1-masscan.txt ]; then
+if [ ! -f ~/$1/$1-masscan.txt ] && [ ! -z $(which masscan) ]; then
 	echo $passwordx | sudo -S masscan -p1-65535 -iL ~/$1/$1-ip.txt --max-rate 10000 -oG ~/$1/$1-masscan.txt
 	mass=`scanned $1/$1-ip.txt`
 	message "Masscan%20Scanned%20$mass%20IPs%20for%20$1"
@@ -219,7 +197,7 @@ sleep 5
 
 
 echo "[+] NMAP PORT SCANNING [+]"
-if [ ! -f ~/$1/$1-nmap.txt ]; then
+if [ ! -f ~/$1/$1-nmap.txt ] && [ ! -z $(which nmap) ]; then
 	nmap -sV -Pn -p- -iL ~/$1/$1-ip.txt --stylesheet ~/nmap-bootstrap.xsl -oA ~/$1/$1-nmap
 	nmaps=`scanned ~/$1/$1-ip.txt `
 	xsltproc -o ~/$1/$1-nmap.html ~/nmap-bootstrap.xsl ~/$1/$1-nmap.xml
@@ -261,17 +239,18 @@ for i in `cat ~/$1/tmp.txt`; do test="${i%/open*}"; echo $test >> ~/$1/temp.txt;
 rm ~/$1/tmp.txt;cat ~/$1/temp.txt | sort -u >> ~/$1/tmp.txt; rm ~/$1/temp.txt
 
 echo "[+] Scanning for Virtual Hosts Resolution [+]"
+cat ~/$1/$1-ips.txt ~/VHostScan/vhost-wordlist.txt | sort -u >> ~/$1/$1-temp-vhost-wordlist.txt
 for test in `cat $1/$1-ip.txt`; do
 	for p in `cat ~/$1/tmp.txt`; do
-		VHostScan -t $test -b $1 -p $p -v --fuzzy-logic --waf --random-agent -w ~/VHostScan/vhost-wordlist.txt -oN ~/$1/virtual-hosts/initial-$test_$p.txt
-		VHostScan -t $test -b $1 -p $p -v --fuzzy-logic --waf --ssl --random-agent -w ~/VHostScan/vhost-wordlist.txt -oN ~/$1/virtual-hosts/ssl-$test_$p.txt
+		VHostScan -t $test -b $1 -p $p -v --fuzzy-logic --waf --random-agent -w ~/$1/$1-temp-vhost-wordlist.txt -oN ~/$1/virtual-hosts/initial-$test_$p.txt
+		VHostScan -t $test -b $1 -p $p -v --fuzzy-logic --waf --ssl --random-agent -w ~/$1/$1-temp-vhost-wordlist.txt -oN ~/$1/virtual-hosts/ssl-$test_$p.txt
 		cat ~/$1/virtual-hosts/$test_$p.txt ~/$1/virtual-hosts/ssl-$test_$p.txt >> ~/$1/virtual-hosts/final-$test.txt
 		rm -rf ~/$1/virtual-hosts/initial-* ~/$1/virtual-hosts/ssl-*
 	done
 done
 vt=`ls ~/$1/virtual-hosts/* | wc -l`
 message "Virtual%20Host(s)%20found%20$vt"
-rm ~/$1/tmp.txt
+rm ~/$1/tmp.txt ~/$1/$1-temp-vhost-wordlist.txt
 sleep 5
 
 echo "[+] DirSearch Scanning for Sensitive Files [+]"
