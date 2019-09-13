@@ -157,7 +157,7 @@ echo "[+] ALTDNS SCANNING [+]"
 altdns -i ~/$1/$1-final.txt -w ~/altdns.txt -t 100 -e -r -o ~/$1/$1-altdns.txt -s ~/$1/$1-altdns-2.txt
 sleep 3
 rm ~/$1/$1-altdns.txt
-for alt in `cat ~/$1/$1-altdns-2.txt`; do dns="${alt%:*}"; echo $dns >> ~/$1/$1-altdns.txt
+for alt in `cat ~/$1/$1-altdns-2.txt`; do dns="${alt%:*}"; echo $dns >> ~/$1/$1-altdns.txt; done
 altdns=`scanned ~/$1/$1-altdns.txt`
 message "Altdns%20Found%20$altdns%20subdomain(s)%20for%20$1"
 sleep 5
