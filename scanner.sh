@@ -92,34 +92,34 @@ sleep 5
 
 echo "[+] CRT.SH SCANNING [+]"
 if [ ! -f ~/$1/$1-crt.txt ]; then
-	curl 'https://crt.sh/?q=%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl "https://crt.sh/?q=%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
 	scanned ~/$1/$1-crt.txt
 	sleep 3
-	curl 'https://crt.sh/?q=%25dev%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl "https://crt.sh/?q=%25dev%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
 	scanned ~/$1/$1-crt.txt
 	sleep 3
-	curl 'https://crt.sh/?q=%25stg%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl "https://crt.sh/?q=%25stg%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
 	scanned ~/$1/$1-crt.txt
 	sleep 3
-	curl 'https://crt.sh/?q=%25api%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl "https://crt.sh/?q=%25api%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
 	scanned ~/$1/$1-crt.txt
 	sleep 3
-	curl 'https://crt.sh/?q=%25staging%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl "https://crt.sh/?q=%25staging%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
 	scanned ~/$1/$1-crt.txt
 	sleep 3
-	curl 'https://crt.sh/?q=%25mobile%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl "https://crt.sh/?q=%25mobile%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
 	scanned ~/$1/$1-crt.txt
 	sleep 3
-	curl 'https://crt.sh/?q=%25admin%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl "https://crt.sh/?q=%25admin%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
 	scanned ~/$1/$1-crt.txt
 	sleep 3
-	curl 'https://crt.sh/?q=%25console%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl "https://crt.sh/?q=%25console%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
 	scanned ~/$1/$1-crt.txt
 	sleep 3
-	curl 'https://crt.sh/?q=%25portal%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl "https://crt.sh/?q=%25portal%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
 	scanned ~/$1/$1-crt.txt
 	sleep 3
-	curl 'https://crt.sh/?q=%%25internal%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	curl "https://crt.sh/?q=%25internal%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
 	scanned ~/$1/$1-crt.txt
 	sleep 3
 	cat ~/$1/$1-crt.txt | sort -u >> ~/$1/$1-crtx.txt && rm ~/$1/$1-crt.txt && mv ~/$1/$1-crtx.txt ~/$1/$1-crt.txt
