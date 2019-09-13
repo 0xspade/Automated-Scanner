@@ -2,6 +2,7 @@
 
 # amass, subfinder, snapd, aquatone, project sonar, grepcidr, gobuster, masscan, nmap, sensitive.py, curl, CRLF-Injection-Scanner, otxurls, waybackurls, DirSearch, LinkFinder, VHostScan
 
+## Password for root is required in masscan idk why :D
 passwordx=""
 
 [ ! -f ~/$1 ] && mkdir ~/$1
@@ -64,7 +65,7 @@ fi
 sleep 5
 
 echo "[+] SUBLIST3R SCANNING [+]"
-if [ ! -f ~/$1/$1-sublist3r.txt ] && [ ! -e ~/Sublist3r/sublist3r.py ]; then
+if [ ! -f ~/$1/$1-sublist3r.txt ] && [ -e ~/Sublist3r/sublist3r.py ]; then
 	python ~/Sublist3r/sublist3r.py -b -d $1 -o ~/$1/$1-sublist3r.txt
 	sublist3rscan=`scanned ~/$1/$1-sublist3r.txt`
 	message "Sublist3r%20Found%20$sublist3rscan%20subdomain(s)%20for%20$1"
@@ -76,10 +77,10 @@ fi
 sleep 5
 
 echo "[+] SCANNING SUBDOMAINS WITH PROJECT SONAR [+]"
-if [ ! -f ~/$1/$1-project-sonar.txt ] && [ ! -e ~/2019-08-23-1566601070-fdns_any.json.gz ]; then
-	dom=$1
-	domainss="${dom//./\\.}"
-	pv ~/2019-08-23-1566601070-fdns_any.json.gz | pigz -dc | grep -E ".\\$domainss\"," | jq -r '.name' | sort -u | grep -E "*[.]$domainss" >> ~/$1/$1-project-sonar.txt
+if [ ! -f ~/$1/$1-project-sonar.txt ] && [ -e ~/forward_dns.json.gz ] && [ -e ~/reverse_dns.json.gz ]; then
+	pv ~/forward_dns.json.gz | pigz -dc | grep -E "*[.]$1" | jq -r '.name' | sort -u >> ~/$1/$1-project-sonar.txt
+	scanned ~/$1/$1-project-sonar.txt
+	pv ~/reverse_dns.json.gz | pigz -dc | grep -E "*[.]$1" | jq -r '.value' | sort -u >> ~/$1/$1-project-sonar.txt
 	projectsonar=`scanned ~/$1/$1-project-sonar.txt`
 	message "Project%20Sonar%20Found%20$projectsonar%20subdomain(s)%20for%20$1"
 	echo "[+] Done"
@@ -92,15 +93,35 @@ sleep 5
 echo "[+] CRT.SH SCANNING [+]"
 if [ ! -f ~/$1/$1-crt.txt ]; then
 	curl 'https://crt.sh/?q=%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	scanned ~/$1/$1-crt.txt
+	sleep 3
 	curl 'https://crt.sh/?q=%25dev%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	scanned ~/$1/$1-crt.txt
+	sleep 3
 	curl 'https://crt.sh/?q=%25stg%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	scanned ~/$1/$1-crt.txt
+	sleep 3
 	curl 'https://crt.sh/?q=%25api%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	scanned ~/$1/$1-crt.txt
+	sleep 3
 	curl 'https://crt.sh/?q=%25staging%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	scanned ~/$1/$1-crt.txt
+	sleep 3
 	curl 'https://crt.sh/?q=%25mobile%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	scanned ~/$1/$1-crt.txt
+	sleep 3
 	curl 'https://crt.sh/?q=%25admin%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	scanned ~/$1/$1-crt.txt
+	sleep 3
 	curl 'https://crt.sh/?q=%25console%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	scanned ~/$1/$1-crt.txt
+	sleep 3
 	curl 'https://crt.sh/?q=%25portal%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	scanned ~/$1/$1-crt.txt
+	sleep 3
 	curl 'https://crt.sh/?q=%%25internal%25.$1&output=json' --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
+	scanned ~/$1/$1-crt.txt
+	sleep 3
 	cat ~/$1/$1-crt.txt | sort -u >> ~/$1/$1-crtx.txt && rm ~/$1/$1-crt.txt && mv ~/$1/$1-crtx.txt ~/$1/$1-crt.txt
 	crt=`scanned ~/$1/$1-crt.txt`
 	message "CRT.SH%20Found%20$crt%20subdomain(s)%20for%20$1"
@@ -297,5 +318,3 @@ for u in `cat ~/$1/$1-allz.txt`;do python3 ~/dirsearch/dirsearch.py -u $u -e * -
 sleep 5
 
 message "Scanner%20Done%20for%20$1"
-
-
