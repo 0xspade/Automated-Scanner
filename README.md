@@ -14,6 +14,7 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 * Aquatone (old) `gem install aquatone`
 * [Sublist3r](https://github.com/aboul3la/Sublist3r)
 * [Rapid7's Project Sonar](https://opendata.rapid7.com/sonar.fdns_v2/)
+> https://github.com/phspade/Project_Sonar_R7
 * [CRT.SH](https://crt.sh/)
 * [GoBuster](https://github.com/OJ/gobuster) using Jason Haddix's [all.txt](https://gist.githubusercontent.com/jhaddix/86a06c5dc309d08580a018c66354a056/raw/96f4e51d96b2203f19f6381c8c545b278eaa0837/all.txt) wordlist
 * [ALTDNS](https://github.com/infosec-au/altdns)
