@@ -154,7 +154,7 @@ touch ~/$1/$1-ipz.txt
 sleep 5
 
 echo "[+] ALTDNS SCANNING [+]"
-altdns -i ~/$1/$1-final.txt -w ~/altnds.txt -t 100 -e -r -o ~/$1/$1-altdns.txt -s ~/$1/$1-altdns-2.txt
+altdns -i ~/$1/$1-final.txt -w ~/altdns.txt -t 100 -e -r -o ~/$1/$1-altdns.txt -s ~/$1/$1-altdns-2.txt
 sleep 3
 rm ~/$1/$1-altdns.txt
 for alt in `cat ~/$1/$1-altdns-2.txt`; do dns="${alt%:*}"; echo $dns >> ~/$1/$1-altdns.txt
