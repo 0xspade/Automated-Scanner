@@ -4,7 +4,6 @@
 
 ## Password for root is required in masscan idk why :D
 passwordx=""
-
 [ ! -f ~/$1 ] && mkdir ~/$1
 [ ! -f ~/$1/dirsearch ] && mkdir ~/$1/dirsearch
 [ ! -f ~/$1/virtual-hosts ] && mkdir ~/$1/virtual-hosts
@@ -155,18 +154,12 @@ touch ~/$1/$1-ipz.txt
 sleep 5
 
 echo "[+] ALTDNS SCANNING [+]"
-if [ ! -f ~/$1/$1-altdns.txt ] && [ ! -z $(which altdns) ]; then
-	altdns -i ~/$1/$1-final.txt -w ~/altnds.txt -t 100 -e -r -o ~/$1/$1-altdns.txt -s ~/$1/$1-altdns-2.txt
-	sleep 3
-	rm ~/$1/$1-altdns.txt
-	for alt in `cat ~/$1/$1-altdns-2.txt`; do dns="${alt%:*}";echo $dns >> ~/$1/$1-altdns.txt
-	altdns=`scanned ~/$1/$1-altdns.txt`
-	message "Altdns%20Found%20$altdns%20subdomain(s)%20for%20$1"
-	echo "[+] Done"
-else
-	message "Skipping%20Altdns%20Scanning%20for%20$1"
-	echo "[!] Skipping ..."
-fi
+altdns -i ~/$1/$1-final.txt -w ~/altnds.txt -t 100 -e -r -o ~/$1/$1-altdns.txt -s ~/$1/$1-altdns-2.txt
+sleep 3
+rm ~/$1/$1-altdns.txt
+for alt in `cat ~/$1/$1-altdns-2.txt`; do dns="${alt%:*}"; echo $dns >> ~/$1/$1-altdns.txt
+altdns=`scanned ~/$1/$1-altdns.txt`
+message "Altdns%20Found%20$altdns%20subdomain(s)%20for%20$1"
 sleep 5
 
 cat ~/$1/$1-altdns.txt ~/$1/$1-final.txt | sort -u >> ~/$1/$1-fin.txt
@@ -174,7 +167,6 @@ rm ~/$1/$1-final.txt && mv ~/$1/$1-fin.txt ~/$1/$1-final.txt
 all=`scanned ~/$1/$1-final.txt`
 message "Almost%20$all%20Collected%20Subdomains%20for%20$1"
 sleep 3
-
 
 cp ~/$1/$1-final.txt ~/$1/ports.txt
 for ipx in `cat ~/$1/ports.txt`; do i="${ipx%:*}"; echo $i >> ~/$1/$1-ips.txt;done
