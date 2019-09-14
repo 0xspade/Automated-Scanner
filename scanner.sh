@@ -30,7 +30,7 @@ if [ ! -f ~/$1/$1-amass.txt ] && [ ! -z $(which amass) ]; then
 	message "Amass%20Found%20$amasscan%20subdomain(s)%20for%20$1"
 	echo "[+] Done"
 else
-	message "Skipping%20Amass%20Scanning%20for%20$1"
+	message "[-]%20Skipping%20Amass%20Scanning%20for%20$1"
 	echo "[!] Skipping ..."
 fi
 sleep 5
@@ -42,7 +42,7 @@ if [ ! -f ~/$1/$1-subfinder.txt ] && [ ! -z $(which subfinder) ]; then
 	message "SubFinder%20Found%20$subfinderscan%20subdomain(s)%20for%20$1"
 	echo "[+] Done"
 else
-	message "Skipping%20Subfinder%20Scanning%20for%20$1"
+	message "[-]%20Skipping%20Subfinder%20Scanning%20for%20$1"
 	echo "[!] Skipping ..."
 fi
 sleep 5
@@ -58,7 +58,7 @@ if [ ! -f ~/aquatone/$1/urls.txt ] && [ ! -z $(which aquatone-discover) ] && [ !
 else
 	for domains in `cat ~/aquatone/$1/urls.txt`; do domain="${domains#*://}"; domainx="${domain%/*}"; echo $domainx >> ~/$1/$1-aquatone.txt;done
 	aquatonescan=`scanned ~/$1/$1-aquatone.txt`
-	message "Skipping%20Aquatone%20Scanning%20for%20$1"
+	message "[-]%20Skipping%20Aquatone%20Scanning%20for%20$1"
 	echo "[!] Skipping ..."
 fi
 sleep 5
@@ -70,7 +70,7 @@ if [ ! -f ~/$1/$1-sublist3r.txt ] && [ -e ~/Sublist3r/sublist3r.py ]; then
 	message "Sublist3r%20Found%20$sublist3rscan%20subdomain(s)%20for%20$1"
 	echo "[+] Done"
 else
-	message "Skipping%20Sublist3r%20Scanning%20for%20$1"
+	message "[-]%20Skipping%20Sublist3r%20Scanning%20for%20$1"
 	echo "[!] Skipping ..."
 fi
 sleep 5
@@ -84,7 +84,7 @@ if [ ! -f ~/$1/$1-project-sonar.txt ] && [ -e ~/forward_dns.json.gz ] && [ -e ~/
 	message "Project%20Sonar%20Found%20$projectsonar%20subdomain(s)%20for%20$1"
 	echo "[+] Done"
 else
-	message "Skipping%20Project%20Sonar%20Scanning%20for%20$1"
+	message "[-]%20Skipping%20Project%20Sonar%20Scanning%20for%20$1"
 	echo "[!] Skipping ..."
 fi
 sleep 5
@@ -126,7 +126,7 @@ if [ ! -f ~/$1/$1-crt.txt ]; then
 	message "CRT.SH%20Found%20$crt%20subdomain(s)%20for%20$1"
 	echo "[+] Done"
 else
-	message "Skipping%20CRT.SH%20Scanning%20for%20$1"
+	message "[-]%20Skipping%20CRT.SH%20Scanning%20for%20$1"
 	echo "[!] Skipping ..."
 fi
 sleep 5
@@ -138,7 +138,7 @@ if [ ! -f ~/$1/$1-gobuster.txt ] && [ ! -z $(which gobuster) ]; then
 	message "Gobuster%20Found%20$gobusterscan%20subdomain(s)%20for%20$1"
 	echo "[+] Done"
 else
-	message "Skipping%20Gobuster%20Scanning%20for%20$1"
+	message "[-]%20Skipping%20Gobuster%20Scanning%20for%20$1"
 	echo "[!] Skipping ..."
 fi
 sleep 5
@@ -154,18 +154,18 @@ touch ~/$1/$1-ipz.txt
 sleep 5
 
 echo "[+] ALTDNS SCANNING [+]"
-if [ ! -f ~/$1/$1-gobuster.txt ] && [ ! -z $(which gobuster) ]; then
+if [ ! -f ~/$1/$1-altdns.txt ] && [ ! -z $(which altdns) ]; then
 	altdns -i ~/$1/$1-final.txt -w ~/altdns.txt -t 100 -e -r -o ~/$1/$1-altdns.txt -s ~/$1/$1-altdns-2.txt
 	sleep 3
 	rm ~/$1/$1-altdns.txt
 	for alt in `cat ~/$1/$1-altdns-2.txt`; do dns="${alt%:*}"; echo $dns | grep -E "*[.]$1" >> ~/$1/$1-altdns.txt; done
-	altdns=`scanned ~/$1/$1-altdns.txt`
-	message "Altdns%20Found%20$altdns%20subdomain(s)%20for%20$1"
-	sleep 5
+	altdnx=`scanned ~/$1/$1-altdns.txt`
+	message "Altdns%20Found%20$altdnx%20subdomain(s)%20for%20$1"
 else
-	message "Skipping%20Altdns%20Scanning%20for%20$1"
+	message "[-]%20Skipping%20Altdns%20Scanning%20for%20$1"
 	echo "[!] Skipping ..."
 fi
+sleep 5
 
 cat ~/$1/$1-altdns.txt ~/$1/$1-final.txt | sort -u >> ~/$1/$1-fin.txt
 rm ~/$1/$1-final.txt && mv ~/$1/$1-fin.txt ~/$1/$1-final.txt
@@ -195,12 +195,36 @@ cat ~/$1/$1-ip.txt ~/$1/$1-final.txt > ~/$1/$1-all.txt
 sleep 5
 
 echo "[+] HTTPROBE Scanning for Alive Hosts [+]"
-if [ ! -f ~/$1/$1-httprobe.txt ] && [ -z $(which httprobe) ]; then
+if [ ! -f ~/$1/$1-httprobe.txt ] && [ ! -z $(which httprobe) ]; then
 	cat ~/$1/$1-all.txt | httprobe | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort -u >> ~/$1/$1-httprobe.txt
 	alivesu=`scanned ~/$1/$1-httprobe.txt`
 	message "$alivesu%20alive%20domains%20out%20of%20$all%20domains%20in%20$1"
 else
-	message "Skipping%20httprobe%20Scanning%20for%20$1"
+	message "[-]%20Skipping%20httprobe%20Scanning%20for%20$1"
+	echo "[!] Skipping ..."
+fi
+sleep 5
+
+echo "[+] SUBOVER for Subdomain TKO [+]"
+if [ ! -f ~/$1/$1-subover.txt ] && [ ! -z $(which SubOver) ]; then
+	[ ! -f ~/providers.json ] && wget "https://raw.githubusercontent.com/Ice3man543/SubOver/master/providers.json"
+	SubOver -l ~/$1/$1-httprobe.txt -timeout 15 >> ~/$1/$1-subover.txt
+	SubOver -l ~/$1/$1-httprobe.txt -timeout 15 -https >> ~/$1/$1-subover.txt
+	message "Subover%20scanner%20done%20for%20$1"
+else
+	message "[-]%20Skipping%20subover%20Scanning%20for%20$1"
+	echo "[!] Skipping ..."
+fi
+sleep 5
+
+echo "[+] SUBJACK for Subdomain TKO [+]"
+if [ ! -f ~/$1/$1-subjack.txt ] && [ ! -z $(which subjack) ]; then
+	[ ! -f ~/fingerprints.json ] && wget "https://raw.githubusercontent.com/haccer/subjack/master/fingerprints.json"
+	subjack -w ~/$1/$1-httprobe.txt -a -timeout 15 -c ~/fingerprints.json -v -m -o ~/$1/$1-subjack.txt
+	subjack -w ~/$1/$1-httprobe.txt -a -timeout 15 -c ~/fingerprints.json -v -m -ssl -o ~/$1/$1-subjack.txt
+	message "subjack%20scanner%20done%20for%20$1"
+else
+	message "[-]%20Skipping%20subjack%20Scanning%20for%20$1"
 	echo "[!] Skipping ..."
 fi
 sleep 5
@@ -238,7 +262,7 @@ if [ ! -f ~/$1/$1-masscan.txt ] && [ ! -z $(which masscan) ]; then
 	message "Masscan%20Scanned%20$mass%20IPs%20for%20$1"
 	echo "[+] Done"
 else
-	message "Skipping%20Masscan%20Scanning%20for%20$1"
+	message "[-]%20Skipping%20Masscan%20Scanning%20for%20$1"
 	echo "[!] Skipping ..."
 fi
 sleep 5
@@ -252,7 +276,7 @@ if [ ! -f ~/$1/$1-nmap.txt ] && [ ! -z $(which nmap) ]; then
 	message "Nmap%20Scanned%20$nmaps%20IPs%20for%20$1"
 	echo "[+] Done"
 else
-	message "Skipping%20Nmap%20Scanning%20for%20$1"
+	message "[-]%20Skipping%20Nmap%20Scanning%20for%20$1"
 	echo "[!] Skipping ..."
 fi
 sleep 5
