@@ -154,13 +154,18 @@ touch ~/$1/$1-ipz.txt
 sleep 5
 
 echo "[+] ALTDNS SCANNING [+]"
-altdns -i ~/$1/$1-final.txt -w ~/altdns.txt -t 100 -e -r -o ~/$1/$1-altdns.txt -s ~/$1/$1-altdns-2.txt
-sleep 3
-rm ~/$1/$1-altdns.txt
-for alt in `cat ~/$1/$1-altdns-2.txt`; do dns="${alt%:*}"; echo $dns >> ~/$1/$1-altdns.txt; done
-altdns=`scanned ~/$1/$1-altdns.txt`
-message "Altdns%20Found%20$altdns%20subdomain(s)%20for%20$1"
-sleep 5
+if [ ! -f ~/$1/$1-gobuster.txt ] && [ ! -z $(which gobuster) ]; then
+	altdns -i ~/$1/$1-final.txt -w ~/altdns.txt -t 100 -e -r -o ~/$1/$1-altdns.txt -s ~/$1/$1-altdns-2.txt
+	sleep 3
+	rm ~/$1/$1-altdns.txt
+	for alt in `cat ~/$1/$1-altdns-2.txt`; do dns="${alt%:*}"; echo $dns | grep -E "*[.]$1" >> ~/$1/$1-altdns.txt; done
+	altdns=`scanned ~/$1/$1-altdns.txt`
+	message "Altdns%20Found%20$altdns%20subdomain(s)%20for%20$1"
+	sleep 5
+else
+	message "Skipping%20Altdns%20Scanning%20for%20$1"
+	echo "[!] Skipping ..."
+fi
 
 cat ~/$1/$1-altdns.txt ~/$1/$1-final.txt | sort -u >> ~/$1/$1-fin.txt
 rm ~/$1/$1-final.txt && mv ~/$1/$1-fin.txt ~/$1/$1-final.txt
@@ -189,34 +194,25 @@ message "$ipz%20non-cloudflare%20IPs%20has%20been%20$collected%20in%20$1"
 cat ~/$1/$1-ip.txt ~/$1/$1-final.txt > ~/$1/$1-all.txt
 sleep 5
 
-declare -a protocol=("http" "https")
-
-echo "[+] Scanning for Alive Hosts [+]"
-for alive in `cat ~/$1/$1-all.txt`; do
-	for proto in ${protocol[@]}; do
-		iamalive=$(curl -s -o /dev/null -w "%{http_code}" -k $proto://$alive --max-time 15)
-		if [ $iamalive == 000 ]
-		then
-			echo "[$iamalive] $alive tango down!"
-		else
-			echo "[$iamalive] $alive is up!"
-			echo $alive >> ~/$1/$1-allx.txt
-		fi
-	done
-done
-alivesu=`scanned ~/$1/$1-allx.txt`
-cat ~/$1/$1-allx.txt | sort -u > ~/$1/$1-allz.txt
-rm ~/$1/$1-allx.txt
-message "$alivesu%20alive%20domains%20out%20of%20$all%20domains%20in%20$1"
+echo "[+] HTTPROBE Scanning for Alive Hosts [+]"
+if [ ! -f ~/$1/$1-httprobe.txt ] && [ -z $(which httprobe) ]; then
+	cat ~/$1/$1-all.txt | httprobe | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort -u >> ~/$1/$1-httprobe.txt
+	alivesu=`scanned ~/$1/$1-httprobe.txt`
+	message "$alivesu%20alive%20domains%20out%20of%20$all%20domains%20in%20$1"
+else
+	message "Skipping%20httprobe%20Scanning%20for%20$1"
+	echo "[!] Skipping ..."
+fi
 sleep 5
 
 echo "[+] SCANNING CRLF [+]"
-python3 ~/CRLF-Injection-Scanner/crlf_scan.py -i ~/$1/$1-allz.txt -o ~/$1/$1-crlf.txt
+python3 ~/CRLF-Injection-Scanner/crlf_scan.py -i ~/$1/$1-httprobe.txt -o ~/$1/$1-crlf.txt
 message "CRLF%20Scanning%20done%20for%20$1"
 sleep 5
 
+declare -a protocol=("http" "https")
 echo "[+] COLLECTING ENDPOINTS [+]"
-for urlz in `cat ~/$1/$1-allz.txt`; do 
+for urlz in `cat ~/$1/$1-httprobe.txt`; do 
 	for protoc in ${protocol[@]}; do
 		python ~/LinkFinder/linkfinder.py -i $protoc://$urlz -d -o ~/$1/endpoints/$protoc_$urlz-result.html
 	done
@@ -225,12 +221,12 @@ message "Done%20collecting%20endpoint%20in%20$1"
 sleep 5
 
 echo "[+] MASSDNS SCANNING [+]"
-massdns -r ~/massdns/lists/resolvers.txt -t CNAME ~/$1/$1-allz.txt -o S > $1/$1-massdns.txt
+massdns -r ~/massdns/lists/resolvers.txt -t CNAME ~/$1/$1-httprobe.txt -o S > $1/$1-massdns.txt
 message "Done%20Massdns%20CNAME%20Scanning%20for%20$1"
 sleep 5
 
 echo "[+] PORT SCANNING [+]"
-cat ~/$1/$1-allz.txt | aquatone -ports xlarge -out ~/$1/$1-ports
+cat ~/$1/$1-httprobe.txt | aquatone -ports xlarge -out ~/$1/$1-ports
 message "Done%20Aquatone%20Port%20Scanning%20for%20$1"
 sleep 5
 
@@ -262,7 +258,7 @@ fi
 sleep 5
 
 echo "[+] Scanning for Sensitive Files [+]"
-cp ~/$1/$1-allz.txt ~/$1-sensitive.txt
+cp ~/$1/$1-httprobe.txt ~/$1-sensitive.txt
 python ~/sensitive.py -u ~/$1-sensitive.txt
 sens=`scanned ~/$1-sensitive.txt`
 message "Sensitive%20File%20Scanned%20$sens%20asset(s)%20for%20$1"
@@ -270,43 +266,37 @@ rm $1-sensitive.txt
 sleep 5
 
 echo "[+] OTXURL Scanning for Archived Endpoints [+]"
-for u in `cat ~/$1/$1-allz.txt`;do echo $u | otxurls >> ~/$1/otxurls/$u.txt; done
+for u in `cat ~/$1/$1-httprobe.txt`;do echo $u | otxurls >> ~/$1/otxurls/$u.txt; done
 cat ~/$1/otxurls/* | sort -u >> ~/$1/otxurls/$1-otxurl.txt 
 rm *.$1.txt
 message "OTXURL%20Done%20for%20$1"
 sleep 5
 
 echo "[+] WAYBACKURLS Scanning for Archived Endpoints [+]"
-for u in `cat ~/$1/$1-allz.txt`;do echo $u | waybackurls >> ~/$1/waybackurls/$u.txt; done
+for u in `cat ~/$1/$1-httprobe.txt`;do echo $u | waybackurls >> ~/$1/waybackurls/$u.txt; done
 cat ~/$1/waybackurls/* | sort -u >> ~/$1/waybackurls/$1-waybackurls.txt 
 rm *.$1.txt
 message "WAYBACKURLS%20Done%20for%20$1"
 sleep 5
 
-NMAP_FILE=~/$1/$1-nmap.gnmap
-cat $NMAP_FILE | awk '{printf "%s\t", $2; for (i=4;i<=NF;i++) { split($i,a,"/"); if (a[2]=="open") printf ",%s",a[1];} print ""}' | sed -e 's/,//' | awk '{print $2}' | sort -u | tr ',' '\n' > ~/$1/tmp.txt
-MASSCAN_FILE=~/$1/$1-masscan.txt
-cat $MASSCAN_FILE | grep 'Ports: ' | awk '{print $5}' | sort -u >> ~/$1/tmp.txt
-for i in `cat ~/$1/tmp.txt`; do test="${i%/open*}"; echo $test >> ~/$1/temp.txt; done
-rm ~/$1/tmp.txt;cat ~/$1/temp.txt | sort -u >> ~/$1/tmp.txt; rm ~/$1/temp.txt
-
 echo "[+] Scanning for Virtual Hosts Resolution [+]"
+declare -a vhost=("66" "80" "81" "443" "445" "457" "1080" "1100" "1241" "1352" "1433" "1434" "1521" "1944" "2301" "3128" "3306" "4000" "4001" "4002" "4100" "5000" "5432" "5800" "5801" "5802" "6346" "6347" "7001" "7002" "8080" "8888" "30821")
 cat ~/$1/$1-ips.txt ~/VHostScan/vhost-wordlist.txt | sort -u >> ~/$1/$1-temp-vhost-wordlist.txt
 for test in `cat $1/$1-ip.txt`; do
-	for p in `cat ~/$1/tmp.txt`; do
-		VHostScan -t $test -b $1 -p $p -v --fuzzy-logic --waf --random-agent -w ~/$1/$1-temp-vhost-wordlist.txt -oN ~/$1/virtual-hosts/initial-$test_$p.txt
-		VHostScan -t $test -b $1 -p $p -v --fuzzy-logic --waf --ssl --random-agent -w ~/$1/$1-temp-vhost-wordlist.txt -oN ~/$1/virtual-hosts/ssl-$test_$p.txt
+	for p in ${vhost[@]}; do
+		VHostScan -t $test -b $1 -r 80 -p $p -v --fuzzy-logic --waf --random-agent -w ~/$1/$1-temp-vhost-wordlist.txt -oN ~/$1/virtual-hosts/initial-$test_$p.txt
+		VHostScan -t $test -b $1 -p $p -r 80 -v --fuzzy-logic --waf --ssl --random-agent -w ~/$1/$1-temp-vhost-wordlist.txt -oN ~/$1/virtual-hosts/ssl-$test_$p.txt
 		cat ~/$1/virtual-hosts/$test_$p.txt ~/$1/virtual-hosts/ssl-$test_$p.txt >> ~/$1/virtual-hosts/final-$test.txt
 		rm -rf ~/$1/virtual-hosts/initial-* ~/$1/virtual-hosts/ssl-*
 	done
 done
 vt=`ls ~/$1/virtual-hosts/* | wc -l`
 message "Virtual%20Host(s)%20found%20$vt"
-rm ~/$1/tmp.txt ~/$1/$1-temp-vhost-wordlist.txt
+rm ~/$1/$1-temp-vhost-wordlist.txt
 sleep 5
 
 echo "[+] DirSearch Scanning for Sensitive Files [+]"
-for u in `cat ~/$1/$1-allz.txt`;do python3 ~/dirsearch/dirsearch.py -u $u -e * -x 301,404,303,403 -t 200 -R 5 --http-method=POST -F -f --random-agents -b -w ~/newlist.txt --plain-text-report ~/$1/dirsearch/$u-dirsearch.txt;done
+for u in `cat ~/$1/$1-httprobe.txt`;do python3 ~/dirsearch/dirsearch.py -u $u -e * -x 301,404,303,403 -t 200 -R 5 --http-method=POST --random-agents -b -w ~/newlist.txt --plain-text-report ~/$1/dirsearch/$u-dirsearch.txt;done
 sleep 5
 
 message "Scanner%20Done%20for%20$1"
