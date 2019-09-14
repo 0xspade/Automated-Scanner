@@ -26,6 +26,10 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 >It's useless to scan Cloudflare IPs.
 FYI, Install grepcidr first `apt-get install grepcidr`
 
+**Subdomain TakeOver**
+* [SubOver](https://github.com/Ice3man543/SubOver)
+* [Subjack](https://github.com/haccer/subjack)
+
 **[CRLF Injection](https://github.com/random-robbie/CRLF-Injection-Scanner) Scan**
 >Soon to be purged. still no findings about this tool. *realtalk*
 
@@ -50,9 +54,6 @@ FYI, Install grepcidr first `apt-get install grepcidr`
 I hope that someone could help me to add more useful automated scanning technique :)
 
 # Future Tools to be added
-
-* subdomain takeover tool
->I still don't know what subdomain takeover tool will implement in this project, because there's a lot of tools out there which is not maintained and also I'm looking on pros and cons. atleast I need two.
 
 * findomain
 >Still waiting to finish the implementation of other APIs here.
