@@ -20,7 +20,7 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 * [ALTDNS](https://github.com/infosec-au/altdns)
 > `wget https://raw.githubusercontent.com/infosec-au/altdns/master/words.txt -O altdns.txt`
 
-**Scan All Alive Hosts**
+**Scan All Alive Hosts with [httprobe](https://github.com/tomnomnom/httprobe)**
 
 **Separating Cloudflare IPs to Non-Cloudflare IPs**
 >It's useless to scan Cloudflare IPs.
@@ -53,9 +53,6 @@ I hope that someone could help me to add more useful automated scanning techniqu
 
 * subdomain takeover tool
 >I still don't know what subdomain takeover tool will implement in this project, because there's a lot of tools out there which is not maintained and also I'm looking on pros and cons. atleast I need two.
-
-* httprobe
->I will study this tool first
 
 * findomain
 >Still waiting to finish the implementation of other APIs here.
