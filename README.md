@@ -23,9 +23,11 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 **Scan All Alive Hosts**
 
 **Separating Cloudflare IPs to Non-Cloudflare IPs**
->It's useless to scan Cloudflare IPs
+>It's useless to scan Cloudflare IPs.
+FYI, Install grepcidr first `apt-get install grepcidr`
 
 **[CRLF Injection](https://github.com/random-robbie/CRLF-Injection-Scanner) Scan**
+>Soon to be purged. still no findings about this tool. *realtalk*
 
 **Collecting Endpoints thru [Linkfinder](https://github.com/GerbenJavado/LinkFinder/)**
 >*Just comment out the line 253 to 256 in linkfinder.py file*
@@ -66,4 +68,9 @@ I hope that someone could help me to add more useful automated scanning techniqu
 
 **ALL CREDIT GOES TO AMAZING CREATORS OF THIS WONDERFUL TOOLS :)**
 
-*cannot make to mention y'all co'z i'm too lazy to do that though :D (i'm being honest here)*
+<sup>cannot make to mention y'all co'z i'm too lazy to do that though :D (i'm being honest here)</sup>
+
+### Need a Digitalocean?
+
+You can help me by registering an account [here](https://m.do.co/c/9d633afb889b) *(with my referral code of course)* and you can also help me (slash) support me in this project.
+
