@@ -41,7 +41,7 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 * [sensitive.py](https://github.com/phspade/Sensitive-File-Explorer)
 * [otxurls](https://github.com/lc/otxurls)
 * [waybackurls](https://github.com/tomnomnom/waybackurls)
-* [DirSearch](https://github.com/maurosoria/dirsearch) using combined wordlist of nullenc0de and Jason Haddix [content discovery wordlist](https://mega.nz/#!Pgom0azQ!ZK9m085CpimYHp5Z9adqL9oFSIG3PGoTGj0kdxclgME)
+* [DirSearch](https://github.com/maurosoria/dirsearch) using [combined wordlists](https://github.com/phspade/Combined-Wordlists)
 
 **[Virtual Hosts](https://github.com/codingo/VHostScan) Scan**
 
