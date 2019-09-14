@@ -47,6 +47,23 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 
 I hope that someone could help me to add more useful automated scanning technique :)
 
+# Future Tools to be added
+
+* subdomain takeover tool
+>I still don't know what subdomain takeover tool will implement in this project, because there's a lot of tools out there which is not maintained and also I'm looking on pros and cons. atleast I need two.
+
+* httprobe
+>I will study this tool first
+
+* findomain
+>Still waiting to finish the implementation of other APIs here.
+
+* A Param Miner like tool
+>A parameter bruteforcer, maybe [parameth](https://github.com/mak-/parameth) will do.
+
+* SSH/FTP/TELNET/etc bruteforcer
+>I dont suggest [brutespray](https://github.com/x90skysn3k/brutespray) for this project because it still depends on Medusa which is likely takes a lot of False Positive outputs.
+
 **ALL CREDIT GOES TO AMAZING CREATORS OF THIS WONDERFUL TOOLS :)**
 
 *cannot make to mention y'all co'z i'm too lazy to do that though :D (i'm being honest here)*
