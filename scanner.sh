@@ -200,7 +200,7 @@ echo "[+] HTTPROBE Scanning for Alive Hosts [+]"
 if [ ! -f ~/$1/$1-httprobe.txt ] && [ ! -z $(which httprobe) ]; then
 	cat ~/$1/$1-all.txt | httprobe | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort -u >> ~/$1/$1-httprobe.txt
 	alivesu=`scanned ~/$1/$1-httprobe.txt`
-	rm ~/$1/$1-all.txt
+	rm ~/$1/$1-all.txt ~/$1/$1-final.txt
 	message "$alivesu%20alive%20domains%20out%20of%20$all%20domains%20in%20$1"
 else
 	message "[-]%20Skipping%20httprobe%20Scanning%20for%20$1"
