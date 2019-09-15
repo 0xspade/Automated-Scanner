@@ -18,7 +18,6 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 * [CRT.SH](https://crt.sh/)
 * [GoBuster](https://github.com/OJ/gobuster) using Jason Haddix's [all.txt](https://gist.githubusercontent.com/jhaddix/86a06c5dc309d08580a018c66354a056/raw/96f4e51d96b2203f19f6381c8c545b278eaa0837/all.txt) wordlist
 * [ALTDNS](https://github.com/infosec-au/altdns)
-> `wget https://raw.githubusercontent.com/infosec-au/altdns/master/words.txt -O altdns.txt`
 
 **Scan All Alive Hosts with [httprobe](https://github.com/tomnomnom/httprobe)**
 
