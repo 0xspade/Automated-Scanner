@@ -159,7 +159,7 @@ if [ ! -f ~/$1/$1-altdns.txt ] && [ ! -z $(which altdns) ]; then
 	altdns -i ~/$1/$1-final.txt -w ~/altdns.txt -t 100 -e -r -o ~/$1/$1-altdns.txt -s ~/$1/$1-altdns-2.txt
 	sleep 3
 	rm ~/$1/$1-altdns.txt
-	for alt in `cat ~/$1/$1-altdns-2.txt`; do dns="${alt%:*}"; echo $dns | grep -E "*[.]$1$" >> ~/$1/$1-altdns.txt; done
+	for alt in `cat ~/$1/$1-altdns-2.txt`; do dns="${alt%:*}"; echo $dns | grep -E "*[.]$1\$" >> ~/$1/$1-altdns.txt; done
 	altdnx=`scanned ~/$1/$1-altdns.txt`
 	message "Altdns%20Found%20$altdnx%20subdomain(s)%20for%20$1"
 else
