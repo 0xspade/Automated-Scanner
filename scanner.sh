@@ -175,7 +175,7 @@ message "Almost%20$all%20Collected%20Subdomains%20for%20$1"
 sleep 3
 
 cp ~/$1/$1-final.txt ~/$1/ports.txt
-for ipx in `cat ~/$1/ports.txt`; do i="${ipx%:*}"; echo $i | grep -E "*[.]$1$" >> ~/$1/$1-ips.txt;done
+for ipx in `cat ~/$1/ports.txt`; do i="${ipx%:*}"; echo $i | grep -E "*[.]$1\$" >> ~/$1/$1-ips.txt;done
 rm ~/$1/ports.txt
 sleep 5
 
