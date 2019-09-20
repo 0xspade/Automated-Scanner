@@ -134,7 +134,7 @@ sleep 5
 
 echo "[+] GOBUSTER SCANNING [+]"
 if [ ! -f ~/$1/$1-gobuster.txt ] && [ ! -z $(which gobuster) ]; then
-	[ ! -f ~/all.txt ] && wget "https://gist.githubusercontent.com/jhaddix/86a06c5dc309d08580a018c66354a056/raw/96f4e51d96b2203f19f6381c8c545b278eaa0837/all.txt" ~/all.txt
+	[ ! -f ~/all.txt ] && wget "https://gist.githubusercontent.com/jhaddix/86a06c5dc309d08580a018c66354a056/raw/96f4e51d96b2203f19f6381c8c545b278eaa0837/all.txt" -O ~/all.txt
 	gobuster dns -d $1 -t 100 -w ~/all.txt --wildcard -o ~/$1/$1-gobust.txt
 	cat ~/$1/$1-gobust.txt | grep "Found:" | awk {'print $2'} > ~/$1/$1-gobuster.txt
 	rm ~/$1/$1-gobust.txt
