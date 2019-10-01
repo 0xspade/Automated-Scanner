@@ -318,13 +318,14 @@ for test in `cat $1/$1-ip.txt`; do
 	done
 done
 vt=`ls ~/$1/virtual-hosts/* | wc -l`
-message "Virtual%20Host(s)%20found%20$vt"
+message "Virtual%20Host(s)%20found%20$vt%20in%20$1"
 rm ~/$1/$1-temp-vhost-wordlist.txt ~/$1/virtual-hosts/initial-* ~/$1/virtual-hosts/ssl-*
 sleep 5
 
 echo "[+] DirSearch Scanning for Sensitive Files [+]"
 [ ! -f ~/newlist.txt ] && wget "https://github.com/phspade/Combined-Wordlists/raw/master/newlist.txt" -O ~/newlist.txt
-for u in `cat ~/$1/$1-httprobe.txt`;do python3 ~/dirsearch/dirsearch.py -u $u -e php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,old,gz,shtml -x 301,404,303,403,500 -t 200 -R 5 --http-method=POST --random-agents -b -w ~/newlist.txt --plain-text-report ~/$1/dirsearch/$u-dirsearch.txt;done
+for u in `cat ~/$1/$1-httprobe.txt`;do python3 ~/dirsearch/dirsearch.py -u $u -e php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,old,gz,shtml,log,swp -x 400,301,404,303,403,500 -t 200 -R 5 --http-method=POST --random-agents -b -w ~/newlist.txt --plain-text-report ~/$1/dirsearch/$u-dirsearch.txt;done
 sleep 5
 
 message "Scanner%20Done%20for%20$1"
+
