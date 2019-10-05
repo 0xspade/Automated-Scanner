@@ -22,6 +22,7 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 * [CRT.SH](https://crt.sh/)
 * [GoBuster](https://github.com/OJ/gobuster) using Jason Haddix's [all.txt](https://gist.githubusercontent.com/jhaddix/86a06c5dc309d08580a018c66354a056/raw/96f4e51d96b2203f19f6381c8c545b278eaa0837/all.txt) wordlist
 * [DNSGen](https://github.com/ProjectAnte/dnsgen)
+>changing altdns to dnsgen. it's faster than altdns
 
 **Scan All Alive Hosts with [httprobe](https://github.com/tomnomnom/httprobe)**
 
@@ -66,9 +67,6 @@ I hope that someone could help me to add more useful automated scanning techniqu
 
 * A Param Miner like tool
 >A parameter bruteforcer, maybe [parameth](https://github.com/mak-/parameth) will do.
-
-* SSH/FTP/TELNET/etc bruteforcer
->I dont suggest [brutespray](https://github.com/x90skysn3k/brutespray) for this project because it still depends on Medusa which is likely takes a lot of False Positive outputs.
 
 **ALL CREDIT GOES TO AMAZING CREATORS OF THIS WONDERFUL TOOLS :)**
 
