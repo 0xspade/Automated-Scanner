@@ -38,7 +38,7 @@ sleep 5
 
 echo "[+] SUBFINDER SCANNING [+]"
 if [ ! -f ~/$1/$1-subfinder.txt ] && [ ! -z $(which subfinder) ]; then
-	subfinder -d $1 -o ~/$1/$1-subfinder.txt
+	subfinder -d $1 -recursive -o ~/$1/$1-subfinder.txt
 	subfinderscan=`scanned ~/$1/$1-subfinder.txt`
 	message "SubFinder%20Found%20$subfinderscan%20subdomain(s)%20for%20$1"
 	echo "[+] Done"
