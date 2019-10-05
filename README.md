@@ -21,7 +21,7 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 > https://github.com/phspade/Project_Sonar_R7
 * [CRT.SH](https://crt.sh/)
 * [GoBuster](https://github.com/OJ/gobuster) using Jason Haddix's [all.txt](https://gist.githubusercontent.com/jhaddix/86a06c5dc309d08580a018c66354a056/raw/96f4e51d96b2203f19f6381c8c545b278eaa0837/all.txt) wordlist
-* [ALTDNS](https://github.com/infosec-au/altdns)
+* [DNSGen](https://github.com/ProjectAnte/dnsgen)
 
 **Scan All Alive Hosts with [httprobe](https://github.com/tomnomnom/httprobe)**
 
@@ -39,12 +39,15 @@ FYI, Install grepcidr first `apt-get install grepcidr`
 **Collecting Endpoints thru [Linkfinder](https://github.com/GerbenJavado/LinkFinder/)**
 >*Just comment out the line 253 to 256 in linkfinder.py file*
 
-**Checking CNAME with [massdns](https://github.com/blechschmidt/massdns)**
+**[Massdns](https://github.com/blechschmidt/massdns) scanning**
 
 **Port Scanning**
 * [Aquatone](https://github.com/michenriksen/aquatone) (New)
 * NMAP
 * [Masscan](https://github.com/robertdavidgraham/masscan)
+
+**[Default Credential](https://github.com/ztgrace/changeme) Scanning**
+>Scanning default credentials for all protocols and services
 
 **File/Dir Discovery**
 * [sensitive.py](https://github.com/phspade/Sensitive-File-Explorer)
