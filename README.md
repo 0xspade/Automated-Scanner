@@ -60,6 +60,10 @@ FYI, Install grepcidr first `apt-get install grepcidr`
 
 I hope that someone could help me to add more useful automated scanning technique :)
 
+# Installation
+
+For the installation of all the tools above. I linked all the github links, just make sure that its in the right directory PATH and your good to go. feel free to modify and feel free not to use it if you don't like it :)
+
 # Future Tools to be added
 
 * findomain
