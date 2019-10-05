@@ -153,22 +153,20 @@ rm ~/$1/$1-amass.txt ~/$1/$1-project-sonar.txt ~/$1/$1-subfinder.txt ~/$1/$1-aqu
 touch ~/$1/$1-ipz.txt
 sleep 5
 
-echo "[+] ALTDNS SCANNING [+]"
-if [ ! -f ~/$1/$1-altdns.txt ] && [ ! -z $(which altdns) ]; then
-	[ ! -f ~/altdns.txt ] && wget "https://raw.githubusercontent.com/infosec-au/altdns/master/words.txt" -O ~/altdns.txt
-	altdns -i ~/$1/$1-final.txt -w ~/altdns.txt -t 100 -e -r -o ~/$1/$1-altdns.txt -s ~/$1/$1-altdns-2.txt
+echo "[+] DNSGEN SCANNING [+]"
+if [ ! -f ~/$1/$1-dnsgen.txt ] && [ ! -z $(which dnsgen) ]; then
+	[ ! -f ~/dnsgen.txt ] && wget "https://raw.githubusercontent.com/infosec-au/altdns/master/words.txt" -O ~/dnsgen.txt
+	cat ~/$1/$1-final.txt | dnsgen -w ~/dnsgen.txt - >> ~/$1/$1-dnsgen.txt
 	sleep 3
-	rm ~/$1/$1-altdns.txt
-	for alt in `cat ~/$1/$1-altdns-2.txt`; do dns="${alt%:*}"; echo $dns | grep -E "*[.]$1\$" >> ~/$1/$1-altdns.txt; done
-	altdnx=`scanned ~/$1/$1-altdns.txt`
-	message "Altdns%20Found%20$altdnx%20subdomain(s)%20for%20$1"
+	dnsgens=`scanned ~/$1/$1-dnsgen.txt`
+	message "DNSGEN%20Found%20$dnsgens%20subdomain(s)%20for%20$1"
 else
-	message "[-]%20Skipping%20Altdns%20Scanning%20for%20$1"
+	message "[-]%20Skipping%20DNSGEN%20Scanning%20for%20$1"
 	echo "[!] Skipping ..."
 fi
 sleep 5
 
-cat ~/$1/$1-altdns.txt ~/$1/$1-final.txt | sort -u >> ~/$1/$1-fin.txt
+cat ~/$1/$1-dnsgen.txt ~/$1/$1-final.txt | sort -u >> ~/$1/$1-fin.txt
 rm ~/$1/$1-final.txt && mv ~/$1/$1-fin.txt ~/$1/$1-final.txt
 all=`scanned ~/$1/$1-final.txt`
 message "Almost%20$all%20Collected%20Subdomains%20for%20$1"
@@ -180,7 +178,7 @@ rm ~/$1/ports.txt
 sleep 5
 
 # collecting all IP from collected subdomains
-for ip in `cat ~/$1/$1-ips.txt`; do host $ip | grep "has address" | awk {'print $4'} >> ~/$1/$1-ipf.txt;done
+for ip in `cat ~/$1/$1-ips.txt`; do ip_collect=`host $ip | grep "has address" | awk {'print $4'}`; echo "$ip >> $ip_collect"; echo $ip_collect >> ~/$1/$1-ipf.txt;done
 cat ~/$1/$1-ipf.txt | sort -u >> ~/$1/$1-ipz.txt
 rm ~/$1/$1-ipf.txt
 
@@ -190,9 +188,10 @@ iprange="173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 141.101.6
 for ip in `cat ~/$1/$1-ipz.txt`; do
 	grepcidr "$iprange" <(echo "$ip") >/dev/null && echo "$ip is cloudflare" || echo "$ip" >> ~/$1/$1-ip.txt
 done
-rm ~/$1/$1-ipz.txt ~/$1/$1-ips.txt
 ipz=`scanned ~/$1/$1-ip.txt`
-message "$ipz%20non-cloudflare%20IPs%20has%20been%20$collected%20in%20$1"
+ip_old=`scanned ~/$1/$1-ipz.txt`
+message "$ipz%20non-cloudflare%20IPs%20has%20been%20$collected%20in%20$1%20out%20of%20$ip_old%20IPs"
+rm ~/$1/$1-ipz.txt ~/$1/$1-ips.txt
 cat ~/$1/$1-ip.txt ~/$1/$1-final.txt > ~/$1/$1-all.txt
 sleep 5
 
@@ -248,8 +247,8 @@ message "Done%20collecting%20endpoint%20in%20$1"
 sleep 5
 
 echo "[+] MASSDNS SCANNING [+]"
-massdns -r ~/massdns/lists/resolvers.txt -t CNAME ~/$1/$1-httprobe.txt -o S > $1/$1-massdns.txt
-message "Done%20Massdns%20CNAME%20Scanning%20for%20$1"
+massdns -r ~/massdns/lists/resolvers.txt ~/$1/$1-httprobe.txt -o S > $1/$1-massdns.txt
+message "Done%20Massdns%20Scanning%20for%20$1"
 sleep 5
 
 echo "[+] PORT SCANNING [+]"
@@ -270,7 +269,6 @@ else
 fi
 sleep 5
 
-
 echo "[+] NMAP PORT SCANNING [+]"
 if [ ! -f ~/$1/$1-nmap.txt ] && [ ! -z $(which nmap) ]; then
 	[ ! -f ~/nmap-bootstrap.xsl ] && wget "https://raw.githubusercontent.com/honze-net/nmap-bootstrap-xsl/master/nmap-bootstrap.xsl" -O ~/nmap-bootstrap.xsl
@@ -281,6 +279,17 @@ if [ ! -f ~/$1/$1-nmap.txt ] && [ ! -z $(which nmap) ]; then
 	echo "[+] Done"
 else
 	message "[-]%20Skipping%20Nmap%20Scanning%20for%20$1"
+	echo "[!] Skipping ..."
+fi
+sleep 5
+
+echo "[+] DEFAULT CREDENTIAL SCANNING [+]"
+if [ ! -f ~/$1/$1-nmap.xml ] && [ -e ~/changeme/changeme.py ]; then
+	python3 ~/changeme/changeme.py ~/$1/$1-nmap.xml -d --fresh -v --ssl -o ~/$1/$1-changeme.csv
+	message "Default%20Credential%20done%20for%20$1"
+	echo "[+] Done"
+else
+	message "[-]%20Skipping%20Default%20Credential%20Scanning%20for%20$1"
 	echo "[!] Skipping ..."
 fi
 sleep 5
@@ -308,24 +317,23 @@ message "WAYBACKURLS%20Done%20for%20$1"
 sleep 5
 
 echo "[+] Scanning for Virtual Hosts Resolution [+]"
-declare -a vhost=("66" "80" "81" "443" "445" "457" "1080" "1100" "1241" "1352" "1433" "1434" "1521" "1944" "2301" "3128" "3306" "4000" "4001" "4002" "4100" "5000" "5432" "5800" "5801" "5802" "6346" "6347" "7001" "7002" "8080" "8888" "30821")
+declare -a vhost=(66 80 81 443 445 457 1080 1100 1241 1352 1433 1434 1521 1944 2301 3128 3306 4000 4001 4002 4100 5000 5432 5800 5801 5802 6346 6347 7001 7002 8080 8888 30821)
 cat ~/$1/$1-httprobe.txt ~/VHostScan/vhost-wordlist.txt | sort -u >> ~/$1/$1-temp-vhost-wordlist.txt
-for test in `cat $1/$1-ip.txt`; do
+for test in `cat ~/$1/$1-ip.txt`; do
 	for p in ${vhost[@]}; do
 		VHostScan -t $test -b $1 -r 80 -p $p -v --fuzzy-logic --waf --random-agent -w ~/$1/$1-temp-vhost-wordlist.txt -oN ~/$1/virtual-hosts/initial-$test_$p.txt
 		VHostScan -t $test -b $1 -p $p -r 80 -v --fuzzy-logic --waf --ssl --random-agent -w ~/$1/$1-temp-vhost-wordlist.txt -oN ~/$1/virtual-hosts/ssl-$test_$p.txt
 		cat ~/$1/virtual-hosts/initial-$test_$p.txt ~/$1/virtual-hosts/ssl-$test_$p.txt >> ~/$1/virtual-hosts/final-$test.txt
 	done
 done
-vt=`ls ~/$1/virtual-hosts/* | wc -l`
-message "Virtual%20Host(s)%20found%20$vt%20in%20$1"
+message "Virtual%20Host(s)%20done%20for%20$1"
 rm ~/$1/$1-temp-vhost-wordlist.txt ~/$1/virtual-hosts/initial-* ~/$1/virtual-hosts/ssl-*
 sleep 5
 
 echo "[+] DirSearch Scanning for Sensitive Files [+]"
-[ ! -f ~/newlist.txt ] && wget "https://github.com/phspade/Combined-Wordlists/raw/master/newlist.txt" -O ~/newlist.txt
-for u in `cat ~/$1/$1-httprobe.txt`;do python3 ~/dirsearch/dirsearch.py -u $u -e php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,old,gz,shtml,log,swp -x 400,301,404,303,403,500 -t 200 -R 5 --http-method=POST --random-agents -b -w ~/newlist.txt --plain-text-report ~/$1/dirsearch/$u-dirsearch.txt;done
+[ ! -f ~/newlist.txt ] && echo "visit https://github.com/phspade/Combined-Wordlists/"
+for u in `cat ~/$1/$1-httprobe.txt`;do python3 ~/dirsearch/dirsearch.py -u $u -e php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,old,gz,shtml,log,swp,yaml,yml,config -x 400,301,404,303,403,500,406,503 -t 50 --http-method=POST --random-agents -b -w ~/newlist.txt --plain-text-report ~/$1/dirsearch/$u-dirsearch.txt;done
 sleep 5
 
+[ ! -f ~/$1.out ] && mv $1.out ~/$1/ 
 message "Scanner%20Done%20for%20$1"
-
