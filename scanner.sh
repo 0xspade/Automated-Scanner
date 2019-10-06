@@ -153,17 +153,15 @@ rm ~/recon/$1/$1-amass.txt ~/recon/$1/$1-project-sonar.txt ~/recon/$1/$1-subfind
 touch ~/recon/$1/$1-ipz.txt
 sleep 5
 
-echo "[+] ALTDNS SCANNING [+]"
-if [ ! -f ~/recon/$1/$1-altdns.txt ] && [ ! -z $(which altdns) ]; then
-	[ ! -f ~/recon/altdns.txt ] && wget "https://raw.githubusercontent.com/infosec-au/altdns/master/words.txt" -O ~/recon/altdns.txt
-	altdns -i ~/recon/$1/$1-final.txt -w ~/recon/altdns.txt -t 100 -e -r -o ~/recon/$1/$1-altdns.txt -s ~/recon/$1/$1-altdns-2.txt
+echo "[+] DNSGEN SCANNING [+]"
+if [ ! -f ~/recon/$1/$1-dnsgen.txt ] && [ ! -z $(which dnsgen) ]; then
+	[ ! -f ~/recon/dnsgen.txt ] && wget "https://raw.githubusercontent.com/infosec-au/altdns/master/words.txt" -O ~/recon/dnsgen.txt
+	cat ~/recon/$1/$1-final.txt | dnsgen -w ~/recon/dnsgen.txt - >> ~/recon/$1/$1-dnsgen.txt
 	sleep 3
-	rm ~/recon/$1/$1-altdns.txt
-	for alt in `cat ~/recon/$1/$1-altdns-2.txt`; do dns="${alt%:*}"; echo $dns | grep -E "*[.]$1\$" >> ~/recon/$1/$1-altdns.txt; done
-	altdnx=`scanned ~/recon/$1/$1-altdns.txt`
-	message "Altdns%20Found%20$altdnx%20subdomain(s)%20for%20$1"
+	dnsgens=`scanned ~/recon/$1/$1-dnsgen.txt`
+	message "DNSGEN%20Found%20$dnsgens%20subdomain(s)%20for%20$1"
 else
-	message "[-]%20Skipping%20Altdns%20Scanning%20for%20$1"
+	message "[-]%20Skipping%20DNSGEN%20Scanning%20for%20$1"
 	echo "[!] Skipping ..."
 fi
 sleep 5
