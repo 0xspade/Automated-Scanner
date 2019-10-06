@@ -210,8 +210,10 @@ sleep 5
 echo "[+] SUBOVER for Subdomain TKO [+]"
 if [ ! -f ~/$1/$1-subover.txt ] && [ ! -z $(which SubOver) ]; then
 	[ ! -f ~/providers.json ] && wget "https://raw.githubusercontent.com/Ice3man543/SubOver/master/providers.json" -O ~/providers.json
-	SubOver -l ~/$1/$1-httprobe.txt -timeout 15 >> ~/$1/$1-subover.txt
-	SubOver -l ~/$1/$1-httprobe.txt -timeout 15 -https >> ~/$1/$1-subover.txt
+	SubOver -l ~/$1/$1-httprobe.txt -timeout 15 >> ~/$1/$1-subtemp.txt
+	SubOver -l ~/$1/$1-httprobe.txt -timeout 15 -https >> ~/$1/$1-subtmp.txt
+	cat ~/$1/$1-subtemp.txt ~/$1/$1-subtmp.txt | sort -u > ~/$1/$1-subover.txt
+	rm ~/$1/$1-subtemp.txt ~/$1/$1-subtmp.txt
 	message "Subover%20scanner%20done%20for%20$1"
 else
 	message "[-]%20Skipping%20subover%20Scanning%20for%20$1"
@@ -222,8 +224,10 @@ sleep 5
 echo "[+] SUBJACK for Subdomain TKO [+]"
 if [ ! -f ~/$1/$1-subjack.txt ] && [ ! -z $(which subjack) ]; then
 	[ ! -f ~/fingerprints.json ] && wget "https://raw.githubusercontent.com/haccer/subjack/master/fingerprints.json" -O ~/fingerprints.json
-	subjack -w ~/$1/$1-httprobe.txt -a -timeout 15 -c ~/fingerprints.json -v -m -o ~/$1/$1-subjack.txt
-	subjack -w ~/$1/$1-httprobe.txt -a -timeout 15 -c ~/fingerprints.json -v -m -ssl -o ~/$1/$1-subjack.txt
+	subjack -w ~/$1/$1-httprobe.txt -a -timeout 15 -c ~/fingerprints.json -v -m -o ~/$1/$1-subtemp.txt
+	subjack -w ~/$1/$1-httprobe.txt -a -timeout 15 -c ~/fingerprints.json -v -m -ssl -o ~/$1/$1-subtmp.txt
+	cat ~/$1/$1-subtemp.txt ~/$1/$1-subtmp.txt | sort -u > ~/$1/$1-subjack.txt
+	rm ~/$1/$1-subtemp.txt ~/$1/$1-subtmp.txt
 	message "subjack%20scanner%20done%20for%20$1"
 else
 	message "[-]%20Skipping%20subjack%20Scanning%20for%20$1"
