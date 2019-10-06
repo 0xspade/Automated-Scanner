@@ -2,7 +2,6 @@
 
 # amass, subfinder, snapd, aquatone, project sonar, grepcidr, gobuster, masscan, nmap, sensitive.py, curl, CRLF-Injection-Scanner, otxurls, waybackurls, DirSearch, LinkFinder, VHostScan
 
-## Password for root is required in masscan idk why :D
 passwordx=""
 
 [ ! -f ~/$1 ] && mkdir ~/$1
@@ -255,12 +254,6 @@ massdns -r ~/massdns/lists/resolvers.txt ~/$1/$1-httprobe.txt -o S > $1/$1-massd
 message "Done%20Massdns%20Scanning%20for%20$1"
 sleep 5
 
-echo "[+] PORT SCANNING [+]"
-cat ~/$1/$1-httprobe.txt | aquatone -ports xlarge -out ~/$1/$1-ports
-message "Done%20Aquatone%20Port%20Scanning%20for%20$1"
-sleep 5
-
-
 echo "[+] MASSCAN PORT SCANNING [+]"
 if [ ! -f ~/$1/$1-masscan.txt ] && [ ! -z $(which masscan) ]; then
 	echo $passwordx | sudo -S masscan -p1-65535 -iL ~/$1/$1-ip.txt --max-rate 10000 -oG ~/$1/$1-masscan.txt
@@ -273,10 +266,15 @@ else
 fi
 sleep 5
 
+big_ports=`cat ~/$1/$1-masscan.txt | grep 'Host:' | awk {'print $5'} | awk -F '/' {'print $1'} | sort -u | paste -s -d ','`
+echo "[+] PORT SCANNING [+]"
+cat ~/$1/$1-httprobe.txt | aquatone -ports $big_ports -out ~/$1/$1-ports
+message "Done%20Aquatone%20Port%20Scanning%20for%20$1"
+sleep 5
+
 echo "[+] NMAP PORT SCANNING [+]"
 if [ ! -f ~/$1/$1-nmap.txt ] && [ ! -z $(which nmap) ]; then
 	[ ! -f ~/nmap-bootstrap.xsl ] && wget "https://raw.githubusercontent.com/honze-net/nmap-bootstrap-xsl/master/nmap-bootstrap.xsl" -O ~/nmap-bootstrap.xsl
-	big_ports=`cat ~/$1/$1-masscan.txt | grep 'Host:' | awk {'print $5'} | awk -F '/' {'print $1'} | sort -u | paste -s -d ','`
 	nmap -sVTC -A -O -Pn -p$big_ports -iL ~/$1/$1-ip.txt --stylesheet ~/nmap-bootstrap.xsl -oA ~/$1/$1-nmap
 	nmaps=`scanned ~/$1/$1-ip.txt`
 	xsltproc -o ~/$1/$1-nmap.html ~/nmap-bootstrap.xsl ~/$1/$1-nmap.xml
@@ -308,16 +306,16 @@ rm $1-sensitive.txt
 sleep 5
 
 echo "[+] OTXURL Scanning for Archived Endpoints [+]"
-for u in `cat ~/$1/$1-httprobe.txt`;do echo $u | otxurls >> ~/$1/otxurls/$u.txt; done
+for u in `cat ~/$1/$1-httprobe.txt`;do echo $u | otxurls | grep "$u" >> ~/$1/otxurls/tmp-$u.txt; done
 cat ~/$1/otxurls/* | sort -u >> ~/$1/otxurls/$1-otxurl.txt 
-rm ~/$1/otxurls/*.$1.txt
+rm ~/$1/otxurls/tmp-*
 message "OTXURL%20Done%20for%20$1"
 sleep 5
 
 echo "[+] WAYBACKURLS Scanning for Archived Endpoints [+]"
-for u in `cat ~/$1/$1-httprobe.txt`;do echo $u | waybackurls >> ~/$1/waybackurls/$u.txt; done
+for u in `cat ~/$1/$1-httprobe.txt`;do echo $u | waybackurls | grep "$u" >> ~/$1/waybackurls/tmp-$u.txt; done
 cat ~/$1/waybackurls/* | sort -u >> ~/$1/waybackurls/$1-waybackurls.txt 
-rm ~/$1/waybackurls/*.$1.txt
+rm ~/$1/waybackurls/tmp-*
 message "WAYBACKURLS%20Done%20for%20$1"
 sleep 5
 
