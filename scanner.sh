@@ -272,8 +272,9 @@ sleep 5
 echo "[+] NMAP PORT SCANNING [+]"
 if [ ! -f ~/$1/$1-nmap.txt ] && [ ! -z $(which nmap) ]; then
 	[ ! -f ~/nmap-bootstrap.xsl ] && wget "https://raw.githubusercontent.com/honze-net/nmap-bootstrap-xsl/master/nmap-bootstrap.xsl" -O ~/nmap-bootstrap.xsl
-	nmap -sV -Pn -p- -iL ~/$1/$1-ip.txt --stylesheet ~/nmap-bootstrap.xsl -oA ~/$1/$1-nmap
-	nmaps=`scanned ~/$1/$1-ip.txt `
+	big_ports=`cat ~/$1/$1-masscan.txt | grep 'Host:' | awk {'print $5'} | awk -F '/' {'print $1'} | sort -u | paste -s -d ','`
+	nmap -sVTC -A -O -Pn -p$big_ports -iL ~/$1/$1-ip.txt --stylesheet ~/nmap-bootstrap.xsl -oA ~/$1/$1-nmap
+	nmaps=`scanned ~/$1/$1-ip.txt`
 	xsltproc -o ~/$1/$1-nmap.html ~/nmap-bootstrap.xsl ~/$1/$1-nmap.xml
 	message "Nmap%20Scanned%20$nmaps%20IPs%20for%20$1"
 	echo "[+] Done"
@@ -317,7 +318,8 @@ message "WAYBACKURLS%20Done%20for%20$1"
 sleep 5
 
 echo "[+] Scanning for Virtual Hosts Resolution [+]"
-declare -a vhost=(66 80 81 443 445 457 1080 1100 1241 1352 1433 1434 1521 1944 2301 3128 3306 4000 4001 4002 4100 5000 5432 5800 5801 5802 6346 6347 7001 7002 8080 8888 30821)
+vhost_ports=`cat ~/$1/$1-masscan.txt | grep 'Host:' | awk {'print $5'} | awk -F '/' {'print $1'} | sort -u | paste -s -d ' '`
+declare -a vhost=($vhost_ports)
 cat ~/$1/$1-httprobe.txt ~/VHostScan/vhost-wordlist.txt | sort -u >> ~/$1/$1-temp-vhost-wordlist.txt
 for test in `cat ~/$1/$1-ip.txt`; do
 	for p in ${vhost[@]}; do
