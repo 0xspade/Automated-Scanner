@@ -275,7 +275,7 @@ sleep 5
 echo "[+] NMAP PORT SCANNING [+]"
 if [ ! -f ~/$1/$1-nmap.txt ] && [ ! -z $(which nmap) ]; then
 	[ ! -f ~/nmap-bootstrap.xsl ] && wget "https://raw.githubusercontent.com/honze-net/nmap-bootstrap-xsl/master/nmap-bootstrap.xsl" -O ~/nmap-bootstrap.xsl
-	nmap -sVTC -A -O -Pn -p$big_ports -iL ~/$1/$1-ip.txt --stylesheet ~/nmap-bootstrap.xsl -oA ~/$1/$1-nmap
+	echo $passwordx | sudo -S nmap -sVTC -A -O -Pn -p$big_ports -iL ~/$1/$1-ip.txt --stylesheet ~/nmap-bootstrap.xsl -oA ~/$1/$1-nmap
 	nmaps=`scanned ~/$1/$1-ip.txt`
 	xsltproc -o ~/$1/$1-nmap.html ~/nmap-bootstrap.xsl ~/$1/$1-nmap.xml
 	message "Nmap%20Scanned%20$nmaps%20IPs%20for%20$1"
