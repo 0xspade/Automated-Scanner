@@ -78,9 +78,10 @@ sleep 5
 
 echo "[+] SCANNING SUBDOMAINS WITH PROJECT SONAR [+]"
 if [ ! -f ~/recon/$1/$1-project-sonar.txt ] && [ -e ~/forward_dns.json.gz ] && [ -e ~/reverse_dns.json.gz ]; then
-	pv ~/forward_dns.json.gz | pigz -dc | grep -E "*[.]$1\"," | jq -r '.name' | sort -u >> ~/recon/$1/$1-project-sonar.txt
+	#pv ~/forward_dns.json.gz | pigz -dc | grep -E "*[.]$1\"," | jq -r '.name' | sort -u >> ~/recon/$1/$1-project-sonar.txt
+	pv ~/recon/data/*fdns_cname.json.gz | pigz -dc | grep -E "*[.]$1\"," | jq -r '.name' | sort -u >> ~/recon/$1/$1-project-sonar.txt
 	scanned ~/recon/$1/$1-project-sonar.txt
-	pv ~/reverse_dns.json.gz | pigz -dc | grep -E "*[.]$1\"," | jq -r '.value' | sort -u >> ~/recon/$1/$1-project-sonar.txt
+	#pv ~/reverse_dns.json.gz | pigz -dc | grep -E "*[.]$1\"," | jq -r '.value' | sort -u >> ~/recon/$1/$1-project-sonar.txt
 	projectsonar=`scanned ~/recon/$1/$1-project-sonar.txt`
 	message "Project%20Sonar%20Found%20$projectsonar%20subdomain(s)%20for%20$1"
 	echo "[+] Done"
@@ -155,8 +156,8 @@ sleep 5
 
 echo "[+] DNSGEN SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-dnsgen.txt ] && [ ! -z $(which dnsgen) ]; then
-	[ ! -f ~/recon/dnsgen.txt ] && wget "https://raw.githubusercontent.com/infosec-au/altdns/master/words.txt" -O ~/recon/dnsgen.txt
-	cat ~/recon/$1/$1-final.txt | dnsgen -w ~/recon/dnsgen.txt - >> ~/recon/$1/$1-dnsgen.txt
+	[ ! -f ~/recon/scanner/dnsgen.txt ] && wget "https://raw.githubusercontent.com/infosec-au/altdns/master/words.txt" -O ~/recon/scanner/dnsgen.txt
+	cat ~/recon/$1/$1-final.txt | dnsgen -w ~/recon/scanner/dnsgen.txt - >> ~/recon/$1/$1-dnsgen.txt
 	sleep 3
 	dnsgens=`scanned ~/recon/$1/$1-dnsgen.txt`
 	message "DNSGEN%20Found%20$dnsgens%20subdomain(s)%20for%20$1"
@@ -208,7 +209,7 @@ sleep 5
 
 echo "[+] SUBOVER for Subdomain TKO [+]"
 if [ ! -f ~/recon/$1/$1-subover.txt ] && [ ! -z $(which SubOver) ]; then
-	[ ! -f ~/recon/providers.json ] && wget "https://raw.githubusercontent.com/Ice3man543/SubOver/master/providers.json" -O ~/recon/providers.json
+	[ ! -f ~/recon/scanner/providers.json ] && wget "https://raw.githubusercontent.com/Ice3man543/SubOver/master/providers.json" -O ~/recon/scanner/providers.json
 	SubOver -l ~/recon/$1/$1-httprobe.txt -timeout 15 >> ~/recon/$1/$1-subover.txt
 	SubOver -l ~/recon/$1/$1-httprobe.txt -timeout 15 -https >> ~/recon/$1/$1-subover.txt
 	message "Subover%20scanner%20done%20for%20$1"
@@ -220,9 +221,9 @@ sleep 5
 
 echo "[+] SUBJACK for Subdomain TKO [+]"
 if [ ! -f ~/recon/$1/$1-subjack.txt ] && [ ! -z $(which subjack) ]; then
-	[ ! -f ~/recon/fingerprints.json ] && wget "https://raw.githubusercontent.com/sumgr0/subjack/master/fingerprints.json" -O ~/recon/fingerprints.json
-	subjack -w ~/recon/$1/$1-httprobe.txt -a -timeout 15 -c ~/recon/fingerprints.json -v -m -o ~/recon/$1/$1-subjack.txt
-	subjack -w ~/recon/$1/$1-httprobe.txt -a -timeout 15 -c ~/recon/fingerprints.json -v -m -ssl -o ~/recon/$1/$1-subjack.txt
+	[ ! -f ~/recon/scanner/fingerprints.json ] && wget "https://raw.githubusercontent.com/sumgr0/subjack/master/fingerprints.json" -O ~/recon/scanner/fingerprints.json
+	subjack -w ~/recon/$1/$1-httprobe.txt -a -timeout 15 -c ~/recon/scanner/fingerprints.json -v -m -o ~/recon/$1/$1-subjack.txt
+	subjack -w ~/recon/$1/$1-httprobe.txt -a -timeout 15 -c ~/recon/scanner/fingerprints.json -v -m -ssl -o ~/recon/$1/$1-subjack.txt
 	message "subjack%20scanner%20done%20for%20$1"
 else
 	message "[-]%20Skipping%20subjack%20Scanning%20for%20$1"
@@ -246,7 +247,7 @@ message "Done%20collecting%20endpoint%20in%20$1"
 sleep 5
 
 echo "[+] MASSDNS SCANNING [+]"
-massdns -r ~/tools/massdns/lists/resolvers.txt -t CNAME ~/recon/$1/$1-httprobe.txt -o S > $1/$1-massdns.txt
+massdns -r ~/tools/massdns/lists/nameservers.txt -t CNAME ~/recon/$1/$1-httprobe.txt -o S > $1/$1-massdns.txt
 message "Done%20Massdns%20CNAME%20Scanning%20for%20$1"
 sleep 5
 
@@ -277,7 +278,7 @@ sleep 5
 
 echo "[+] NMAP PORT SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-nmap.txt ] && [ ! -z $(which nmap) ]; then
-	[ ! -f ~/recon/nmap-bootstrap.xsl ] && wget "https://raw.githubusercontent.com/honze-net/nmap-bootstrap-xsl/master/nmap-bootstrap.xsl" -O ~/recon/nmap-bootstrap.xsl
+	[ ! -f ~/recon/scanner/nmap-bootstrap.xsl ] && wget "https://raw.githubusercontent.com/honze-net/nmap-bootstrap-xsl/master/nmap-bootstrap.xsl" -O ~/recon/scanner/nmap-bootstrap.xsl
 	#nmap -sV -Pn -p- -iL ~/recon/$1/$1-ip.txt --stylesheet ~/recon/nmap-bootstrap.xsl -oA ~/recon/$1/$1-nmap
 	echo $passwordx | sudo -S nmap -sVTC -A -O -Pn -p$big_ports -iL ~/$1/$1-ip.txt --stylesheet ~/nmap-bootstrap.xsl -oA ~/$1/$1-nmap
 	nmaps=`scanned ~/recon/$1/$1-ip.txt `
