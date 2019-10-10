@@ -292,9 +292,9 @@ fi
 sleep 5
 
 echo "[+] Scanning for Sensitive Files [+]"
-cp ~/recon/$1/$1-httprobe.txt ~/recon/$1-sensitive.txt
-python ~/tools/Sensitive-File-Explorer/sensitive.py -u ~/recon/$1-sensitive.txt
-sens=`scanned ~/recon/$1-sensitive.txt`
+cp ~/recon/$1/$1-httprobe.txt ~/recon/$1/$1-sensitive.txt
+python ~/tools/Sensitive-File-Explorer/sensitive.py -u ~/recon/$1/$1-sensitive.txt
+sens=`scanned ~/recon/$1/$1-sensitive.txt`
 message "Sensitive%20File%20Scanned%20$sens%20asset(s)%20for%20$1"
 rm $1-sensitive.txt
 sleep 5
