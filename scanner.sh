@@ -251,21 +251,9 @@ massdns -r ~/tools/massdns/lists/nameservers.txt -t CNAME ~/recon/$1/$1-httprobe
 message "Done%20Massdns%20CNAME%20Scanning%20for%20$1"
 sleep 5
 
-#echo "[+] PORT SCANNING [+]"
-#cat ~/recon/$1/$1-httprobe.txt | aquatone -ports xlarge -out ~/recon/$1/$1-ports
-#message "Done%20Aquatone%20Port%20Scanning%20for%20$1"
-#sleep 5
-#
-#
 echo "[+] MASSCAN PORT SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-masscan.txt ] && [ ! -z $(which masscan) ]; then
 	echo $passwordx | sudo -S masscan -p1-65535 -iL ~/recon/$1/$1-ip.txt --max-rate 10000 -oG ~/recon/$1/$1-masscan.txt
-	#mass=`scanned $1/$1-ip.txt`
-	#message "Masscan%20Scanned%20$mass%20IPs%20for%20$1"
-	#echo "[+] Done"
-#else
-#	message "[-]%20Skipping%20Masscan%20Scanning%20for%20$1"
-#	echo "[!] Skipping ..."
 fi
 sleep 5
 
@@ -279,8 +267,7 @@ sleep 5
 echo "[+] NMAP PORT SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-nmap.txt ] && [ ! -z $(which nmap) ]; then
 	[ ! -f ~/recon/scanner/nmap-bootstrap.xsl ] && wget "https://raw.githubusercontent.com/honze-net/nmap-bootstrap-xsl/master/nmap-bootstrap.xsl" -O ~/recon/scanner/nmap-bootstrap.xsl
-	#nmap -sV -Pn -p- -iL ~/recon/$1/$1-ip.txt --stylesheet ~/recon/nmap-bootstrap.xsl -oA ~/recon/$1/$1-nmap
-	echo $passwordx | sudo -S nmap -sVTC -A -O -Pn -p$big_ports -iL ~/$1/$1-ip.txt --stylesheet ~/nmap-bootstrap.xsl -oA ~/$1/$1-nmap
+	echo $passwordx | sudo -S nmap -sVTC -A -O -Pn -p$big_ports -iL ~/$1/$1-ip.txt --stylesheet ~/recon/scanner/nmap-bootstrap.xsl -oA ~/$1/$1-nmap
 	nmaps=`scanned ~/recon/$1/$1-ip.txt `
 	xsltproc -o ~/recon/$1/$1-nmap.html ~/recon/nmap-bootstrap.xsl ~/recon/$1/$1-nmap.xml
 	message "Nmap%20Scanned%20$nmaps%20IPs%20for%20$1"
