@@ -250,29 +250,36 @@ massdns -r ~/tools/massdns/lists/resolvers.txt -t CNAME ~/recon/$1/$1-httprobe.t
 message "Done%20Massdns%20CNAME%20Scanning%20for%20$1"
 sleep 5
 
-echo "[+] PORT SCANNING [+]"
-cat ~/recon/$1/$1-httprobe.txt | aquatone -ports xlarge -out ~/recon/$1/$1-ports
-message "Done%20Aquatone%20Port%20Scanning%20for%20$1"
-sleep 5
-
-
+#echo "[+] PORT SCANNING [+]"
+#cat ~/recon/$1/$1-httprobe.txt | aquatone -ports xlarge -out ~/recon/$1/$1-ports
+#message "Done%20Aquatone%20Port%20Scanning%20for%20$1"
+#sleep 5
+#
+#
 echo "[+] MASSCAN PORT SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-masscan.txt ] && [ ! -z $(which masscan) ]; then
 	echo $passwordx | sudo -S masscan -p1-65535 -iL ~/recon/$1/$1-ip.txt --max-rate 10000 -oG ~/recon/$1/$1-masscan.txt
-	mass=`scanned $1/$1-ip.txt`
-	message "Masscan%20Scanned%20$mass%20IPs%20for%20$1"
-	echo "[+] Done"
-else
-	message "[-]%20Skipping%20Masscan%20Scanning%20for%20$1"
-	echo "[!] Skipping ..."
+	#mass=`scanned $1/$1-ip.txt`
+	#message "Masscan%20Scanned%20$mass%20IPs%20for%20$1"
+	#echo "[+] Done"
+#else
+#	message "[-]%20Skipping%20Masscan%20Scanning%20for%20$1"
+#	echo "[!] Skipping ..."
 fi
+sleep 5
+
+big_ports=`cat ~/recon/$1/$1-masscan.txt | grep 'Host:' | awk {'print $5'} | awk -F '/' {'print $1'} | sort -u | paste -s -d ','`
+echo "[+] PORT SCANNING [+]"
+cat ~/recon/$1/$1-httprobe.txt | aquatone -ports $big_ports -out ~/recon/$1/$1-ports
+message "Done%20Aquatone%20Port%20Scanning%20for%20$1"
 sleep 5
 
 
 echo "[+] NMAP PORT SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-nmap.txt ] && [ ! -z $(which nmap) ]; then
 	[ ! -f ~/recon/nmap-bootstrap.xsl ] && wget "https://raw.githubusercontent.com/honze-net/nmap-bootstrap-xsl/master/nmap-bootstrap.xsl" -O ~/recon/nmap-bootstrap.xsl
-	nmap -sV -Pn -p- -iL ~/recon/$1/$1-ip.txt --stylesheet ~/recon/nmap-bootstrap.xsl -oA ~/recon/$1/$1-nmap
+	#nmap -sV -Pn -p- -iL ~/recon/$1/$1-ip.txt --stylesheet ~/recon/nmap-bootstrap.xsl -oA ~/recon/$1/$1-nmap
+	echo $passwordx | sudo -S nmap -sVTC -A -O -Pn -p$big_ports -iL ~/$1/$1-ip.txt --stylesheet ~/nmap-bootstrap.xsl -oA ~/$1/$1-nmap
 	nmaps=`scanned ~/recon/$1/$1-ip.txt `
 	xsltproc -o ~/recon/$1/$1-nmap.html ~/recon/nmap-bootstrap.xsl ~/recon/$1/$1-nmap.xml
 	message "Nmap%20Scanned%20$nmaps%20IPs%20for%20$1"
@@ -292,16 +299,16 @@ rm $1-sensitive.txt
 sleep 5
 
 echo "[+] OTXURL Scanning for Archived Endpoints [+]"
-for u in `cat ~/recon/$1/$1-httprobe.txt`;do echo $u | otxurls >> ~/recon/$1/otxurls/$u.txt; done
+for u in `cat ~/recon/$1/$1-httprobe.txt`;do echo $u | otxurls | grep "$u" >> ~/recon/$1/otxurls/tmp-$u.txt; done
 cat ~/recon/$1/otxurls/* | sort -u >> ~/recon/$1/otxurls/$1-otxurl.txt 
-rm ~/recon/$1/otxurls/*.$1.txt
+rm ~/recon/$1/otxurls/tmp-*
 message "OTXURL%20Done%20for%20$1"
 sleep 5
 
 echo "[+] WAYBACKURLS Scanning for Archived Endpoints [+]"
-for u in `cat ~/recon/$1/$1-httprobe.txt`;do echo $u | waybackurls >> ~/recon/$1/waybackurls/$u.txt; done
+for u in `cat ~/recon/$1/$1-httprobe.txt`;do echo $u | waybackurls | grep "$u" >> ~/recon/$1/waybackurls/tmp-$u.txt; done
 cat ~/recon/$1/waybackurls/* | sort -u >> ~/recon/$1/waybackurls/$1-waybackurls.txt 
-rm ~/recon/$1/waybackurls/*.$1.txt
+rm ~/recon/$1/waybackurls/tmp-*
 message "WAYBACKURLS%20Done%20for%20$1"
 sleep 5
 
