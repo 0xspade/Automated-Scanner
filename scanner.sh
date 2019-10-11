@@ -309,7 +309,9 @@ sleep 5
 
 echo "[+] Scanning for Virtual Hosts Resolution [+]"
 declare -a vhost=("66" "80" "81" "443" "445" "457" "1080" "1100" "1241" "1352" "1433" "1434" "1521" "1944" "2301" "3128" "3306" "4000" "4001" "4002" "4100" "5000" "5432" "5800" "5801" "5802" "6346" "6347" "7001" "7002" "8080" "8888" "30821")
-cat ~/recon/$1/$1-httprobe.txt ~/tools/VHostScan/vhost-wordlist.txt | sort -u >> ~/recon/$1/$1-temp-vhost-wordlist.txt
+#cat ~/recon/$1/$1-httprobe.txt ~/tools/VHostScan/vhost-wordlist.txt | sort -u >> ~/recon/$1/$1-temp-vhost-wordlist.txt
+cat ~/recon/$1/$1-httprobe.txt | sort -u >> ~/recon/$1/$1-temp-vhost-wordlist.txt
+
 for test in `cat $1/$1-ip.txt`; do
 	for p in ${vhost[@]}; do
 		VHostScan -t $test -b $1 -r 80 -p $p -v --fuzzy-logic --waf --random-agent -w ~/recon/$1/$1-temp-vhost-wordlist.txt -oN ~/recon/$1/virtual-hosts/initial-$test_$p.txt
