@@ -274,7 +274,7 @@ sleep 5
 echo "[+] NMAP PORT SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-nmap.txt ] && [ ! -z $(which nmap) ]; then
 	[ ! -f ~/recon/scanner/nmap-bootstrap.xsl ] && wget "https://raw.githubusercontent.com/honze-net/nmap-bootstrap-xsl/master/nmap-bootstrap.xsl" -O ~/recon/scanner/nmap-bootstrap.xsl
-	echo $passwordx | sudo -S nmap -sVTC -A -O -Pn -p$big_ports -iL ~/$1/$1-ip.txt --stylesheet ~/recon/scanner/nmap-bootstrap.xsl -oA ~/$1/$1-nmap
+	echo $passwordx | sudo -S nmap -sVTC -A -O -Pn -p$big_ports -iL ~/recon/$1/$1-ip.txt --stylesheet ~/recon/scanner/nmap-bootstrap.xsl -oA ~/recon/$1/$1-nmap
 	nmaps=`scanned ~/recon/$1/$1-ip.txt `
 	xsltproc -o ~/recon/$1/$1-nmap.html ~/recon/nmap-bootstrap.xsl ~/recon/$1/$1-nmap.xml
 	message "Nmap%20Scanned%20$nmaps%20IPs%20for%20$1"
@@ -326,7 +326,7 @@ sleep 5
 
 echo "[+] DirSearch Scanning for Sensitive Files [+]"
 [ ! -f ~/wordlists/newlist.txt ] && wget "https://github.com/phspade/Combined-Wordlists/raw/master/newlist.txt" -O ~/wordlists/newlist.txt
-for u in `cat ~/$1/$1-httprobe.txt`;do python3 ~/tools/dirsearch/dirsearch.py -u $u -e php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,old,gz,shtml,log,swp -x 400,301,404,303,403,500 -t 200 -R 5 --http-method=POST --random-agents -b -w ~/wordlists/newlist.txt --plain-text-report ~/$1/dirsearch/$u-dirsearch.txt;done
+for u in `cat ~/recon/$1/$1-httprobe.txt`;do python3 ~/tools/dirsearch/dirsearch.py -u $u -e php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,old,gz,shtml,log,swp -x 400,301,404,303,403,500 -t 200 -R 5 --http-method=POST --random-agents -b -w ~/wordlists/newlist.txt --plain-text-report ~/recon/$1/dirsearch/$u-dirsearch.txt;done
 sleep 5
 
 message "Scanner%20Done%20for%20$1"
