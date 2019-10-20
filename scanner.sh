@@ -142,7 +142,7 @@ else
 fi
 sleep 5
 
-cat ~/recon/$1/$1-altdns.txt ~/recon/$1/$1-final.txt | sort -u >> ~/recon/$1/$1-fin.txt
+cat ~/recon/$1/$1-dnsgen.txt ~/recon/$1/$1-final.txt | sort -u >> ~/recon/$1/$1-fin.txt
 rm ~/recon/$1/$1-final.txt && mv ~/recon/$1/$1-fin.txt ~/recon/$1/$1-final.txt
 all=`scanned ~/recon/$1/$1-final.txt`
 message "Almost%20$all%20Collected%20Subdomains%20for%20$1"
