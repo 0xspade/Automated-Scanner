@@ -94,37 +94,7 @@ sleep 5
 
 echo "[+] CRT.SH SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-crt.txt ]; then
-	[ !-f ~/recon/scanner/altname.] && wget "https://gist.githubusercontent.com/sumgr0/58e234fb96ae30e85271634b38331912/raw/bdd9ed497bfe4741249d98fc01703e99282f1f2d/altname.txt" -O ~/recon/scanner/altname.txt
-	# curl "https://crt.sh/?q=%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/recon/$1/$1-crt.txt
-	# scanned ~/recon/$1/$1-crt.txt
-	# sleep 3
-	# curl "https://crt.sh/?q=%25dev%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/recon/$1/$1-crt.txt
-	# scanned ~/recon/$1/$1-crt.txt
-	# sleep 3
-	# curl "https://crt.sh/?q=%25stg%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/recon/$1/$1-crt.txt
-	# scanned ~/recon/$1/$1-crt.txt
-	# sleep 3
-	# curl "https://crt.sh/?q=%25api%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/recon/$1/$1-crt.txt
-	# scanned ~/recon/$1/$1-crt.txt
-	# sleep 3
-	# curl "https://crt.sh/?q=%25staging%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/recon/$1/$1-crt.txt
-	# scanned ~/recon/$1/$1-crt.txt
-	# sleep 3
-	# curl "https://crt.sh/?q=%25mobile%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/recon/$1/$1-crt.txt
-	# scanned ~/recon/$1/$1-crt.txt
-	# sleep 3
-	# curl "https://crt.sh/?q=%25admin%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/recon/$1/$1-crt.txt
-	# scanned ~/recon/$1/$1-crt.txt
-	# sleep 3
-	# curl "https://crt.sh/?q=%25console%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/recon/$1/$1-crt.txt
-	# scanned ~/recon/$1/$1-crt.txt
-	# sleep 3
-	# curl "https://crt.sh/?q=%25portal%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/recon/$1/$1-crt.txt
-	# scanned ~/recon/$1/$1-crt.txt
-	# sleep 3
-	# curl "https://crt.sh/?q=%25internal%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/recon/$1/$1-crt.txt
-	# scanned ~/recon/$1/$1-crt.txt
-	# sleep 3
+	[ !-f ~/recon/scanner/altname.txt ] && wget "https://gist.githubusercontent.com/sumgr0/58e234fb96ae30e85271634b38331912/raw/bdd9ed497bfe4741249d98fc01703e99282f1f2d/altname.txt" -O ~/recon/scanner/altname.txt
 	while read dom; do
     {
         curl "https://crt.sh/?q=$dom.$1&output=json" | jq '.[].name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/recon/$1/$1-crt.txt
