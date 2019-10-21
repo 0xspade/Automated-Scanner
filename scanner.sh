@@ -37,6 +37,15 @@ else
 fi
 sleep 5
 
+echo "[+] FINDOMAIN SCANNING [+]"
+if [ ! -f ~/recon/$1/$1-findomain.txt ] && [ ! -z $(which findomain) ]; then
+	findomain -t $1 -u ~/recon/$1/$1-findomain.txt
+	findomainscan=`scanned ~/recon/$1/$1-findomain.txt`
+	message "Findomain%20Found%20$findomainscan%20subdomain(s)%20for%20$1"
+else
+	message "[-]%20Skipping%20Findomain%20Scanning%20for%20$1"
+	echo "[!] Skipping ..."
+
 echo "[+] SUBFINDER SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-subfinder.txt ] && [ ! -z $(which subfinder) ]; then
 	subfinder -nW -silent -d $1 -o ~/recon/$1/$1-subfinder.txt
@@ -125,8 +134,8 @@ fi
 sleep 5
 
 ## Deleting all the results to less disk usage
-cat ~/recon/$1/$1-amass.txt ~/recon/$1/$1-project-sonar.txt ~/recon/$1/$1-subfinder.txt ~/recon/$1/$1-aquatone.txt ~/recon/$1/$1-sublist3r.txt ~/recon/$1/$1-crt.txt ~/recon/$1/$1-gobuster.txt | sort -uf > ~/recon/$1/$1-final.txt
-rm ~/recon/$1/$1-amass.txt ~/recon/$1/$1-project-sonar.txt ~/recon/$1/$1-subfinder.txt ~/recon/$1/$1-aquatone.txt ~/recon/$1/$1-sublist3r.txt ~/recon/$1/$1-crt.txt ~/recon/$1/$1-gobuster.txt
+cat ~/recon/$1/$1-amass.txt ~/recon/$1/$1-findomain.txt ~/recon/$1/$1-project-sonar.txt ~/recon/$1/$1-subfinder.txt ~/recon/$1/$1-aquatone.txt ~/recon/$1/$1-sublist3r.txt ~/recon/$1/$1-crt.txt ~/recon/$1/$1-gobuster.txt | sort -uf > ~/recon/$1/$1-final.txt
+rm ~/recon/$1/$1-amass.txt ~/recon/$1/$1-findomain.txt ~/recon/$1/$1-project-sonar.txt ~/recon/$1/$1-subfinder.txt ~/recon/$1/$1-aquatone.txt ~/recon/$1/$1-sublist3r.txt ~/recon/$1/$1-crt.txt ~/recon/$1/$1-gobuster.txt
 touch ~/recon/$1/$1-ipz.txt
 sleep 5
 
