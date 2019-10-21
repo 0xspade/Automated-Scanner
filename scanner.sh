@@ -45,6 +45,8 @@ if [ ! -f ~/recon/$1/$1-findomain.txt ] && [ ! -z $(which findomain) ]; then
 else
 	message "[-]%20Skipping%20Findomain%20Scanning%20for%20$1"
 	echo "[!] Skipping ..."
+fi
+sleep 5
 
 echo "[+] SUBFINDER SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-subfinder.txt ] && [ ! -z $(which subfinder) ]; then
