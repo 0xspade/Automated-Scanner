@@ -5,6 +5,7 @@
 ## Password for root is required in masscan idk why :D
 passwordx=""
 
+echo "[+] CREATED DIRECTORIES [+]"
 [ ! -f ~/recon/$1 ] && mkdir ~/recon/$1
 [ ! -f ~/recon/$1/dirsearch ] && mkdir ~/recon/$1/dirsearch
 [ ! -f ~/recon/$1/virtual-hosts ] && mkdir ~/recon/$1/virtual-hosts
@@ -14,10 +15,10 @@ passwordx=""
 sleep 5
 
 message () {
-	telegram_bot=""	
+	telegram_botAPI=""	
 	telegram_id=""
-	alert="https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text="
-	[ -z $telegram_bot ] && [ -z $telegram_id ] || curl -g $alert$1 --silent > /dev/null
+	alert="https://api.telegram.org/bot$telegram_botAPI/sendmessage?chat_id=$telegram_id&text="
+	[ -z $telegram_botAPI ] && [ -z $telegram_id ] || curl -g $alert$1 --silent > /dev/null
 }
 
 scanned () {
@@ -38,7 +39,7 @@ sleep 5
 
 echo "[+] SUBFINDER SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-subfinder.txt ] && [ ! -z $(which subfinder) ]; then
-	subfinder -d $1 -o ~/recon/$1/$1-subfinder.txt
+	subfinder -nW -silent -d $1 -o ~/recon/$1/$1-subfinder.txt
 	subfinderscan=`scanned ~/recon/$1/$1-subfinder.txt`
 	message "SubFinder%20Found%20$subfinderscan%20subdomain(s)%20for%20$1"
 	echo "[+] Done"
