@@ -15,8 +15,8 @@ echo "[+] CREATING DIRECTORIES [+]"
 sleep 5
 
 message () {
-	telegram_botAPI=""	
-	telegram_id=""
+	telegram_botAPI="$2"	
+	telegram_id="$3"
 	alert="https://api.telegram.org/bot$telegram_botAPI/sendmessage?chat_id=$telegram_id&text="
 	[ -z $telegram_botAPI ] && [ -z $telegram_id ] || curl -g $alert$1 --silent > /dev/null
 }
@@ -28,7 +28,7 @@ scanned () {
 echo "[+] AMASS SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-amass.txt ] && [ ! -z $(which amass) ]; then
 	#amass enum -brute -active -d $1 -o ~/recon/$1/$1-amass.txt -config ~/config.ini
-	amass enum -passive -d $1 -o ~/recon/$1/$1-amass.txt -config ~/config.ini
+	amass enum -passive -d $1 -o ~/recon/$1/$1-amass.txt
 	amasscan=`scanned ~/recon/$1/$1-amass.txt`
 	message "Amass%20Found%20$amasscan%20subdomain(s)%20for%20$1"
 	echo "[+] Done"
