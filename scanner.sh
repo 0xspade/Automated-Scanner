@@ -25,7 +25,7 @@ scanned () {
 
 echo "[+] AMASS SCANNING [+]"
 if [ ! -f ~/$1/$1-amass.txt ] && [ ! -z $(which amass) ]; then
-	amass enum -brute -active -d $1 -o ~/$1/$1-amass.txt -config ~/amass/config.ini
+	amass enum -passive -r -d $1 -o ~/$1/$1-amass.txt -config ~/amass/config.ini
 	amasscan=`scanned ~/$1/$1-amass.txt`
 	message "Amass%20Found%20$amasscan%20subdomain(s)%20for%20$1"
 	echo "[+] Done"
@@ -51,12 +51,12 @@ echo "[+] AQUATONE SCANNING [+]"
 if [ ! -f ~/aquatone/$1/urls.txt ] && [ ! -z $(which aquatone-discover) ] && [ ! -z $(which aquatone-scan) ]; then
 	aquatone-discover -d $1
 	aquatone-scan -d $1 -p huge
-	for domains in `cat ~/aquatone/$1/urls.txt`; do domain="${domains#*://}"; domainx="${domain%/*}"; echo $domainx >> ~/$1/$1-aquatone.txt;done
+	for domains in `cat ~/aquatone/$1/urls.txt`; do domain="${domains#*://}"; domainx="${domain%/*}"; domainz="${domainx%:*}"; echo $domainz >> ~/$1/$1-aquatone.txt;done
 	aquatonescan=`scanned ~/$1/$1-aquatone.txt`
 	message "Aquatone%20Found%20$aquatonescan%20subdomain(s)%20for%20$1"
 	echo "[+] Done"
 else
-	for domains in `cat ~/aquatone/$1/urls.txt`; do domain="${domains#*://}"; domainx="${domain%/*}"; echo $domainx >> ~/$1/$1-aquatone.txt;done
+	for domains in `cat ~/aquatone/$1/urls.txt`; do domain="${domains#*://}"; domainx="${domain%/*}"; domainz="${domainx%:*}"; echo $domainz >> ~/$1/$1-aquatone.txt;done
 	aquatonescan=`scanned ~/$1/$1-aquatone.txt`
 	message "[-]%20Skipping%20Aquatone%20Scanning%20for%20$1"
 	echo "[!] Skipping ..."
@@ -92,36 +92,6 @@ sleep 5
 echo "[+] CRT.SH SCANNING [+]"
 if [ ! -f ~/$1/$1-crt.txt ]; then
 	curl "https://crt.sh/?q=%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
-	scanned ~/$1/$1-crt.txt
-	sleep 3
-	curl "https://crt.sh/?q=%25dev%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
-	scanned ~/$1/$1-crt.txt
-	sleep 3
-	curl "https://crt.sh/?q=%25stg%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
-	scanned ~/$1/$1-crt.txt
-	sleep 3
-	curl "https://crt.sh/?q=%25api%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
-	scanned ~/$1/$1-crt.txt
-	sleep 3
-	curl "https://crt.sh/?q=%25staging%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
-	scanned ~/$1/$1-crt.txt
-	sleep 3
-	curl "https://crt.sh/?q=%25mobile%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
-	scanned ~/$1/$1-crt.txt
-	sleep 3
-	curl "https://crt.sh/?q=%25admin%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
-	scanned ~/$1/$1-crt.txt
-	sleep 3
-	curl "https://crt.sh/?q=%25console%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
-	scanned ~/$1/$1-crt.txt
-	sleep 3
-	curl "https://crt.sh/?q=%25portal%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
-	scanned ~/$1/$1-crt.txt
-	sleep 3
-	curl "https://crt.sh/?q=%25internal%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/$1/$1-crt.txt
-	scanned ~/$1/$1-crt.txt
-	sleep 3
-	cat ~/$1/$1-crt.txt | sort -u >> ~/$1/$1-crtx.txt && rm ~/$1/$1-crt.txt && mv ~/$1/$1-crtx.txt ~/$1/$1-crt.txt
 	crt=`scanned ~/$1/$1-crt.txt`
 	message "CRT.SH%20Found%20$crt%20subdomain(s)%20for%20$1"
 	echo "[+] Done"
@@ -171,13 +141,8 @@ all=`scanned ~/$1/$1-final.txt`
 message "Almost%20$all%20Collected%20Subdomains%20for%20$1"
 sleep 3
 
-cp ~/$1/$1-final.txt ~/$1/ports.txt
-for ipx in `cat ~/$1/ports.txt`; do i="${ipx%:*}"; echo $i | grep -E "*[.]$1\$" >> ~/$1/$1-ips.txt;done
-rm ~/$1/ports.txt
-sleep 5
-
 # collecting all IP from collected subdomains
-for ip in `cat ~/$1/$1-ips.txt`; do ip_collect=`host $ip | grep "has address" | awk {'print $4'}`; echo "$ip >> $ip_collect"; echo $ip_collect >> ~/$1/$1-ipf.txt;done
+for ip in `cat ~/$1/$1-final.txt`; do ip_collect=`host $ip | grep "has address" | awk {'print $4'}`; echo "$ip >> $ip_collect"; echo $ip_collect >> ~/$1/$1-ipf.txt;done
 cat ~/$1/$1-ipf.txt | sort -u >> ~/$1/$1-ipz.txt
 rm ~/$1/$1-ipf.txt
 
@@ -190,7 +155,7 @@ done
 ipz=`scanned ~/$1/$1-ip.txt`
 ip_old=`scanned ~/$1/$1-ipz.txt`
 message "$ipz%20non-cloudflare%20IPs%20has%20been%20$collected%20in%20$1%20out%20of%20$ip_old%20IPs"
-rm ~/$1/$1-ipz.txt ~/$1/$1-ips.txt
+rm ~/$1/$1-ipz.txt
 cat ~/$1/$1-ip.txt ~/$1/$1-final.txt > ~/$1/$1-all.txt
 sleep 5
 
