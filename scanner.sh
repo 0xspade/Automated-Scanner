@@ -25,7 +25,7 @@ scanned () {
 
 echo "[+] AMASS SCANNING [+]"
 if [ ! -f ~/$1/$1-amass.txt ] && [ ! -z $(which amass) ]; then
-	amass enum -passive -r -d $1 -o ~/$1/$1-amass.txt -config ~/amass/config.ini
+	amass enum -active -brute -d $1 -o ~/$1/$1-amass.txt -config ~/amass/config.ini
 	amasscan=`scanned ~/$1/$1-amass.txt`
 	message "Amass%20Found%20$amasscan%20subdomain(s)%20for%20$1"
 	echo "[+] Done"
