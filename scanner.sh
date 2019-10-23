@@ -5,7 +5,7 @@
 ## Password for root is required in masscan idk why :D
 passwordx=""
 
-echo "[+] CREATED DIRECTORIES [+]"
+echo "[+] CREATING DIRECTORIES [+]"
 [ ! -f ~/recon/$1 ] && mkdir ~/recon/$1
 [ ! -f ~/recon/$1/dirsearch ] && mkdir ~/recon/$1/dirsearch
 [ ! -f ~/recon/$1/virtual-hosts ] && mkdir ~/recon/$1/virtual-hosts
@@ -27,7 +27,8 @@ scanned () {
 
 echo "[+] AMASS SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-amass.txt ] && [ ! -z $(which amass) ]; then
-	amass enum -brute -active -d $1 -o ~/recon/$1/$1-amass.txt -config ~/config.ini
+	#amass enum -brute -active -d $1 -o ~/recon/$1/$1-amass.txt -config ~/config.ini
+	amass enum -passive -r -d $1 -o ~/recon/$1/$1-amass.txt -config ~/config.ini
 	amasscan=`scanned ~/recon/$1/$1-amass.txt`
 	message "Amass%20Found%20$amasscan%20subdomain(s)%20for%20$1"
 	echo "[+] Done"
@@ -64,12 +65,14 @@ echo "[+] AQUATONE SCANNING [+]"
 if [ ! -f ~/aquatone/$1/urls.txt ] && [ ! -z $(which aquatone-discover) ] && [ ! -z $(which aquatone-scan) ]; then
 	aquatone-discover -d $1
 	aquatone-scan -d $1 -p huge
-	for domains in `cat ~/aquatone/$1/urls.txt`; do domain="${domains#*://}"; domainx="${domain%/*}"; echo $domainx >> ~/recon/$1/$1-aquatone.txt;done
+	#for domains in `cat ~/aquatone/$1/urls.txt`; do domain="${domains#*://}"; domainx="${domain%/*}"; echo $domainx >> ~/recon/$1/$1-aquatone.txt;done
+	for domains in `cat ~/aquatone/$1/urls.txt`; do domain="${domains#*://}"; domainx="${domain%/*}"; domainz="${domainx%:*}"; echo $domainz >> ~/recon/$1/$1-aquatone.txt; done
 	aquatonescan=`scanned ~/recon/$1/$1-aquatone.txt`
 	message "Aquatone%20Found%20$aquatonescan%20subdomain(s)%20for%20$1"
 	echo "[+] Done"
 else
-	for domains in `cat ~/aquatone/$1/urls.txt`; do domain="${domains#*://}"; domainx="${domain%/*}"; echo $domainx >> ~/recon/$1/$1-aquatone.txt;done
+	#for domains in `cat ~/aquatone/$1/urls.txt`; do domain="${domains#*://}"; domainx="${domain%/*}"; echo $domainx >> ~/recon/$1/$1-aquatone.txt;done
+	for domains in `cat ~/aquatone/$1/urls.txt`; do domain="${domains#*://}"; domainx="${domain%/*}"; domainz="${domainx%:*}"; echo $domainz >> ~/recon/$1/$1-aquatone.txt; done
 	aquatonescan=`scanned ~/recon/$1/$1-aquatone.txt`
 	message "[-]%20Skipping%20Aquatone%20Scanning%20for%20$1"
 	echo "[!] Skipping ..."
@@ -160,13 +163,14 @@ all=`scanned ~/recon/$1/$1-final.txt`
 message "Almost%20$all%20Collected%20Subdomains%20for%20$1"
 sleep 3
 
-cp ~/recon/$1/$1-final.txt ~/recon/$1/ports.txt
-for ipx in `cat ~/recon/$1/ports.txt`; do i="${ipx%:*}"; echo $i | grep -E "*[.]$1\$" >> ~/recon/$1/$1-ips.txt;done
-rm ~/recon/$1/ports.txt
-sleep 5
+# cp ~/recon/$1/$1-final.txt ~/recon/$1/ports.txt
+# for ipx in $(cat ~/recon/$1/ports.txt); do i="${ipx%:*}"; echo $i | grep -E "*[.]$1\$" >> ~/recon/$1/$1-ips.txt; done
+# rm ~/recon/$1/ports.txt
+# sleep 5
 
 # collecting all IP from collected subdomains
-for ip in `cat ~/recon/$1/$1-ips.txt`; do host $ip | grep "has address" | awk {'print $4'} >> ~/recon/$1/$1-ipf.txt;done
+#for ip in `cat ~/recon/$1/$1-ips.txt`; do host $ip | grep "has address" | awk {'print $4'} >> ~/recon/$1/$1-ipf.txt; done
+for ip in `cat ~/recon/$1/$1-final.txt`; do ip_collect=`host $ip | grep "has address" | awk {'print $4'}`; echo "$ip >> $ip_collect"; echo $ip_collect >> ~/recon/$1/$1-ipf.txt; done
 cat ~/recon/$1/$1-ipf.txt | sort -u >> ~/recon/$1/$1-ipz.txt
 rm ~/recon/$1/$1-ipf.txt
 
@@ -176,7 +180,8 @@ iprange="173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 141.101.6
 for ip in `cat ~/recon/$1/$1-ipz.txt`; do
 	grepcidr "$iprange" <(echo "$ip") >/dev/null && echo "$ip is cloudflare" || echo "$ip" >> ~/recon/$1/$1-ip.txt
 done
-rm ~/recon/$1/$1-ipz.txt ~/recon/$1/$1-ips.txt
+#rm ~/recon/$1/$1-ipz.txt ~/recon/$1/$1-ips.txt
+rm ~/recon/$1/$1-ipz.txt
 ipz=`scanned ~/recon/$1/$1-ip.txt`
 message "$ipz%20non-cloudflare%20IPs%20has%20been%20$collected%20in%20$1"
 cat ~/recon/$1/$1-ip.txt ~/recon/$1/$1-final.txt > ~/recon/$1/$1-all.txt
