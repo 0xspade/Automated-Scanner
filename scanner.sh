@@ -15,8 +15,8 @@ echo "[+] CREATING DIRECTORIES [+]"
 sleep 5
 
 message () {
-	telegram_botAPI="$2"	
-	telegram_id="$3"
+	telegram_botAPI=""	
+	telegram_id=""
 	alert="https://api.telegram.org/bot$telegram_botAPI/sendmessage?chat_id=$telegram_id&text="
 	[ -z $telegram_botAPI ] && [ -z $telegram_id ] || curl -g $alert$1 --silent > /dev/null
 }
