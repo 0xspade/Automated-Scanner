@@ -165,11 +165,6 @@ all=`scanned ~/recon/$1/$1-final.txt`
 message "Almost%20$all%20Collected%20Subdomains%20for%20$1"
 sleep 3
 
-# cp ~/recon/$1/$1-final.txt ~/recon/$1/ports.txt
-# for ipx in $(cat ~/recon/$1/ports.txt); do i="${ipx%:*}"; echo $i | grep -E "*[.]$1\$" >> ~/recon/$1/$1-ips.txt; done
-# rm ~/recon/$1/ports.txt
-# sleep 5
-
 # collecting all IP from collected subdomains
 #for ip in `cat ~/recon/$1/$1-ips.txt`; do host $ip | grep "has address" | awk {'print $4'} >> ~/recon/$1/$1-ipf.txt; done
 for ip in $(cat ~/recon/$1/$1-final.txt); do $(host $ip | grep "has address" | awk '{print $4}'); echo "$ip >> $ip_collect"; echo $ip_collect >> ~/recon/$1/$1-ipf.txt; done
@@ -182,7 +177,7 @@ iprange="173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 141.101.6
 for ip in $(cat ~/recon/$1/$1-ipz.txt); do
 	grepcidr "$iprange" <(echo "$ip") >/dev/null && echo "$ip is cloudflare" || echo "$ip" >> ~/recon/$1/$1-ip.txt
 done
-#rm ~/recon/$1/$1-ipz.txt ~/recon/$1/$1-ips.txt
+
 rm ~/recon/$1/$1-ipz.txt
 ipz=$(scanned ~/recon/$1/$1-ip.txt)
 message "$ipz%20non-cloudflare%20IPs%20has%20been%20$collected%20in%20$1"
