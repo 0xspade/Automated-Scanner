@@ -26,25 +26,25 @@ scanned () {
 }
 
 echo "[+] AMASS SCANNING [+]"
-if [ ! -f ~/recon/$1/$1-amass.txt ] && [ ! -z $(which amass) ]; then
+if [ ! -f ~/recon/$1/$1-amass.txt ] && [ ! -s ~/recon/$1/$1-amass.txt ] && [ ! -z $(which amass) ]; then
 	#amass enum -brute -active -config ~/config.ini -d $1 -o ~/recon/$1/$1-amass.txt 
 	amass enum -passive -config ~/config.ini -d $1 -o ~/recon/$1/$1-amass.txt
 	amasscan=$(scanned ~/recon/$1/$1-amass.txt)
 	message "Amass%20Found%20$amasscan%20subdomain(s)%20for%20$1"
 	echo "[+] Done"
 else
-	message "[-]%20Skipping%20Amass%20Scanning%20for%20$1"
+	message "[-]%20Skipping%20Amass%20$amasscan%20previously%20discovered%20for%20$1"
 	echo "[!] Skipping ..."
 fi
 sleep 5
 
 echo "[+] FINDOMAIN SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-findomain.txt ] && [ ! -z $(which findomain) ]; then
-	findomain -t $1 -u ~/recon/$1/$1-findomain.txt
+	findomain -t $1 -q -u ~/recon/$1/$1-findomain.txt
 	findomainscan=$(scanned ~/recon/$1/$1-findomain.txt)
 	message "Findomain%20Found%20$findomainscan%20subdomain(s)%20for%20$1"
 else
-	message "[-]%20Skipping%20Findomain%20Scanning%20for%20$1"
+	message "[-]%20Skipping%20Findomain%20$findomainscan%20previously%20discovered%20for%20$1"
 	echo "[!] Skipping ..."
 fi
 sleep 5
@@ -56,7 +56,7 @@ if [ ! -f ~/recon/$1/$1-subfinder.txt ] && [ ! -z $(which subfinder) ]; then
 	message "SubFinder%20Found%20$subfinderscan%20subdomain(s)%20for%20$1"
 	echo "[+] Done"
 else
-	message "[-]%20Skipping%20Subfinder%20Scanning%20for%20$1"
+	message "[-]%20Skipping%20Subfinder%20$subfinderscan%20previously%20discovered%20for%20$1"
 	echo "[!] Skipping ..."
 fi
 sleep 5
@@ -168,7 +168,7 @@ sleep 3
 
 # collecting all IP from collected subdomains
 #for ip in `cat ~/recon/$1/$1-ips.txt`; do host $ip | grep "has address" | awk {'print $4'} >> ~/recon/$1/$1-ipf.txt; done
-for ip in $(cat ~/recon/$1/$1-final.txt); do $(host $ip | grep "has address" | awk '{print $4}'); echo "$ip >> $ip_collect"; echo $ip_collect >> ~/recon/$1/$1-ipf.txt; done
+for ip in $(cat ~/recon/$1/$1-final.txt); do ip_collect=$(host $ip | grep "has address" | awk '{print $4}'); echo "$ip >> $ip_collect"; echo $ip_collect >> ~/recon/$1/$1-ipf.txt; done
 cat ~/recon/$1/$1-ipf.txt | sort -u >> ~/recon/$1/$1-ipz.txt
 rm ~/recon/$1/$1-ipf.txt
 
