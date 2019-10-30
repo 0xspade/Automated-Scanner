@@ -157,8 +157,9 @@ echo "[+] DNSGEN SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-dnsgen.txt ] && [ ! -z $(which dnsgen) ]; then
 	[ ! -f ~/recon/scanner/dnsgen.txt ] && wget "https://raw.githubusercontent.com/infosec-au/altdns/master/words.txt" -O ~/recon/scanner/dnsgen.txt
 	#cat ~/recon/$1/$1-final.txt | dnsgen -w ~/recon/scanner/dnsgen.txt - >> ~/recon/$1/$1-dnsgen.txt
-	cat ~/recon/$1/$1-final.txt | dnsgen - | ~/tools/massdns/bin/massdns -r ~/tools/massdns/lists/resolvers.txt -t A -o J --flush 2>/dev/null >> ~/recon/$1/$1-massdns_dnsgen.txt
-	cat ~/recon/$1/$1-massdns_dnsgen.txt | jq -r .query_name | sort -u | sed 's/.$//g' > ~/recon/$1/$1-dnsgen.txt
+	# cat ~/recon/$1/$1-final.txt | dnsgen - | ~/tools/massdns/bin/massdns -r ~/tools/massdns/lists/resolvers.txt -t A -o J --flush 2>/dev/null >> ~/recon/$1/$1-massdns_dnsgen.txt
+	# cat ~/recon/$1/$1-massdns_dnsgen.txt | jq -r .query_name | sort -u | sed 's/.$//g' > ~/recon/$1/$1-dnsgen.txt
+	cat ~/recon/$1/$1-final.txt | dnsgen - | ~/tools/massdns/bin/massdns -r ~/tools/massdns/lists/resolvers.txt -t A -o J --flush 2>/dev/null | jq -r .query_name | sort -u | sed 's/.$//g' | tee -a ~/recon/$1/$1-dnsgen.txt
 	rm ~/recon/$1/$1-massdns_dnsgen.txt
 	sleep 3
 	dnsgens=`scanned ~/recon/$1/$1-dnsgen.txt`
