@@ -23,6 +23,8 @@ scanned () {
 	cat $1 | sort -u | wc -l
 }
 
+message="[+] Initiating%20scan%20:%20$1 [+]"
+
 echo "[+] AMASS SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-amass.txt ] && [ ! -z $(which amass) ]; then
 	#amass enum -active -brute -d $1 -o ~/recon/$1/$1-amass.txt -config ~/config.ini
@@ -49,7 +51,7 @@ sleep 5
 
 echo "[+] SUBFINDER SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-subfinder.txt ] && [ ! -z $(which subfinder) ]; then
-	subfinder -d $1 -o ~/recon/$1/$1-subfinder.txt
+	subfinder -d $1 -nW -silent -o ~/recon/$1/$1-subfinder.txt
 	subfinderscan=`scanned ~/recon/$1/$1-subfinder.txt`
 	message "SubFinder%20Found%20$subfinderscan%20subdomain(s)%20for%20$1"
 	echo "[+] Done"
@@ -76,8 +78,8 @@ fi
 sleep 5
 
 echo "[+] SUBLIST3R SCANNING [+]"
-if [ ! -f ~/recon/$1/$1-sublist3r.txt ] && [ -e ~/Sublist3r/sublist3r.py ]; then
-	python ~/Sublist3r/sublist3r.py -b -d $1 -o ~/recon/$1/$1-sublist3r.txt
+if [ ! -f ~/recon/$1/$1-sublist3r.txt ] && [ -e ~/tools/Sublist3r/sublist3r.py ]; then
+	python ~/tools/Sublist3r/sublist3r.py -b -d $1 -o ~/recon/$1/$1-sublist3r.txt
 	sublist3rscan=`scanned ~/recon/$1/$1-sublist3r.txt`
 	message "Sublist3r%20Found%20$sublist3rscan%20subdomain(s)%20for%20$1"
 	echo "[+] Done"
@@ -159,6 +161,8 @@ if [ ! -f ~/recon/$1/$1-dnsgen.txt ] && [ ! -z $(which dnsgen) ]; then
 	#cat ~/recon/$1/$1-final.txt | dnsgen -w ~/recon/scanner/dnsgen.txt - >> ~/recon/$1/$1-dnsgen.txt
 	# cat ~/recon/$1/$1-final.txt | dnsgen - | ~/tools/massdns/bin/massdns -r ~/tools/massdns/lists/resolvers.txt -t A -o J --flush 2>/dev/null >> ~/recon/$1/$1-massdns_dnsgen.txt
 	# cat ~/recon/$1/$1-massdns_dnsgen.txt | jq -r .query_name | sort -u | sed 's/.$//g' > ~/recon/$1/$1-dnsgen.txt
+	rm ~/recon/$1/$1-dnsgen.txt
+	
 	cat ~/recon/$1/$1-final.txt | dnsgen - | ~/tools/massdns/bin/massdns -r ~/tools/massdns/lists/resolvers.txt -t A -o J --flush 2>/dev/null | jq -r .query_name | sort -u | sed 's/.$//g' | tee -a ~/recon/$1/$1-dnsgen.txt
 	rm ~/recon/$1/$1-massdns_dnsgen.txt
 	sleep 3
