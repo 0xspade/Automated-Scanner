@@ -1,4 +1,5 @@
-[![Follow on Twitter](https://img.shields.io/twitter/follow/phspades.svg?logo=twitter)](https://twitter.com/phspades) [![Follow on Twitter](https://img.shields.io/twitter/follow/sumgr0.svg?logo=twitter)](https://twitter.com/sumgr0)
+[![Follow on Twitter](https://img.shields.io/twitter/follow/phspades.svg?logo=twitter)](https://twitter.com/phspades)
+[![Follow on Twitter](https://img.shields.io/twitter/follow/sumgr0.svg?logo=twitter)](https://twitter.com/sumgr0)
 # Automated-Scanner
 
 Usage: `~$ bash scanner.sh example.com`
@@ -64,7 +65,7 @@ For the installation of all the tools above. I linked all the github links, just
 
 # Future Tools to be added
 * Install Script
-Thanks to [@sumgr0](https://twitter.com/sumgr0)
+>Thanks to [@sumgr0](https://twitter.com/sumgr0)
 
 * A Param Miner like tool
 >A parameter bruteforcer, maybe [parameth](https://github.com/mak-/parameth) will do.
@@ -75,7 +76,7 @@ Thanks to [@sumgr0](https://twitter.com/sumgr0)
 
 ### Need a Digitalocean?
 
-You can help me by registering an account [here](https://m.do.co/c/9d633afb889b) *(with my referral code of course)* and you can also help me (slash) support me in this project.
+You can help me (slash) support me in this project by registering an account [here](https://m.do.co/c/9d633afb889b) *(with my referral code of course)* .
 
 ## Contributor
 
