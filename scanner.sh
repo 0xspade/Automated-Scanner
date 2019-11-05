@@ -26,6 +26,7 @@ scanned () {
 message="[+] Initiating%20scan%20:%20$1 [+]"
 
 echo "[+] AMASS SCANNING [+]"
+
 if [ ! -f ~/recon/$1/$1-amass.txt ] && [ ! -z $(which amass) ]; then
 	#amass enum -active -brute -d $1 -o ~/recon/$1/$1-amass.txt -config ~/config.ini
 	amass enum -passive -d $1 -o ~/recon/$1/$1-amass.txt
@@ -65,6 +66,7 @@ echo "[+] AQUATONE SCANNING [+]"
 if [ ! -f ~/aquatone/$1/urls.txt ] && [ ! -z $(which aquatone-discover) ] && [ ! -z $(which aquatone-scan) ]; then
 	aquatone-discover -d $1
 	aquatone-scan -d $1 -p huge
+
 	for domains in `cat ~/aquatone/$1/urls.txt`; do domain="${domains#*://}"; domainx="${domain%/*}"; domainz="${domainx%:*}"; echo $domainz >> ~/recon/$1/$1-aquatone.txt;done
 	aquatonescan=`scanned ~/recon/$1/$1-aquatone.txt`
 	message "Aquatone%20Found%20$aquatonescan%20subdomain(s)%20for%20$1"
@@ -190,6 +192,7 @@ iprange="173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 141.101.6
 for ip in `cat ~/recon/$1/$1-ipz.txt`; do
 	grepcidr "$iprange" <(echo "$ip") >/dev/null && echo "$ip is cloudflare" || echo "$ip" >> ~/recon/$1/$1-ip.txt
 done
+
 ipz=`scanned ~/recon/$1/$1-ip.txt`
 ip_old=`scanned ~/recon/$1/$1-ipz.txt`
 message "$ipz%20non-cloudflare%20IPs%20has%20been%20$collected%20in%20$1%20out%20of%20$ip_old%20IPs"
@@ -289,6 +292,7 @@ message "Done%20Aquatone%20Port%20Scanning%20for%20$1"
 sleep 5
 
 echo "[+] NMAP PORT SCANNING [+]"
+
 if [ ! -f ~/recon/$1/$1-nmap.txt ] && [ ! -z $(which nmap) ]; then
 	[ ! -f ~/scanner/nmap-bootstrap.xsl ] && wget "https://raw.githubusercontent.com/honze-net/nmap-bootstrap-xsl/master/nmap-bootstrap.xsl" -O ~/scanner/nmap-bootstrap.xsl
 	echo $passwordx | sudo -S nmap -sVTC -A -O -Pn -p$big_ports -iL ~/recon/$1/$1-ip.txt --stylesheet ~/scanner/nmap-bootstrap.xsl -oA ~/recon/$1/$1-nmap
@@ -325,6 +329,7 @@ echo "[+] OTXURL Scanning for Archived Endpoints [+]"
 for u in `cat ~/recon/$1/$1-alive.txt`;do echo $u | otxurls | grep "$u" >> ~/recon/$1/otxurls/tmp-$u.txt; done
 cat ~/recon/$1/otxurls/* | sort -u >> ~/recon/$1/otxurls/$1-otxurl.txt 
 rm ~/recon/$1/otxurls/tmp-*
+
 message "OTXURL%20Done%20for%20$1"
 sleep 5
 
@@ -352,6 +357,7 @@ sleep 5
 
 echo "[+] DirSearch Scanning for Sensitive Files [+]"
 [ ! -f ~/newlist.txt ] && echo "visit https://github.com/phspade/Combined-Wordlists/"
+
 for u in `cat ~/recon/$1/$1-alive.txt`;do python3 ~/dirsearch/dirsearch.py -u $u -e php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,old,gz,shtml,log,swp,yaml,yml,config -x 400,301,404,303,403,500,406,503 -t 50 --http-method=POST --random-agents -b -w ~/newlist.txt --plain-text-report ~/recon/$1/dirsearch/$u-dirsearch.txt;done
 sleep 5
 

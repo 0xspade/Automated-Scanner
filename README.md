@@ -23,7 +23,8 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 > https://github.com/phspade/Project_Sonar_R7
 * [CRT.SH](https://crt.sh/)
 * [GoBuster](https://github.com/OJ/gobuster) using Jason Haddix's [all.txt](https://gist.githubusercontent.com/jhaddix/86a06c5dc309d08580a018c66354a056/raw/96f4e51d96b2203f19f6381c8c545b278eaa0837/all.txt) wordlist
-* [ALTDNS](https://github.com/infosec-au/altdns)
+* [DNSGen](https://github.com/ProjectAnte/dnsgen)
+>changing altdns to dnsgen. it's faster than altdns
 
 **Scan All Alive Hosts with [httprobe](https://github.com/tomnomnom/httprobe)**
 
@@ -41,12 +42,15 @@ FYI, Install grepcidr first `apt-get install grepcidr`
 **Collecting Endpoints thru [Linkfinder](https://github.com/GerbenJavado/LinkFinder/)**
 >*Just comment out the line 253 to 256 in linkfinder.py file*
 
-**Checking CNAME with [massdns](https://github.com/blechschmidt/massdns)**
+**[Massdns](https://github.com/blechschmidt/massdns) scanning**
 
 **Port Scanning**
 * [Aquatone](https://github.com/michenriksen/aquatone) (New)
 * NMAP
 * [Masscan](https://github.com/robertdavidgraham/masscan)
+
+**[Default Credential](https://github.com/ztgrace/changeme) Scanning**
+>Scanning default credentials for all protocols and services
 
 **File/Dir Discovery**
 * [sensitive.py](https://github.com/phspade/Sensitive-File-Explorer)
@@ -58,6 +62,10 @@ FYI, Install grepcidr first `apt-get install grepcidr`
 
 I hope that someone could help me to add more useful automated scanning technique :)
 
+# Installation
+
+For the installation of all the tools above. I linked all the github links, just make sure that its in the right directory PATH and your good to go. feel free to modify and feel free not to use it if you don't like it :)
+
 # Future Tools to be added
 
 * findomain
@@ -65,9 +73,6 @@ I hope that someone could help me to add more useful automated scanning techniqu
 
 * A Param Miner like tool
 >A parameter bruteforcer, maybe [parameth](https://github.com/mak-/parameth) will do.
-
-* SSH/FTP/TELNET/etc bruteforcer
->I dont suggest [brutespray](https://github.com/x90skysn3k/brutespray) for this project because it still depends on Medusa which is likely takes a lot of False Positive outputs.
 
 **ALL CREDIT GOES TO AMAZING CREATORS OF THIS WONDERFUL TOOLS :)**
 
