@@ -90,7 +90,7 @@ fi
 sleep 5
 
 echo "[+] SCANNING SUBDOMAINS WITH PROJECT SONAR [+]"
-if [ ! -f ~/recon/$1/$1-project-sonar.txt ] && [ -e ~/forward_dns.json.gz ] && [ -e ~/reverse_dns.json.gz ]; then
+if [ ! -f ~/recon/$1/$1-project-sonar.txt ] && [ -e ~/forward_dns.json.gz ]; then
 	pv ~/forward_dns.json.gz | pigz -dc | grep -E "*[.]$1\"," | jq -r '.name' | sort -u >> ~/recon/$1/$1-project-sonar.txt
 	projectsonar=`scanned ~/recon/$1/$1-project-sonar.txt`
 	message "Project%20Sonar%20Found%20$projectsonar%20subdomain(s)%20for%20$1"
