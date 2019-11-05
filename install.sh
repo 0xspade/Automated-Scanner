@@ -15,11 +15,6 @@ go get github.com/OJ/gobuster
 go get github.com/lc/otxurls
 go get github.com/tomnomnom/waybackurls
 
-
-git clone https://github.com/phspade/Sensitive-File-Explorer.git ~/tools/Sensitive-File-Explorer
-
-git clone https://github.com/random-robbie/CRLF-Injection-Scanner.git ~/tools/CRLF-Injection-Scanner
-cd ~/tools/CRLF-Injection-Scanner
 pip3 install -r requirements
 #dirsearch
 git clone https://github.com/maurosoria/dirsearch.git
