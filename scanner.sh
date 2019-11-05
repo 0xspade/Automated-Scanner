@@ -157,7 +157,7 @@ sleep 3
 
 # collecting all IP from collected subdomains
 ulimit -n 800000
-while read -r domain; do dig +short $domain | grep -v '[[:alpha:]]' >> ~/recon/$1/$1-ipf.txt; done < ~/recon/$1/$1-final.txt
+while read -r domain; do dig +short $domain | grep -v '[[:alpha:]]' >> ~/recon/$1/$1-ipf.txt &; done < ~/recon/$1/$1-final.txt
 cat ~/recon/$1/$1-ipf.txt | sort -u > ~/recon/$1/$1-ipz.txt
 rm ~/recon/$1/$1-ipf.txt
 
