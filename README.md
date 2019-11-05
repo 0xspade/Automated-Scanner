@@ -1,4 +1,4 @@
-[![Follow on Twitter](https://img.shields.io/twitter/follow/phspades.svg?logo=twitter)](https://twitter.com/phspades)
+[![Follow on Twitter](https://img.shields.io/twitter/follow/phspades.svg?logo=twitter)](https://twitter.com/phspades) [![Follow on Twitter](https://img.shields.io/twitter/follow/sumgr0.svg?logo=twitter)](https://twitter.com/sumgr0)
 # Automated-Scanner
 
 Usage: `~$ bash scanner.sh example.com`
@@ -10,10 +10,12 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 ----
 
 ![flow](https://raw.githubusercontent.com/phspade/Automated-Scanner/master/gtrrty.png)
+*Will update this in weekend*
 
 **Subdomain Enumeration**
 * [Amass](https://github.com/OWASP/Amass) 
 >you need to have a [config.ini](https://github.com/OWASP/Amass/blob/master/examples/config.ini) and fill those API keys type thing.
+* [Findomain](https://github.com/Edu4rdSHL/findomain)
 * [Subfinder](https://github.com/subfinder/subfinder)
 * Aquatone (old) `gem install aquatone`
 * [Sublist3r](https://github.com/aboul3la/Sublist3r)
@@ -24,7 +26,7 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 * [DNSGen](https://github.com/ProjectAnte/dnsgen)
 >changing altdns to dnsgen. it's faster than altdns
 
-**Scan All Alive Hosts with [httprobe](https://github.com/tomnomnom/httprobe)**
+**Scan All Alive Hosts with [filter-resolved](https://github.com/tomnomnom/hacks/tree/master/filter-resolved)**
 
 **Separating Cloudflare IPs to Non-Cloudflare IPs**
 >It's useless to scan Cloudflare IPs.
@@ -33,9 +35,6 @@ FYI, Install grepcidr first `apt-get install grepcidr`
 **Subdomain TakeOver**
 * [SubOver](https://github.com/Ice3man543/SubOver)
 * [Subjack](https://github.com/haccer/subjack)
-
-**[CRLF Injection](https://github.com/random-robbie/CRLF-Injection-Scanner) Scan**
->Soon to be purged. still no findings about this tool. *realtalk*
 
 **Collecting Endpoints thru [Linkfinder](https://github.com/GerbenJavado/LinkFinder/)**
 >*Just comment out the line 253 to 256 in linkfinder.py file*
@@ -51,12 +50,11 @@ FYI, Install grepcidr first `apt-get install grepcidr`
 >Scanning default credentials for all protocols and services
 
 **File/Dir Discovery**
-* [sensitive.py](https://github.com/phspade/Sensitive-File-Explorer)
 * [otxurls](https://github.com/lc/otxurls)
 * [waybackurls](https://github.com/tomnomnom/waybackurls)
 * [DirSearch](https://github.com/maurosoria/dirsearch) using [combined wordlists](https://github.com/phspade/Combined-Wordlists)
 
-**[Virtual Hosts](https://github.com/codingo/VHostScan) Scan**
+**[Virtual Hosts](https://github.com/ffuf/ffuf) Scan**
 
 I hope that someone could help me to add more useful automated scanning technique :)
 
@@ -65,9 +63,8 @@ I hope that someone could help me to add more useful automated scanning techniqu
 For the installation of all the tools above. I linked all the github links, just make sure that its in the right directory PATH and your good to go. feel free to modify and feel free not to use it if you don't like it :)
 
 # Future Tools to be added
-
-* findomain
->Still waiting to finish the implementation of other APIs here.
+* Install Script
+Thanks to [@sumgr0](https://twitter.com/sumgr0)
 
 * A Param Miner like tool
 >A parameter bruteforcer, maybe [parameth](https://github.com/mak-/parameth) will do.
@@ -80,3 +77,5 @@ For the installation of all the tools above. I linked all the github links, just
 
 You can help me by registering an account [here](https://m.do.co/c/9d633afb889b) *(with my referral code of course)* and you can also help me (slash) support me in this project.
 
+##Contributor
+Big thanks to [@sumgr0](https://twitter.com/sumgr0) :)
