@@ -70,7 +70,7 @@ if [ ! -f ~/aquatone/$1/urls.txt ] && [ ! -z $(which aquatone-discover) ] && [ !
 	message "Aquatone%20Found%20$aquatonescan%20subdomain(s)%20for%20$1"
 	echo "[+] Done"
 else
-	for domains in `cat ~/aquatone/$1/urls.txt`; do domain="${domains#*://}"; domainx="${domain%/*}"; echo $domainx >> ~/recon/$1/$1-aquatone.txt;done
+	for domains in `cat ~/aquatone/$1/urls.txt`; do domain="${domains#*://}"; domainx="${domain%/*}"; domainz="${domainx%:*}"; echo $domainz >> ~/recon/$1/$1-aquatone.txt;done
 	aquatonescan=`scanned ~/recon/$1/$1-aquatone.txt`
 	message "[-]%20Skipping%20Aquatone%20Scanning%20for%20$1"
 	echo "[!] Skipping ..."
