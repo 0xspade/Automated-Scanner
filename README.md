@@ -77,5 +77,6 @@ Thanks to [@sumgr0](https://twitter.com/sumgr0)
 
 You can help me by registering an account [here](https://m.do.co/c/9d633afb889b) *(with my referral code of course)* and you can also help me (slash) support me in this project.
 
-##Contributor
+## Contributor
+
 Big thanks to [@sumgr0](https://twitter.com/sumgr0) :)
