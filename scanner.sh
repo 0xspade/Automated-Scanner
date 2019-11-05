@@ -249,10 +249,10 @@ else
 fi
 sleep 5
 
-echo "[+] SCANNING CRLF [+]"
-python3 ~/tools/CRLF-Injection-Scanner/crlf_scan.py -i ~/recon/$1/$1-alive.txt -o ~/recon/$1/$1-crlf.txt
-message "CRLF%20Scanning%20done%20for%20$1"
-sleep 5
+# echo "[+] SCANNING CRLF [+]"
+# python3 ~/tools/CRLF-Injection-Scanner/crlf_scan.py -i ~/recon/$1/$1-alive.txt -o ~/recon/$1/$1-crlf.txt
+# message "CRLF%20Scanning%20done%20for%20$1"
+# sleep 5
 
 declare -a protocol=("http" "https")
 echo "[+] COLLECTING ENDPOINTS [+]"
