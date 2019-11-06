@@ -24,7 +24,7 @@ scanned () {
 	cat $1 | sort -u | wc -l
 }
 
-message="[+] Initiating%20scan%20:%20$1 [+]"
+message "[+] Initiating%20scan%20:%20$1 [+]"
 
 echo "[+] AMASS SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-amass.txt ] && [ ! -z $(which amass) ]; then
@@ -116,7 +116,7 @@ sleep 5
 echo "[+] GOBUSTER SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-gobuster.txt ] && [ ! -z $(which gobuster) ]; then
 	[ ! -f ~/all.txt ] && wget "https://gist.githubusercontent.com/jhaddix/86a06c5dc309d08580a018c66354a056/raw/96f4e51d96b2203f19f6381c8c545b278eaa0837/all.txt" -O ~/all.txt
-	gobuster dns -d $1 -t 100 -w ~/all.txt --wildcard -o ~/$1/$1-gobust.txt
+	gobuster dns -d $1 -t 100 -w ~/all.txt --wildcard -o ~/recon/$1/$1-gobust.txt
 	cat ~/recon/$1/$1-gobust.txt | grep "Found:" | awk {'print $2'} > ~/recon/$1/$1-gobuster.txt
 	rm ~/recon/$1/$1-gobust.txt
 	gobusterscan=`scanned ~/recon/$1/$1-gobuster.txt`
@@ -129,8 +129,8 @@ fi
 sleep 5
 
 ## Deleting all the results to less disk usage
-cat ~/recon/$1/$1-amass.txt ~/recon/$1/$1-project-sonar.txt ~/recon/$1/$1-subfinder.txt ~/recon/$1/$1-aquatone.txt ~/recon/$1/$1-sublist3r.txt ~/recon/$1/$1-crt.txt ~/recon/$1/$1-gobuster.txt | sort -uf > ~/recon/$1/$1-final.txt
-rm ~/recon/$1/$1-amass.txt ~/recon/$1/$1-project-sonar.txt ~/recon/$1/$1-subfinder.txt ~/recon/$1/$1-aquatone.txt ~/recon/$1/$1-sublist3r.txt ~/recon/$1/$1-crt.txt ~/recon/$1/$1-gobuster.txt
+cat ~/recon/$1/$1-amass.txt ~/recon/$1/$1-project-sonar.txt ~/recon/$1/$1-findomain.txt ~/recon/$1/$1-subfinder.txt ~/recon/$1/$1-aquatone.txt ~/recon/$1/$1-sublist3r.txt ~/recon/$1/$1-crt.txt ~/recon/$1/$1-gobuster.txt | sort -uf > ~/recon/$1/$1-final.txt
+rm ~/recon/$1/$1-amass.txt ~/recon/$1/$1-project-sonar.txt ~/recon/$1/$1-findomain.txt ~/recon/$1/$1-subfinder.txt ~/recon/$1/$1-aquatone.txt ~/recon/$1/$1-sublist3r.txt ~/recon/$1/$1-crt.txt ~/recon/$1/$1-gobuster.txt
 touch ~/recon/$1/$1-ipz.txt
 sleep 5
 
@@ -174,7 +174,7 @@ rm ~/recon/$1/$1-ipz.txt ~/recon/$1/$1-ips.txt
 cat ~/recon/$1/$1-ip.txt ~/recon/$1/$1-final.txt > ~/recon/$1/$1-all.txt
 sleep 5
 
-echo "[+] HTTPROBE Scanning for Alive Hosts [+]"
+echo "[+] Scanning Alive Hosts [+]"
 if [ ! -f ~/recon/$1/$1-alive.txt ] && [ ! -z $(which filter-resolved) ]; then
 	cat ~/recon/$1/$1-all.txt | filter-resolved | sort -u > ~/recon/$1/$1-alive.txt
 	alivesu=`scanned ~/recon/$1/$1-alive.txt`
