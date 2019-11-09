@@ -34,7 +34,7 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 FYI, Install grepcidr first `apt-get install grepcidr`
 
 **Subdomain TakeOver**
-* [SubOver](https://github.com/Ice3man543/SubOver)
+* [tko-subs](https://github.com/anshumanbh/tko-subs)
 * [Subjack](https://github.com/haccer/subjack)
 
 **Collecting Endpoints thru [Linkfinder](https://github.com/GerbenJavado/LinkFinder/)**
@@ -46,6 +46,8 @@ FYI, Install grepcidr first `apt-get install grepcidr`
 * [Aquatone](https://github.com/michenriksen/aquatone) (New)
 * NMAP
 * [Masscan](https://github.com/robertdavidgraham/masscan)
+
+**[Whatweb](https://github.com/urbanadventurer/WhatWeb) for Fingerprinting assets**
 
 **[Default Credential](https://github.com/ztgrace/changeme) Scanning**
 >Scanning default credentials for all protocols and services
@@ -70,6 +72,9 @@ For the installation of all the tools above. I linked all the github links, just
 
 * Another Vhost Scanner
 >Thinking about gobuster or codingo's VHost Scan
+
+* HTML Report
+>HTML Reporting Yey :)
 
 * A Param Miner like tool
 >A parameter bruteforcer, maybe [parameth](https://github.com/mak-/parameth) will do.
