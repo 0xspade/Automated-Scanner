@@ -27,7 +27,7 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 * [DNSGen](https://github.com/ProjectAnte/dnsgen)
 >changing altdns to dnsgen. it's faster than altdns
 
-**Scan All Alive Hosts with [filter-resolved](https://github.com/tomnomnom/hacks/tree/master/filter-resolved)**
+**Scan All Alive Hosts with [filter-resolved](https://github.com/tomnomnom/hacks/tree/master/filter-resolved) and [Httprobe](https://github.com/tomnomnom/httprobe)**
 
 **Separating Cloudflare IPs to Non-Cloudflare IPs**
 >It's useless to scan Cloudflare IPs.
@@ -49,6 +49,7 @@ FYI, Install grepcidr first `apt-get install grepcidr`
 
 **[Default Credential](https://github.com/ztgrace/changeme) Scanning**
 >Scanning default credentials for all protocols and services
+>Need a redis server to properly run this tool.
 
 **File/Dir Discovery**
 * [otxurls](https://github.com/lc/otxurls)
@@ -66,6 +67,9 @@ For the installation of all the tools above. I linked all the github links, just
 # Future Tools to be added
 * Install Script
 >Thanks to [@sumgr0](https://twitter.com/sumgr0)
+
+* Another Vhost Scanner
+>Thinking about gobuster or codingo's VHost Scan
 
 * A Param Miner like tool
 >A parameter bruteforcer, maybe [parameth](https://github.com/mak-/parameth) will do.
