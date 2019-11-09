@@ -15,7 +15,6 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 
 **Subdomain Enumeration**
 * [Amass](https://github.com/OWASP/Amass) 
->you need to have a [config.ini](https://github.com/OWASP/Amass/blob/master/examples/config.ini) and fill those API keys type thing.
 * [Findomain](https://github.com/Edu4rdSHL/findomain)
 * [Subfinder](https://github.com/subfinder/subfinder)
 * Aquatone (old) `gem install aquatone`
