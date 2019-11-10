@@ -19,7 +19,7 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 * Aquatone (old) `gem install aquatone`
 * [Sublist3r](https://github.com/aboul3la/Sublist3r)
 * [Rapid7's Project Sonar](https://opendata.rapid7.com/sonar.fdns_v2/)
-> https://github.com/phspade/Project_Sonar_R7
+>https://github.com/phspade/Project_Sonar_R7
 * [CRT.SH](https://crt.sh/)
 * [GoBuster](https://github.com/OJ/gobuster) using Jason Haddix's [all.txt](https://gist.githubusercontent.com/jhaddix/86a06c5dc309d08580a018c66354a056/raw/96f4e51d96b2203f19f6381c8c545b278eaa0837/all.txt) wordlist
 * [DNSGen](https://github.com/ProjectAnte/dnsgen)
@@ -29,7 +29,7 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 
 **Separating Cloudflare IPs to Non-Cloudflare IPs**
 >It's useless to scan Cloudflare IPs.
-FYI, Install grepcidr first `apt-get install grepcidr`
+>FYI, Install grepcidr first `apt-get install grepcidr`
 
 **Subdomain TakeOver**
 * [tko-subs](https://github.com/anshumanbh/tko-subs)
@@ -38,10 +38,13 @@ FYI, Install grepcidr first `apt-get install grepcidr`
 **Collecting Endpoints thru [Linkfinder](https://github.com/GerbenJavado/LinkFinder/)**
 >*Just comment out the line 253 to 256 in linkfinder.py file*
 
-**[Massdns](https://github.com/blechschmidt/massdns) scanning**
+**[Massdns](https://github.com/blechschmidt/massdns)**
+
+**[Shodan](https://cli.shodan.io/)**
+
+**[Eyewitness](https://github.com/FortyNorthSecurity/EyeWitness)**
 
 **Port Scanning**
-* [Aquatone](https://github.com/michenriksen/aquatone) (New)
 * NMAP
 * [Masscan](https://github.com/robertdavidgraham/masscan)
 
@@ -54,7 +57,7 @@ FYI, Install grepcidr first `apt-get install grepcidr`
 **File/Dir Discovery**
 * [otxurls](https://github.com/lc/otxurls)
 * [waybackurls](https://github.com/tomnomnom/waybackurls)
-* [DirSearch](https://github.com/maurosoria/dirsearch) using [combined wordlists](https://github.com/phspade/Combined-Wordlists)
+* [DirSearch](https://github.com/maurosoria/dirsearch)
 
 **[Virtual Hosts](https://github.com/ffuf/ffuf) Scan**
 
