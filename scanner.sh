@@ -7,6 +7,8 @@ passwordx=""
 [ ! -f ~/recon ] && mkdir ~/recon
 [ ! -f ~/recon/$1 ] && mkdir ~/recon/$1
 [ ! -f ~/recon/$1/whatweb ] && mkdir ~/recon/$1/whatweb
+[ ! -f ~/recon/$1/eyewitness ] && mkdir ~/recon/$1/eyewitness
+[ ! -f ~/recon/$1/shodan ] && mkdir ~/recon/$1/shodan
 [ ! -f ~/recon/$1/dirsearch ] && mkdir ~/recon/$1/dirsearch
 [ ! -f ~/recon/$1/default-credential ] && mkdir ~/recon/$1/default-credential
 [ ! -f ~/recon/$1/virtual-hosts ] && mkdir ~/recon/$1/virtual-hosts
@@ -27,6 +29,7 @@ scanned () {
 }
 
 message "[+]%20Initiating%20scan%20%3A%20$1%20[+]"
+date
 
 echo "[+] AMASS SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-amass.txt ] && [ ! -z $(which amass) ]; then
@@ -165,7 +168,7 @@ sleep 3
 ulimit -n 800000
 while read -r domain; do dig +short $domain | grep -v '[[:alpha:]]' | sort -u >> ~/recon/$1/$1-ipf.txt; done < ~/recon/$1/$1-final.txt
 cat ~/recon/$1/$1-ipf.txt | sort -u > ~/recon/$1/$1-ipz.txt
-rm ~/recon/$1/$1-ipf.txt
+rm ~/recon/$1/$1-ipf.txt ~/recon/$1/$1-dnsgen.txt
 
 ## segregating cloudflare IP from non-cloudflare IP
 ## non-sense if I scan cloudflare IP. :(
@@ -178,8 +181,22 @@ ip_old=`scanned ~/recon/$1/$1-ipz.txt`
 message "$ipz%20non-cloudflare%20IPs%20has%20been%20$collected%20in%20$1%20out%20of%20$ip_old%20IPs"
 echo "[+] $ipz non-cloudflare IPs has been collected out of $ip_old IPs!"
 rm ~/recon/$1/$1-ipz.txt ~/recon/$1/$1-ips.txt
-cat ~/recon/$1/$1-ip.txt ~/recon/$1/$1-final.txt > ~/recon/$1/$1-all.txt
 sleep 5
+
+echo "[+] MASSCAN PORT SCANNING [+]"
+if [ ! -f ~/recon/$1/$1-masscan.txt ] && [ ! -z $(which masscan) ]; then
+	echo $passwordx | sudo -S masscan -p1-65535 -iL ~/recon/$1/$1-ip.txt --max-rate 10000 -oG ~/recon/$1/$1-masscan.txt
+	mass=`scanned ~/recon/$1/$1-ip.txt`
+	message "Masscan%20Scanned%20$mass%20IPs%20for%20$1"
+	echo "[+] Done masscan for scanning IPs"
+else
+	message "[-]%20Skipping%20Masscan%20Scanning%20for%20$1"
+	echo "[!] Skipping ..."
+fi
+sleep 5
+
+cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $2":"$5'} | awk -F '/' {'print $1'} | sort -u > ~/recon/$1/$1-open-ports.txt  
+cat ~/recon/$1/$1-open-ports.txt ~/recon/$1/$1-final.txt > ~/recon/$1/$1-all.txt
 
 echo "[+] HTTProbe Scanning Alive Hosts [+]"
 if [ ! -f ~/recon/$1/$1-httprobe.txt ] && [ ! -z $(which httprobe) ]; then
@@ -206,7 +223,7 @@ else
 fi
 sleep 5
 
-diff --new-line-format="" --unchanged-line-format="" <(sort ~/recon/$1/$1-alive.txt) <(sort ~/recon/$1/$1-httprobe.txt) > ~/recon/$1/$1-all.txt
+diff --new-line-format="" --unchanged-line-format="" <(sort ~/recon/$1/$1-alive.txt) <(sort ~/recon/$1/$1-httprobe.txt) > ~/recon/$1/$1-diff.txt
 
 echo "[+] TKO-SUBS for Subdomain TKO [+]"
 if [ ! -f ~/recon/$1/$1-subover.txt ] && [ ! -z $(which tko-subs) ]; then
@@ -236,11 +253,11 @@ else
 fi
 sleep 5
 
-declare -a protocol=("http" "https")
 echo "[+] COLLECTING ENDPOINTS [+]"
 for urlz in `cat ~/recon/$1/$1-httprobe.txt`; do 
 	filename=`echo $urlz | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g'`
-	python ~/LinkFinder/linkfinder.py -i $urlz -d -o ~/recon/$1/endpoints/$filename-result.html
+	link=$(python ~/LinkFinder/linkfinder.py -i $urlz -d -o cli | grep -E "*.js$" | grep "$1" | grep "Running against:" |awk {'print $3'})
+	python3 ~/LinkFinder/linkfinder.py -i $link -d -o cli > ~/recon/$1/endpoints/$filename-result.txt
 done
 message "Done%20collecting%20endpoint%20in%20$1"
 echo "[+] Done collecting endpoint"
@@ -252,26 +269,30 @@ message "Done%20Massdns%20Scanning%20for%20$1"
 echo "[+] Done massdns for scanning assets"
 sleep 5
 
-echo "[+] MASSCAN PORT SCANNING [+]"
-if [ ! -f ~/recon/$1/$1-masscan.txt ] && [ ! -z $(which masscan) ]; then
-	echo $passwordx | sudo -S masscan -p1-65535 -iL ~/recon/$1/$1-ip.txt --max-rate 10000 -oG ~/recon/$1/$1-masscan.txt
-	mass=`scanned ~/recon/$1/$1-ip.txt`
-	message "Masscan%20Scanned%20$mass%20IPs%20for%20$1"
-	echo "[+] Done masscan for scanning IPs"
+echo "[+] SHODAN HOST SCANNING [+]"
+if [ ! -z $(which shodan) ]; then
+	for ip in `cat ~/recon/$1/$1-ip.txt`; do filename=`echo $ip | sed 's/\./_/g'`;shodan host $ip > ~/recon/$1/shodan/$filename.txt; done
+	message "Done%20Shodan%20for%20$1"
+	echo "[+] Done shodan"
 else
-	message "[-]%20Skipping%20Masscan%20Scanning%20for%20$1"
+	message "[-]%20Skipping%20Shodan%20for%20$1"
+	echo "[!] Skipping ..."
+fi
+sleep 5	
+
+echo "[+] EYEWITNESS SCREENSHOT [+]"
+if [ ! -z $(which eyewitness) ]; then
+	echo $passwordx | sudo -S eyewitness -f ~/recon/$1/$1-httprobe.txt --web --timeout 10 --no-dns --no-prompt --cycle all -d ~/recon/$1/eyewitness
+	message "Done%20Eyewitness%20for%20Screenshot%20for%20$1"
+	echo "[+] Done eyewitness for screenshot of Alive assets"
+else
+	message "[-]%20Skipping%20Eyewitness%20Screenshot%20for%20$1"
 	echo "[!] Skipping ..."
 fi
 sleep 5
 
-big_ports=`cat ~/recon/$1/$1-masscan.txt | grep 'Host:' | awk {'print $5'} | awk -F '/' {'print $1'} | sort -u | paste -s -d ','`
-echo "[+] PORT SCANNING [+]"
-cat ~/recon/$1/$1-httprobe.txt | aquatone -ports $big_ports -out ~/recon/$1/$1-ports
-message "Done%20Aquatone%20Port%20Scanning%20for%20$1"
-echo "[+] Done aquatone for scanning IPs"
-sleep 5
-
 echo "[+] NMAP PORT SCANNING [+]"
+big_ports=`cat ~/recon/$1/$1-masscan.txt | grep 'Host:' | awk {'print $5'} | awk -F '/' {'print $1'} | sort -u | paste -s -d ','`
 if [ ! -f ~/recon/$1/$1-nmap.txt ] && [ ! -z $(which nmap) ]; then
 	[ ! -f ~/nmap-bootstrap.xsl ] && wget "https://raw.githubusercontent.com/honze-net/nmap-bootstrap-xsl/master/nmap-bootstrap.xsl" -O ~/nmap-bootstrap.xsl
 	echo $passwordx | sudo -S nmap -sSVC -A -O -Pn -p$big_ports -iL ~/recon/$1/$1-ip.txt --script http-enum,http-title,vulners --stylesheet ~/nmap-bootstrap.xsl -oA ~/recon/$1/$1-nmap
@@ -287,7 +308,7 @@ sleep 5
 
 echo "[+] DEFAULT CREDENTIAL SCANNING [+]"
 if [ -e ~/changeme/changeme.py ] && [ "active" == `systemctl is-active redis` ]; then
-	for targets in `cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $2":"$5'} | awk -F '/' {'print $1'}`; do python3 ~/changeme/changeme.py --redishost redis --protocols http,snmp,ssh,ftp,memcached,mongo,mssql,mysql,postgres,telnet --portoverride $targets -d --fresh -v --ssl -o ~/recon/$1/default-credential/$targets-changeme.csv; done
+	for targets in `cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $2":"$5'} | awk -F '/' {'print $1'}`; do	python3 ~/changeme/changeme.py --redishost redis --protocols http,snmp,ssh,ftp,memcached,mongo,mssql,mysql,postgres,telnet --portoverride $targets -d --fresh -v --ssl -o ~/recon/$1/default-credential/$targets-changeme.csv; done
 	message "Default%20Credential%20done%20for%20$1"
 	echo "[+] Done changeme for scanning default credentials"
 else
@@ -325,7 +346,7 @@ echo "[+] Done waybackurls for discovering useful endpoints"
 sleep 5
 
 echo "[+] Scanning for Virtual Hosts Resolution [+]"
-cat ~/recon/$1/$1-final.txt ~/recon/$1/$1-all.txt ~/VHostScan/vhost-wordlist.txt | sort -u >> ~/recon/$1/$1-temp-vhost-wordlist.txt
+cat ~/recon/$1/$1-final.txt ~/recon/$1/$1-diff.txt ~/VHostScan/vhost-wordlist.txt | sort -u >> ~/recon/$1/$1-temp-vhost-wordlist.txt
 for test in `cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $2":"$5'} | awk -F '/' {'print $1'}`; do
 	test_case=`curl -sk "http://$test" -H "Host: givemesomebountyplz.$1" | wc -c`
 	ffuf -c -w ~/recon/$1/$1-temp-vhost-wordlist.txt -u http://$test -k -H "Host: FUZZ" -fs $test_case -o ~/recon/$1/virtual-hosts/$test.txt
@@ -344,4 +365,5 @@ sleep 5
 
 [ ! -f ~/$1.out ] && mv $1.out ~/recon/$1/ 
 message "Scanner%20Done%20for%20$1"
+date
 echo "[+] Done scanner :)"
