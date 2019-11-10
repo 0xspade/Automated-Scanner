@@ -223,7 +223,7 @@ else
 fi
 sleep 5
 
-diff --new-line-format="" --unchanged-line-format="" <(sort ~/recon/$1/$1-alive.txt) <(sort ~/recon/$1/$1-httprobe.txt) > ~/recon/$1/$1-diff.txt
+diff --new-line-format="" --unchanged-line-format="" <(sort ~/recon/$1/$1-alive.txt) <(cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort -u) > ~/recon/$1/$1-diff.txt
 
 echo "[+] TKO-SUBS for Subdomain TKO [+]"
 if [ ! -f ~/recon/$1/$1-subover.txt ] && [ ! -z $(which tko-subs) ]; then
