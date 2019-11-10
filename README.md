@@ -10,7 +10,7 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 
 ----
 
-![flow](https://raw.githubusercontent.com/phspade/Automated-Scanner/master/Flow.xml)
+![flow](https://raw.githubusercontent.com/phspade/Automated-Scanner/master/Flow.png)
 *Will update this in weekend*
 
 **Subdomain Enumeration**
