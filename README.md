@@ -11,7 +11,6 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 ----
 
 ![flow](https://raw.githubusercontent.com/phspade/Automated-Scanner/master/Flow.png)
-*Will update this in weekend*
 
 **Subdomain Enumeration**
 * [Amass](https://github.com/OWASP/Amass) 
