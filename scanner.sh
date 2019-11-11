@@ -347,7 +347,7 @@ sleep 5
 
 echo "[+] Scanning for Virtual Hosts Resolution [+]"
 cat ~/recon/$1/$1-final.txt ~/recon/$1/$1-diff.txt ~/VHostScan/vhost-wordlist.txt | sort -u >> ~/recon/$1/$1-temp-vhost-wordlist.txt
-for test in `cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $2":"$5'} | awk -F '/' {'print $1'}`; do
+for test in $(cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $2":"$5'} | awk -F '/' {'print $1'}); do
 	test_case=`curl -sk "http://$test" -H "Host: givemesomebountyplz.$1" | wc -c`
 	ffuf -c -w ~/recon/$1/$1-temp-vhost-wordlist.txt -u http://$test -k -H "Host: FUZZ" -fs $test_case -o ~/recon/$1/virtual-hosts/$test.txt
 	ffuf -c -w ~/recon/$1/$1-temp-vhost-wordlist.txt -u https://$test -k -H "Host: FUZZ" -fs $test_case -o ~/recon/$1/virtual-hosts/$test-ssl.txt
