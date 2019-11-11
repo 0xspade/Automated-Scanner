@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# amass, subfinder, snapd, aquatone, project sonar, grepcidr, gobuster, masscan, nmap, sensitive.py, curl, otxurls, waybackurls, DirSearch, LinkFinder, VHostScan
+# amass, subfinder, snapd, aquatone, project sonar, grepcidr, gobuster, masscan, nmap, sensitive.py, curl, CRLF-Injection-Scanner, otxurls, waybackurls, DirSearch, LinkFinder, VHostScan
 
-passwordx=""
+passwordx="Welcome@123"
 
 [ ! -f ~/recon ] && mkdir ~/recon
 [ ! -f ~/recon/$1 ] && mkdir ~/recon/$1
@@ -18,8 +18,8 @@ passwordx=""
 sleep 5
 
 message () {
-	telegram_bot=""	
-	telegram_id=""
+	telegram_bot="709353033:AAHyciecUqwNGqSTY5bHMppaNneDBxEmUbw"	
+	telegram_id="603895339"
 	alert="https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text="
 	[ -z $telegram_bot ] && [ -z $telegram_id ] || curl -g $alert$1 --silent > /dev/null
 }
@@ -346,8 +346,9 @@ echo "[+] Done waybackurls for discovering useful endpoints"
 sleep 5
 
 echo "[+] Scanning for Virtual Hosts Resolution [+]"
-cat ~/recon/$1/$1-final.txt ~/recon/$1/$1-diff.txt ~/VHostScan/vhost-wordlist.txt | sort -u >> ~/recon/$1/$1-temp-vhost-wordlist.txt
 if [ ! -z $(which ffuf) ]; then
+	[ ! -f ~/virtual-host-scanning.txt ] && wget "https://raw.githubusercontent.com/codingo/VHostScan/master/VHostScan/wordlists/virtual-host-scanning.txt" -O ~/virtual-host-scanning.txt
+	cat ~/recon/$1/$1-final.txt ~/recon/$1/$1-diff.txt ~/virtual-host-scanning.txt | sed "s/\%s/$1/g" | sort -u >> ~/recon/$1/$1-temp-vhost-wordlist.txt
 	path=$(pwd)
 	ffuf -c -w "$path/recon/$1/$1-temp-vhost-wordlist.txt:HOSTS" -w "$path/recon/$1/$1-open-ports.txt:TARGETS" -u http://TARGETS -k -H "Host: HOSTS" -mc all -fc 500-599 -o ~/recon/$1/virtual-hosts/$1.txt
 	ffuf -c -w "$path/recon/$1/$1-temp-vhost-wordlist.txt:HOSTS" -w "$path/recon/$1/$1-open-ports.txt:TARGETS" -u https://TARGETS -k -H "Host: HOSTS" -mc all -fc 500-599 -o ~/recon/$1/virtual-hosts/$1-ssl.txt
