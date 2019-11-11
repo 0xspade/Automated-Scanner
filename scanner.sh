@@ -200,7 +200,7 @@ cat ~/recon/$1/$1-open-ports.txt ~/recon/$1/$1-final.txt > ~/recon/$1/$1-all.txt
 
 echo "[+] HTTProbe Scanning Alive Hosts [+]"
 if [ ! -f ~/recon/$1/$1-httprobe.txt ] && [ ! -z $(which httprobe) ]; then
-	cat ~/$1/$1-all.txt | httprobe | sort -u >> ~/recon/$1/$1-httprobe.txt
+	cat ~/recon/$1/$1-all.txt | httprobe | sort -u >> ~/recon/$1/$1-httprobe.txt
 	alivesu=`scanned ~/recon/$1/$1-httprobe.txt`
 	message "$alivesu%20alive%20domains%20out%20of%20$all%20domains%20in%20$1"
 	echo "[+] $alivesu alive domains out of $all domains/IPs using httprobe"
@@ -308,7 +308,7 @@ sleep 5
 
 echo "[+] DEFAULT CREDENTIAL SCANNING [+]"
 if [ -e ~/changeme/changeme.py ] && [ "active" == `systemctl is-active redis` ]; then
-	for targets in `cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $2":"$5'} | awk -F '/' {'print $1'}`; do	python3 ~/changeme/changeme.py --redishost redis --protocols http,snmp,ssh,ftp,memcached,mongo,mssql,mysql,postgres,telnet --portoverride $targets -d --fresh -v --ssl -o ~/recon/$1/default-credential/$targets-changeme.csv; done
+	for targets in `cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $2":"$5'} | awk -F '/' {'print $1'}`; do python3 ~/changeme/changeme.py --redishost redis --protocols http,snmp,ssh,ftp,memcached,mongo,mssql,mysql,postgres,telnet --portoverride $targets -d --fresh -v --ssl -o ~/recon/$1/default-credential/$targets-changeme.csv; done
 	message "Default%20Credential%20done%20for%20$1"
 	echo "[+] Done changeme for scanning default credentials"
 else
