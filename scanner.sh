@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# amass, subfinder, snapd, aquatone, project sonar, grepcidr, gobuster, masscan, nmap, sensitive.py, curl, CRLF-Injection-Scanner, otxurls, waybackurls, DirSearch, LinkFinder, VHostScan
+# amass, subfinder, snapd, aquatone, project sonar, grepcidr, gobuster, masscan, nmap, sensitive.py, curl, otxurls, waybackurls, DirSearch, LinkFinder, VHostScan
 
 passwordx=""
 
@@ -347,13 +347,16 @@ sleep 5
 
 echo "[+] Scanning for Virtual Hosts Resolution [+]"
 cat ~/recon/$1/$1-final.txt ~/recon/$1/$1-diff.txt ~/VHostScan/vhost-wordlist.txt | sort -u >> ~/recon/$1/$1-temp-vhost-wordlist.txt
-for test in $(cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $2":"$5'} | awk -F '/' {'print $1'}); do
-	test_case=`curl -sk "http://$test" -H "Host: givemesomebountyplz.$1" | wc -c`
-	ffuf -c -w ~/recon/$1/$1-temp-vhost-wordlist.txt -u http://$test -k -H "Host: FUZZ" -fs $test_case -o ~/recon/$1/virtual-hosts/$test.txt
-	ffuf -c -w ~/recon/$1/$1-temp-vhost-wordlist.txt -u https://$test -k -H "Host: FUZZ" -fs $test_case -o ~/recon/$1/virtual-hosts/$test-ssl.txt
-done
-message "Virtual%20Host(s)%20done%20for%20$1"
-echo "[+] Done ffuf for scanning virtual hosts"
+if [ ! -z $(which ffuf) ]; then
+	path=$(pwd)
+	ffuf -c -w "$path/recon/$1/$1-temp-vhost-wordlist.txt:HOSTS" -w "$path/recon/$1/$1-open-ports.txt:TARGETS" -u http://TARGETS -k -H "Host: HOSTS" -mc all -fc 500-599 -o ~/recon/$1/virtual-hosts/$test.txt
+	ffuf -c -w "$path/recon/$1/$1-temp-vhost-wordlist.txt:HOSTS" -w "$path/recon/$1/$1-open-ports.txt:TARGETS" -u https://TARGETS -k -H "Host: HOSTS" -mc all -fc 500-599 -o ~/recon/$1/virtual-hosts/$test-ssl.txt
+	message "Virtual%20Host(s)%20done%20for%20$1"
+	echo "[+] Done ffuf for scanning virtual hosts"
+else
+	message "[-]%20Skipping%20ffuf%20for%20vhost%20scanning"
+	echo "[!] Skipping ..."
+fi
 rm ~/recon/$1/$1-temp-vhost-wordlist.txt 
 sleep 5
 
