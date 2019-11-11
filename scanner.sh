@@ -2,7 +2,7 @@
 
 # amass, subfinder, snapd, aquatone, project sonar, grepcidr, gobuster, masscan, nmap, sensitive.py, curl, CRLF-Injection-Scanner, otxurls, waybackurls, DirSearch, LinkFinder, VHostScan
 
-passwordx="Welcome@123"
+passwordx=""
 
 [ ! -f ~/recon ] && mkdir ~/recon
 [ ! -f ~/recon/$1 ] && mkdir ~/recon/$1
@@ -18,8 +18,8 @@ passwordx="Welcome@123"
 sleep 5
 
 message () {
-	telegram_bot="709353033:AAHyciecUqwNGqSTY5bHMppaNneDBxEmUbw"	
-	telegram_id="603895339"
+	telegram_bot=""	
+	telegram_id=""
 	alert="https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text="
 	[ -z $telegram_bot ] && [ -z $telegram_id ] || curl -g $alert$1 --silent > /dev/null
 }
