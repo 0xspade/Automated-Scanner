@@ -29,6 +29,7 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 
 **Separating Cloudflare IPs to Non-Cloudflare IPs**
 >It's useless to scan Cloudflare IPs.
+
 >FYI, Install grepcidr first `apt-get install grepcidr`
 
 **Subdomain TakeOver**
@@ -36,7 +37,8 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 * [Subjack](https://github.com/haccer/subjack)
 
 **Collecting Endpoints thru [Linkfinder](https://github.com/GerbenJavado/LinkFinder/)**
->*Just comment out the line 253 to 256 in linkfinder.py file*
+
+**Collecting Endpoints thru [Github](https://github.com/gwen001/github-search/blob/master/github-endpoints.py)**
 
 **[Massdns](https://github.com/blechschmidt/massdns)**
 
