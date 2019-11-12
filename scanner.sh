@@ -1,8 +1,7 @@
 #!/bin/bash
 
-# amass, subfinder, snapd, aquatone, project sonar, grepcidr, gobuster, masscan, nmap, sensitive.py, curl,  otxurls, waybackurls, DirSearch, LinkFinder, VHostScan
-
-passwordx=""
+passwordx="Welcome@123" ## I DONT CARE ## Just change it
+github_token=$GITROB_ACCESS_TOKEN ## NOT AGAIN :) Just change me to your github access token 
 
 [ ! -f ~/recon ] && mkdir ~/recon
 [ ! -f ~/recon/$1 ] && mkdir ~/recon/$1
@@ -13,12 +12,13 @@ passwordx=""
 [ ! -f ~/recon/$1/default-credential ] && mkdir ~/recon/$1/default-credential
 [ ! -f ~/recon/$1/virtual-hosts ] && mkdir ~/recon/$1/virtual-hosts
 [ ! -f ~/recon/$1/endpoints ] && mkdir ~/recon/$1/endpoints
+[ ! -f ~/recon/$1/github-endpoints ] && mkdir ~/recon/$1/github-endpoints
 [ ! -f ~/recon/$1/otxurls ] && mkdir ~/recon/$1/otxurls
 [ ! -f ~/recon/$1/waybackurls ] && mkdir ~/recon/$1/waybackurls
 sleep 5
 
 message () {
-	telegram_bot=""	
+	telegram_bot="" ## I DONT KNOW :)
 	telegram_id=""
 	alert="https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text="
 	[ -z $telegram_bot ] && [ -z $telegram_id ] || curl -g $alert$1 --silent > /dev/null
@@ -84,8 +84,8 @@ fi
 sleep 5
 
 echo "[+] SUBLIST3R SCANNING [+]"
-if [ ! -f ~/recon/$1/$1-sublist3r.txt ] && [ -e ~/Sublist3r/sublist3r.py ]; then
-	python ~/Sublist3r/sublist3r.py -b -d $1 -o ~/recon/$1/$1-sublist3r.txt
+if [ ! -f ~/recon/$1/$1-sublist3r.txt ] && [ -e ~/tools/Sublist3r/sublist3r.py ]; then
+	python ~/tools/Sublist3r/sublist3r.py -b -d $1 -o ~/recon/$1/$1-sublist3r.txt
 	sublist3rscan=`scanned ~/recon/$1/$1-sublist3r.txt`
 	message "Sublist3r%20Found%20$sublist3rscan%20subdomain(s)%20for%20$1"
 	echo "[+] Sublist3r Found $sublist3rscan subdomains"
@@ -96,8 +96,8 @@ fi
 sleep 5
 
 echo "[+] SCANNING SUBDOMAINS WITH PROJECT SONAR [+]"
-if [ ! -f ~/recon/$1/$1-project-sonar.txt ] && [ -e ~/forward_dns.json.gz ]; then
-	pv ~/forward_dns.json.gz | pigz -dc | grep -E "*[.]$1\"," | jq -r '.name' | sort -u >> ~/recon/$1/$1-project-sonar.txt
+if [ ! -f ~/recon/$1/$1-project-sonar.txt ] && [ -e ~/tools/forward_dns.json.gz ]; then
+	pv ~/tools/forward_dns.json.gz | pigz -dc | grep -E "*[.]$1\"," | jq -r '.name' | sort -u >> ~/recon/$1/$1-project-sonar.txt
 	projectsonar=`scanned ~/recon/$1/$1-project-sonar.txt`
 	message "Project%20Sonar%20Found%20$projectsonar%20subdomain(s)%20for%20$1"
 	echo "[+] Project Sonar Found $projectsonar subdomains"
@@ -121,7 +121,7 @@ sleep 5
 
 echo "[+] GOBUSTER SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-gobuster.txt ] && [ ! -z $(which gobuster) ]; then
-	[ ! -f ~/all.txt ] && wget "https://gist.githubusercontent.com/jhaddix/86a06c5dc309d08580a018c66354a056/raw/96f4e51d96b2203f19f6381c8c545b278eaa0837/all.txt" -O ~/all.txt
+	[ ! -f ~/tools/all.txt ] && wget "https://gist.githubusercontent.com/jhaddix/86a06c5dc309d08580a018c66354a056/raw/96f4e51d96b2203f19f6381c8c545b278eaa0837/all.txt" -O ~/tools/all.txt
 	gobuster dns -d $1 -t 100 -w ~/all.txt --wildcard -o ~/recon/$1/$1-gobust.txt
 	cat ~/recon/$1/$1-gobust.txt | grep "Found:" | awk {'print $2'} > ~/recon/$1/$1-gobuster.txt
 	rm ~/recon/$1/$1-gobust.txt
@@ -142,8 +142,8 @@ sleep 5
 
 echo "[+] DNSGEN SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-dnsgen.txt ] && [ ! -z $(which dnsgen) ]; then
-	[ ! -f ~/dnsgen.txt ] && wget "https://raw.githubusercontent.com/infosec-au/altdns/master/words.txt" -O ~/dnsgen.txt
-	cat ~/recon/$1/$1-final.txt | dnsgen -w ~/dnsgen.txt - | massdns -r ~/massdns/lists/resolvers.txt -o J --flush 2>/dev/null | jq -r .query_name | sort -u | tee -a ~/recon/$1/$1-dnsgen.tmp
+	[ ! -f ~/tools/dnsgen.txt ] && wget "https://raw.githubusercontent.com/infosec-au/altdns/master/words.txt" -O ~/tools/dnsgen.txt
+	cat ~/recon/$1/$1-final.txt | dnsgen -w ~/dnsgen.txt - | massdns -r ~/tools/massdns/lists/resolvers.txt -o J --flush 2>/dev/null | jq -r .query_name | sort -u | tee -a ~/recon/$1/$1-dnsgen.tmp
 	cat ~/recon/$1/$1-dnsgen.tmp | sed 's/-\.//g' | sed 's/-\.//g' | sed 's/-\-\-\-//g' | sort -u > ~/recon/$1/$1-dnsgen.txt
 	rm ~/recon/$1/$1-dnsgen.tmp
 	sleep 3
@@ -223,12 +223,12 @@ else
 fi
 sleep 5
 
-diff --new-line-format="" --unchanged-line-format="" <(sort ~/recon/$1/$1-alive.txt) <(cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort) > ~/recon/$1/$1-diff.txt
+diff --new-line-format="" --unchanged-line-format="" <(cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort) <(sort ~/recon/$1/$1-alive.txt)  > ~/recon/$1/$1-diff.txt
 
 echo "[+] TKO-SUBS for Subdomain TKO [+]"
 if [ ! -f ~/recon/$1/$1-subover.txt ] && [ ! -z $(which tko-subs) ]; then
-	[ ! -f ~/providers-data.csv ] && wget "https://raw.githubusercontent.com/anshumanbh/tko-subs/master/providers-data.csv" -O ~/providers-data.csv
-	tko-subs -domains=recon/$1/$1-alive.txt -data=providers-data.csv -output=recon/$1/$1-tkosubs.txt
+	[ ! -f ~/tools/providers-data.csv ] && wget "https://raw.githubusercontent.com/anshumanbh/tko-subs/master/providers-data.csv" -O ~/tools/providers-data.csv
+	tko-subs -domains=recon/$1/$1-alive.txt -data=tools/providers-data.csv -output=recon/$1/$1-tkosubs.txt
 	rm ~/recon/$1/$1-subtemp.txt ~/recon/$1/$1-subtmp.txt
 	message "TKO-Subs%20scanner%20done%20for%20$1"
 	echo "[+] TKO-Subs scanner is done"
@@ -240,7 +240,7 @@ sleep 5
 
 echo "[+] SUBJACK for Subdomain TKO [+]"
 if [ ! -f ~/recon/$1/$1-subjack.txt ] && [ ! -z $(which subjack) ]; then
-	[ ! -f ~/fingerprints.json ] && wget "https://raw.githubusercontent.com/haccer/subjack/master/fingerprints.json" -O ~/fingerprints.json
+	[ ! -f ~/tools/fingerprints.json ] && wget "https://raw.githubusercontent.com/haccer/subjack/master/fingerprints.json" -O ~/tools/fingerprints.json
 	subjack -w ~/recon/$1/$1-alive.txt -a -timeout 15 -c ~/fingerprints.json -v -m -o ~/recon/$1/$1-subtemp.txt
 	subjack -w ~/recon/$1/$1-alive.txt -a -timeout 15 -c ~/fingerprints.json -v -m -ssl -o ~/recon/$1/$1-subtmp.txt
 	cat ~/recon/$1/$1-subtemp.txt ~/recon/$1/$1-subtmp.txt | sort -u > ~/recon/$1/$1-subjack.txt
@@ -256,15 +256,23 @@ sleep 5
 echo "[+] COLLECTING ENDPOINTS [+]"
 for urlz in `cat ~/recon/$1/$1-httprobe.txt`; do 
 	filename=`echo $urlz | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g'`
-	link=$(python ~/LinkFinder/linkfinder.py -i $urlz -d -o cli | grep -E "*.js$" | grep "$1" | grep "Running against:" |awk {'print $3'})
-	python3 ~/LinkFinder/linkfinder.py -i $link -d -o cli > ~/recon/$1/endpoints/$filename-result.txt
+	link=$(python ~/tools/LinkFinder/linkfinder.py -i $urlz -d -o cli | grep -E "*.js$" | grep "$1" | grep "Running against:" |awk {'print $3'})
+	python3 ~/tools/LinkFinder/linkfinder.py -i $link -d -o cli > ~/recon/$1/endpoints/$filename-result.txt
+done
+message "Done%20collecting%20endpoint%20in%20$1"
+echo "[+] Done collecting endpoint"
+sleep 5
+
+echo "[+] COLLECTING ENDPOINTS FROM GITHUB [+]"
+for url in `cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort -u`; do 
+	python3 ~/tools/github-endpoints.py -t $github_token -d $url -s -r > ~/recon/$1/github-endpoints/$url.txt
 done
 message "Done%20collecting%20endpoint%20in%20$1"
 echo "[+] Done collecting endpoint"
 sleep 5
 
 echo "[+] MASSDNS SCANNING [+]"
-massdns -r ~/massdns/lists/resolvers.txt ~/recon/$1/$1-alive.txt -o S > ~/recon/$1/$1-massdns.txt
+massdns -r ~/tools/massdns/lists/resolvers.txt ~/recon/$1/$1-alive.txt -o S > ~/recon/$1/$1-massdns.txt
 message "Done%20Massdns%20Scanning%20for%20$1"
 echo "[+] Done massdns for scanning assets"
 sleep 5
@@ -294,8 +302,8 @@ sleep 5
 echo "[+] NMAP PORT SCANNING [+]"
 big_ports=`cat ~/recon/$1/$1-masscan.txt | grep 'Host:' | awk {'print $5'} | awk -F '/' {'print $1'} | sort -u | paste -s -d ','`
 if [ ! -f ~/recon/$1/$1-nmap.txt ] && [ ! -z $(which nmap) ]; then
-	[ ! -f ~/nmap-bootstrap.xsl ] && wget "https://raw.githubusercontent.com/honze-net/nmap-bootstrap-xsl/master/nmap-bootstrap.xsl" -O ~/nmap-bootstrap.xsl
-	echo $passwordx | sudo -S nmap -sSVC -A -O -Pn -p$big_ports -iL ~/recon/$1/$1-ip.txt --script http-enum,http-title,vulners --stylesheet ~/nmap-bootstrap.xsl -oA ~/recon/$1/$1-nmap
+	[ ! -f ~/tools/nmap-bootstrap.xsl ] && wget "https://raw.githubusercontent.com/honze-net/nmap-bootstrap-xsl/master/nmap-bootstrap.xsl" -O ~/tools/nmap-bootstrap.xsl
+	echo $passwordx | sudo -S nmap -sSVC -A -O -Pn -p$big_ports -iL ~/recon/$1/$1-ip.txt --script http-enum,http-title,vulners --stylesheet ~/tools/nmap-bootstrap.xsl -oA ~/recon/$1/$1-nmap
 	nmaps=`scanned ~/recon/$1/$1-ip.txt`
 	xsltproc -o ~/recon/$1/$1-nmap.html ~/nmap-bootstrap.xsl ~/recon/$1/$1-nmap.xml
 	message "Nmap%20Scanned%20$nmaps%20IPs%20for%20$1"
@@ -307,8 +315,8 @@ fi
 sleep 5
 
 echo "[+] DEFAULT CREDENTIAL SCANNING [+]"
-if [ -e ~/changeme/changeme.py ] && [ "active" == `systemctl is-active redis` ]; then
-	for targets in `cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $2":"$5'} | awk -F '/' {'print $1'}`; do	python3 ~/changeme/changeme.py --redishost redis --protocols http,snmp,ssh,ftp,memcached,mongo,mssql,mysql,postgres,telnet --portoverride $targets -d --fresh -v --ssl --timeout 25 -o ~/recon/$1/default-credential/$targets-changeme.csv; done
+if [ -e ~/tools/changeme/changeme.py ] && [ "active" == `systemctl is-active redis` ]; then
+	for targets in `cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $2":"$5'} | awk -F '/' {'print $1'}`; do	python3 ~/tools/changeme/changeme.py --redishost redis --protocols http,snmp,ssh,ftp,memcached,mongo,mssql,mysql,postgres,telnet --portoverride $targets -d --fresh -v --ssl --timeout 25 -o ~/recon/$1/default-credential/$targets-changeme.csv; done
 	message "Default%20Credential%20done%20for%20$1"
 	echo "[+] Done changeme for scanning default credentials"
 else
@@ -347,7 +355,7 @@ sleep 5
 
 echo "[+] Scanning for Virtual Hosts Resolution [+]"
 if [ ! -z $(which ffuf) ]; then
-	[ ! -f ~/virtual-host-scanning.txt ] && wget "https://raw.githubusercontent.com/codingo/VHostScan/master/VHostScan/wordlists/virtual-host-scanning.txt" -O ~/virtual-host-scanning.txt
+	[ ! -f ~/virtual-host-scanning.txt ] && wget "https://raw.githubusercontent.com/codingo/VHostScan/master/VHostScan/wordlists/virtual-host-scanning.txt" -O ~/tools/virtual-host-scanning.txt
 	cat ~/recon/$1/$1-final.txt ~/recon/$1/$1-diff.txt ~/virtual-host-scanning.txt | sed "s/\%s/$1/g" | sort -u >> ~/recon/$1/$1-temp-vhost-wordlist.txt
 	path=$(pwd)
 	ffuf -c -w "$path/recon/$1/$1-temp-vhost-wordlist.txt:HOSTS" -w "$path/recon/$1/$1-open-ports.txt:TARGETS" -u http://TARGETS -k -H "Host: HOSTS" -mc all -fc 500-599 -o ~/recon/$1/virtual-hosts/$1.txt
@@ -362,7 +370,6 @@ rm ~/recon/$1/$1-temp-vhost-wordlist.txt
 sleep 5
 
 echo "[+] DirSearch Scanning for Sensitive Files [+]"
-[ ! -f ~/newlist.txt ] && echo "visit https://github.com/phspade/Combined-Wordlists/"
 cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort -u | xargs -P10 -I % sh -c "python3 ~/dirsearch/dirsearch.py -u % -e php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,old,gz,shtml,log,swp,yaml,yml,config,save,rsa,ppk -x 400,403,401,500,406,503,502 -t 100 --random-agents -b --plain-text-report ~/recon/$1/dirsearch/%-dirsearch.txt"
 echo "[+] Done dirsearch for file and directory scanning"
 sleep 5
