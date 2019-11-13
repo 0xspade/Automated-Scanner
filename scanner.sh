@@ -1,7 +1,7 @@
 #!/bin/bash
 
-passwordx="Welcome@123" ## I DONT CARE ## Just change it
-github_token=$GITROB_ACCESS_TOKEN ## NOT AGAIN :) Just change me to your github access token 
+passwordx="" ## I DONT CARE
+github_token=$GITROB_ACCESS_TOKEN ## NOT AGAIN :)
 
 [ ! -f ~/recon ] && mkdir ~/recon
 [ ! -f ~/recon/$1 ] && mkdir ~/recon/$1
@@ -122,7 +122,7 @@ sleep 5
 echo "[+] GOBUSTER SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-gobuster.txt ] && [ ! -z $(which gobuster) ]; then
 	[ ! -f ~/tools/all.txt ] && wget "https://gist.githubusercontent.com/jhaddix/86a06c5dc309d08580a018c66354a056/raw/96f4e51d96b2203f19f6381c8c545b278eaa0837/all.txt" -O ~/tools/all.txt
-	gobuster dns -d $1 -t 100 -w ~/all.txt --wildcard -o ~/recon/$1/$1-gobust.txt
+	gobuster dns -d $1 -t 100 -w ~/tools/all.txt --wildcard -o ~/recon/$1/$1-gobust.txt
 	cat ~/recon/$1/$1-gobust.txt | grep "Found:" | awk {'print $2'} > ~/recon/$1/$1-gobuster.txt
 	rm ~/recon/$1/$1-gobust.txt
 	gobusterscan=`scanned ~/recon/$1/$1-gobuster.txt`
@@ -143,7 +143,7 @@ sleep 5
 echo "[+] DNSGEN SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-dnsgen.txt ] && [ ! -z $(which dnsgen) ]; then
 	[ ! -f ~/tools/dnsgen.txt ] && wget "https://raw.githubusercontent.com/infosec-au/altdns/master/words.txt" -O ~/tools/dnsgen.txt
-	cat ~/recon/$1/$1-final.txt | dnsgen -w ~/dnsgen.txt - | massdns -r ~/tools/massdns/lists/resolvers.txt -o J --flush 2>/dev/null | jq -r .query_name | sort -u | tee -a ~/recon/$1/$1-dnsgen.tmp
+	cat ~/recon/$1/$1-final.txt | dnsgen -w ~/tools/dnsgen.txt - | massdns -r ~/tools/massdns/lists/resolvers.txt -o J --flush 2>/dev/null | jq -r .query_name | sort -u | tee -a ~/recon/$1/$1-dnsgen.tmp
 	cat ~/recon/$1/$1-dnsgen.tmp | sed 's/-\.//g' | sed 's/-\.//g' | sed 's/-\-\-\-//g' | sort -u > ~/recon/$1/$1-dnsgen.txt
 	rm ~/recon/$1/$1-dnsgen.tmp
 	sleep 3
@@ -155,7 +155,6 @@ else
 	echo "[!] Skipping ..."
 fi
 sleep 5
-
 
 cat ~/recon/$1/$1-dnsgen.txt ~/recon/$1/$1-final.txt | sort -u >> ~/recon/$1/$1-fin.txt
 rm ~/recon/$1/$1-final.txt && mv ~/recon/$1/$1-fin.txt ~/recon/$1/$1-final.txt
@@ -241,8 +240,8 @@ sleep 5
 echo "[+] SUBJACK for Subdomain TKO [+]"
 if [ ! -f ~/recon/$1/$1-subjack.txt ] && [ ! -z $(which subjack) ]; then
 	[ ! -f ~/tools/fingerprints.json ] && wget "https://raw.githubusercontent.com/haccer/subjack/master/fingerprints.json" -O ~/tools/fingerprints.json
-	subjack -w ~/recon/$1/$1-alive.txt -a -timeout 15 -c ~/fingerprints.json -v -m -o ~/recon/$1/$1-subtemp.txt
-	subjack -w ~/recon/$1/$1-alive.txt -a -timeout 15 -c ~/fingerprints.json -v -m -ssl -o ~/recon/$1/$1-subtmp.txt
+	subjack -w ~/recon/$1/$1-alive.txt -a -timeout 15 -c ~/tools/fingerprints.json -v -m -o ~/recon/$1/$1-subtemp.txt
+	subjack -w ~/recon/$1/$1-alive.txt -a -timeout 15 -c ~/tools/fingerprints.json -v -m -ssl -o ~/recon/$1/$1-subtmp.txt
 	cat ~/recon/$1/$1-subtemp.txt ~/recon/$1/$1-subtmp.txt | sort -u > ~/recon/$1/$1-subjack.txt
 	rm ~/recon/$1/$1-subtemp.txt ~/recon/$1/$1-subtmp.txt
 	message "subjack%20scanner%20done%20for%20$1"
@@ -305,7 +304,7 @@ if [ ! -f ~/recon/$1/$1-nmap.txt ] && [ ! -z $(which nmap) ]; then
 	[ ! -f ~/tools/nmap-bootstrap.xsl ] && wget "https://raw.githubusercontent.com/honze-net/nmap-bootstrap-xsl/master/nmap-bootstrap.xsl" -O ~/tools/nmap-bootstrap.xsl
 	echo $passwordx | sudo -S nmap -sSVC -A -O -Pn -p$big_ports -iL ~/recon/$1/$1-ip.txt --script http-enum,http-title,vulners --stylesheet ~/tools/nmap-bootstrap.xsl -oA ~/recon/$1/$1-nmap
 	nmaps=`scanned ~/recon/$1/$1-ip.txt`
-	xsltproc -o ~/recon/$1/$1-nmap.html ~/nmap-bootstrap.xsl ~/recon/$1/$1-nmap.xml
+	xsltproc -o ~/recon/$1/$1-nmap.html ~/tools/nmap-bootstrap.xsl ~/recon/$1/$1-nmap.xml
 	message "Nmap%20Scanned%20$nmaps%20IPs%20for%20$1"
 	echo "[+] Done nmap for scanning IPs"
 else
