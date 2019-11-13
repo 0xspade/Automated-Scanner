@@ -26,7 +26,7 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 >changing altdns to dnsgen. it's faster than altdns
 
 **Scan All Alive Hosts with [filter-resolved](https://github.com/tomnomnom/hacks/tree/master/filter-resolved) and [Httprobe](https://github.com/tomnomnom/httprobe)**
->The reason we implement this is filter-resolved has an output which httprobe doesn't have. We filter it using diff and include it to vhost scan's wordlist :)
+>The reason we implement this, Is filter-resolved has an output which httprobe doesn't have. We filter it using diff and include it to vhost scan's wordlist :)
 
 **Separating Cloudflare IPs to Non-Cloudflare IPs**
 >It's useless to scan Cloudflare IPs.
