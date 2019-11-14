@@ -39,7 +39,7 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 **Collecting Endpoints thru [Linkfinder](https://github.com/GerbenJavado/LinkFinder/)**
 
 **Collecting Endpoints thru [Github](https://github.com/gwen001/github-search/blob/master/github-endpoints.py)**
->make sure to create `.tokens` file together with github-endpoints.py (probably in ~/tools folder).
+>make sure to create `.tokens` file *(containing your github token)* together with `github-endpoints.py` (probably in ~/tools folder).
 
 **[Massdns](https://github.com/blechschmidt/massdns)**
 
