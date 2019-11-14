@@ -1,6 +1,6 @@
 #!/bin/bash
 
-passwordx="Welcome@123" ## I DONT CARE
+passwordx="" ## I DONT CARE
 github_token=$GITROB_ACCESS_TOKEN ## NOT AGAIN :)
 
 [ ! -f ~/recon ] && mkdir ~/recon
@@ -18,8 +18,8 @@ github_token=$GITROB_ACCESS_TOKEN ## NOT AGAIN :)
 sleep 5
 
 message () {
-	telegram_bot="709353033:AAHyciecUqwNGqSTY5bHMppaNneDBxEmUbw" ## I DONT KNOW :)
-	telegram_id="603895339"
+	telegram_bot="" ## I DONT KNOW :)
+	telegram_id=""
 	alert="https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text="
 	[ -z $telegram_bot ] && [ -z $telegram_id ] || curl -g $alert$1 --silent > /dev/null
 }
