@@ -1,20 +1,19 @@
 #!/bin/bash
 
 passwordx="" ## I DONT CARE
-github_token=$GITROB_ACCESS_TOKEN ## NOT AGAIN :)
 
-[ ! -f ~/recon ] && mkdir ~/recon
-[ ! -f ~/recon/$1 ] && mkdir ~/recon/$1
-[ ! -f ~/recon/$1/whatweb ] && mkdir ~/recon/$1/whatweb
-[ ! -f ~/recon/$1/eyewitness ] && mkdir ~/recon/$1/eyewitness
-[ ! -f ~/recon/$1/shodan ] && mkdir ~/recon/$1/shodan
-[ ! -f ~/recon/$1/dirsearch ] && mkdir ~/recon/$1/dirsearch
-[ ! -f ~/recon/$1/default-credential ] && mkdir ~/recon/$1/default-credential
-[ ! -f ~/recon/$1/virtual-hosts ] && mkdir ~/recon/$1/virtual-hosts
-[ ! -f ~/recon/$1/endpoints ] && mkdir ~/recon/$1/endpoints
-[ ! -f ~/recon/$1/github-endpoints ] && mkdir ~/recon/$1/github-endpoints
-[ ! -f ~/recon/$1/otxurls ] && mkdir ~/recon/$1/otxurls
-[ ! -f ~/recon/$1/waybackurls ] && mkdir ~/recon/$1/waybackurls
+[ ! -f ~/recon ] || mkdir ~/recon
+[ ! -f ~/recon/$1 ] || mkdir ~/recon/$1
+[ ! -f ~/recon/$1/whatweb ] || mkdir ~/recon/$1/whatweb
+[ ! -f ~/recon/$1/eyewitness ] || mkdir ~/recon/$1/eyewitness
+[ ! -f ~/recon/$1/shodan ] || mkdir ~/recon/$1/shodan
+[ ! -f ~/recon/$1/dirsearch ] || mkdir ~/recon/$1/dirsearch
+[ ! -f ~/recon/$1/default-credential ] || mkdir ~/recon/$1/default-credential
+[ ! -f ~/recon/$1/virtual-hosts ] || mkdir ~/recon/$1/virtual-hosts
+[ ! -f ~/recon/$1/endpoints ] || mkdir ~/recon/$1/endpoints
+[ ! -f ~/recon/$1/github-endpoints ] || mkdir ~/recon/$1/github-endpoints
+[ ! -f ~/recon/$1/otxurls ] || mkdir ~/recon/$1/otxurls
+[ ! -f ~/recon/$1/waybackurls ] || mkdir ~/recon/$1/waybackurls
 sleep 5
 
 message () {
@@ -221,7 +220,7 @@ else
 fi
 sleep 5
 
-diff --new-line-format="" --unchanged-line-format="" <(cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort) <(sort ~/recon/$1/$1-alive.txt)  > ~/recon/$1/$1-diff.txt
+diff --new-line-format="" --unchanged-line-format="" <(cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort) <(sort ~/recon/$1/$1-alive.txt) > ~/recon/$1/$1-diff.txt
 
 echo "[+] TKO-SUBS for Subdomain TKO [+]"
 if [ ! -f ~/recon/$1/$1-subover.txt ] && [ ! -z $(which tko-subs) ]; then
@@ -268,11 +267,17 @@ echo "[+] Done collecting endpoint"
 sleep 5
 
 echo "[+] COLLECTING ENDPOINTS FROM GITHUB [+]"
-for url in `cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort -u`; do 
-	python3 ~/tools/github-endpoints.py -t $github_token -d $url -s -r > ~/recon/$1/github-endpoints/$url.txt
-done
-message "Done%20collecting%20endpoint%20in%20$1"
-echo "[+] Done collecting endpoint"
+if [ ! -z $(cat ~/tools/.tokens) ]; then
+	for url in `cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort -u`; do 
+		python3 ~/tools/github-endpoints.py -d $url -s -r > ~/recon/$1/github-endpoints/$url.txt
+		sleep 3
+	done
+	message "Done%20collecting%20endpoint%20in%20$1"
+	echo "[+] Done collecting endpoint"
+else
+	message "Skipping%20github-endpoint%20script%20in%20$1"
+	echo "[!] Skipping ..."
+fi
 sleep 5
 
 echo "[+] MASSDNS SCANNING [+]"
