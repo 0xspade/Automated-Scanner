@@ -1,6 +1,6 @@
 #!/bin/bash
 
-passwordx="" ## I DONT CARE
+passwordx="Welcome@123" ## I DONT CARE
 github_token=$GITROB_ACCESS_TOKEN ## NOT AGAIN :)
 
 [ ! -f ~/recon ] && mkdir ~/recon
@@ -18,8 +18,8 @@ github_token=$GITROB_ACCESS_TOKEN ## NOT AGAIN :)
 sleep 5
 
 message () {
-	telegram_bot="" ## I DONT KNOW :)
-	telegram_id=""
+	telegram_bot="709353033:AAHyciecUqwNGqSTY5bHMppaNneDBxEmUbw" ## I DONT KNOW :)
+	telegram_id="603895339"
 	alert="https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text="
 	[ -z $telegram_bot ] && [ -z $telegram_id ] || curl -g $alert$1 --silent > /dev/null
 }
@@ -140,12 +140,11 @@ rm ~/recon/$1/$1-amass.txt ~/recon/$1/$1-project-sonar.txt ~/recon/$1/$1-findoma
 touch ~/recon/$1/$1-ipz.txt
 sleep 5
 
-echo "[+] DNSGEN SCANNING [+]"
-if [ ! -f ~/recon/$1/$1-dnsgen.txt ] && [ ! -z $(which dnsgen) ]; then
-	[ ! -f ~/tools/dnsgen.txt ] && wget "https://raw.githubusercontent.com/infosec-au/altdns/master/words.txt" -O ~/tools/dnsgen.txt
-	cat ~/recon/$1/$1-final.txt | dnsgen -w ~/tools/dnsgen.txt - | massdns -r ~/tools/massdns/lists/resolvers.txt -o J --flush 2>/dev/null | jq -r .query_name | sort -u | tee -a ~/recon/$1/$1-dnsgen.tmp
+echo "[+] DNSGEN & TOK SUBDOMAIN PERMUTATION [+]"
+if [ ! -f ~/recon/$1/$1-dnsgen.txt ] && [ ! -z $(which dnsgen) ] && [ ! -z $(which tok) ]; then
+	cat ~/recon/$1/$1-final.txt | tok | sort -u > ~/recon/$1/$1-final.tmp
+	cat ~/recon/$1/$1-final.txt | dnsgen -w ~/recon/$1/$1-final.tmp - | massdns -r ~/tools/massdns/lists/resolvers.txt -o J --flush 2>/dev/null | jq -r .query_name | sort -u | tee -a ~/recon/$1/$1-dnsgen.tmp
 	cat ~/recon/$1/$1-dnsgen.tmp | sed 's/-\.//g' | sed 's/-\.//g' | sed 's/-\-\-\-//g' | sort -u > ~/recon/$1/$1-dnsgen.txt
-	rm ~/recon/$1/$1-dnsgen.tmp
 	sleep 3
 	dnsgens=`scanned ~/recon/$1/$1-dnsgen.txt`
 	message "DNSGEN%20generates%20$dnsgens%20subdomain(s)%20for%20$1"
@@ -256,7 +255,13 @@ echo "[+] COLLECTING ENDPOINTS [+]"
 for urlz in `cat ~/recon/$1/$1-httprobe.txt`; do 
 	filename=`echo $urlz | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g'`
 	link=$(python ~/tools/LinkFinder/linkfinder.py -i $urlz -d -o cli | grep -E "*.js$" | grep "$1" | grep "Running against:" |awk {'print $3'})
-	python3 ~/tools/LinkFinder/linkfinder.py -i $link -d -o cli > ~/recon/$1/endpoints/$filename-result.txt
+	if [ ! -z $link ]; then
+		for linx in $link; do
+			python3 ~/tools/LinkFinder/linkfinder.py -i $linx -o cli > ~/recon/$1/endpoints/$filename-result.txt
+		done
+	else
+		echo "------ :) ------"
+	fi
 done
 message "Done%20collecting%20endpoint%20in%20$1"
 echo "[+] Done collecting endpoint"
@@ -302,7 +307,7 @@ echo "[+] NMAP PORT SCANNING [+]"
 big_ports=`cat ~/recon/$1/$1-masscan.txt | grep 'Host:' | awk {'print $5'} | awk -F '/' {'print $1'} | sort -u | paste -s -d ','`
 if [ ! -f ~/recon/$1/$1-nmap.txt ] && [ ! -z $(which nmap) ]; then
 	[ ! -f ~/tools/nmap-bootstrap.xsl ] && wget "https://raw.githubusercontent.com/honze-net/nmap-bootstrap-xsl/master/nmap-bootstrap.xsl" -O ~/tools/nmap-bootstrap.xsl
-	echo $passwordx | sudo -S nmap -sSVC -A -O -Pn -p$big_ports -iL ~/recon/$1/$1-ip.txt --script http-enum,http-title,vulners --stylesheet ~/tools/nmap-bootstrap.xsl -oA ~/recon/$1/$1-nmap
+	echo $passwordx | sudo -S nmap -sSVC -A -O -Pn -p$big_ports -iL ~/recon/$1/$1-ip.txt --script http-enum,http-title --stylesheet ~/tools/nmap-bootstrap.xsl -oA ~/recon/$1/$1-nmap
 	nmaps=`scanned ~/recon/$1/$1-ip.txt`
 	xsltproc -o ~/recon/$1/$1-nmap.html ~/tools/nmap-bootstrap.xsl ~/recon/$1/$1-nmap.xml
 	message "Nmap%20Scanned%20$nmaps%20IPs%20for%20$1"
@@ -315,9 +320,10 @@ sleep 5
 
 echo "[+] DEFAULT CREDENTIAL SCANNING [+]"
 if [ -e ~/tools/changeme/changeme.py ] && [ "active" == `systemctl is-active redis` ]; then
-	for targets in `cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $2":"$5'} | awk -F '/' {'print $1'}`; do	python3 ~/tools/changeme/changeme.py --redishost redis --protocols http,snmp,ssh,ftp,memcached,mongo,mssql,mysql,postgres,telnet --portoverride $targets -d --fresh -v --ssl --timeout 25 -o ~/recon/$1/default-credential/$targets-changeme.csv; done
+	for targets in `cat ~/recon/$1/$1-open-ports.txt`;do python3 ~/tools/changeme/changeme.py --redishost redis --all --threads 20 --portoverride $targets -d --fresh -v --ssl --timeout 25 -o ~/recon/$1/default-credential/$targets-changeme.csv; done
 	message "Default%20Credential%20done%20for%20$1"
 	echo "[+] Done changeme for scanning default credentials"
+	for process in `ps aux | grep changeme | awk {'print $2'}`; do kill -9 $process > /dev/null; done
 else
 	message "[-]%20Skipping%20Default%20Credential%20Scanning%20for%20$1"
 	echo "[!] Skipping ..."
@@ -355,11 +361,12 @@ sleep 5
 echo "[+] Scanning for Virtual Hosts Resolution [+]"
 if [ ! -z $(which ffuf) ]; then
 	[ ! -f ~/tools/virtual-host-scanning.txt ] && wget "https://raw.githubusercontent.com/codingo/VHostScan/master/VHostScan/wordlists/virtual-host-scanning.txt" -O ~/tools/virtual-host-scanning.txt
-	cat ~/recon/$1/$1-final.txt ~/recon/$1/$1-diff.txt ~/tools/virtual-host-scanning.txt | sed "s/\%s/$1/g" | sort -u >> ~/recon/$1/$1-temp-vhost-wordlist.txt
+	cat ~/recon/$1/$1-final.txt ~/recon/$1/$1-dnsgen.tmp ~/recon/$1/$1-final.tmp ~/recon/$1/$1-diff.txt ~/tools/virtual-host-scanning.txt | sed "s/\%s/$1/g" | sort -u >> ~/recon/$1/$1-temp-vhost-wordlist.txt
 	path=$(pwd)
 	ffuf -c -w "$path/recon/$1/$1-temp-vhost-wordlist.txt:HOSTS" -w "$path/recon/$1/$1-open-ports.txt:TARGETS" -u http://TARGETS -k -H "Host: HOSTS" -mc all -fc 500-599 -o ~/recon/$1/virtual-hosts/$1.txt
 	ffuf -c -w "$path/recon/$1/$1-temp-vhost-wordlist.txt:HOSTS" -w "$path/recon/$1/$1-open-ports.txt:TARGETS" -u https://TARGETS -k -H "Host: HOSTS" -mc all -fc 500-599 -o ~/recon/$1/virtual-hosts/$1-ssl.txt
 	message "Virtual%20Host(s)%20done%20for%20$1"
+	rm ~/recon/$1/$1-dnsgen.tmp ~/recon/$1/$1-final.tmp ~/recon/$1/$1-diff.txt
 	echo "[+] Done ffuf for scanning virtual hosts"
 else
 	message "[-]%20Skipping%20ffuf%20for%20vhost%20scanning"
