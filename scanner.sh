@@ -1,6 +1,6 @@
 #!/bin/bash
 
-passwordx="" ## I DONT CARE
+passwordx=$(cat ~/tools/.creds | grep password | awk {'print $3'})
 
 [ ! -f ~/recon ] || mkdir ~/recon
 [ ! -f ~/recon/$1 ] || mkdir ~/recon/$1
@@ -17,8 +17,8 @@ passwordx="" ## I DONT CARE
 sleep 5
 
 message () {
-	telegram_bot="" ## I DONT KNOW :)
-	telegram_id=""
+	telegram_bot=$(cat ~/tools/.creds | grep "telegram_bot" | awk {'print $3'})
+	telegram_id=$(cat ~/tools/.creds | grep "telegram_id" | awk {'print $3'})
 	alert="https://api.telegram.org/bot$telegram_bot/sendmessage?chat_id=$telegram_id&text="
 	[ -z $telegram_bot ] && [ -z $telegram_id ] || curl -g $alert$1 --silent > /dev/null
 }
