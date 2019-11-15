@@ -4,7 +4,7 @@ passwordx=$(cat ~/tools/.creds | grep password | awk {'print $3'})
 
 [ ! -f ~/recon ] && mkdir ~/recon
 [ ! -f ~/recon/$1 ] && mkdir ~/recon/$1
-[ ! -f ~/recon/$1/whatweb ] && mkdir ~/recon/$1/whatweb
+[ ! -f ~/recon/$1/webanalyze ] && mkdir ~/recon/$1/webanalyze
 [ ! -f ~/recon/$1/eyewitness ] && mkdir ~/recon/$1/eyewitness
 [ ! -f ~/recon/$1/shodan ] && mkdir ~/recon/$1/shodan
 [ ! -f ~/recon/$1/dirsearch ] && mkdir ~/recon/$1/dirsearch
@@ -27,7 +27,7 @@ scanned () {
 	cat $1 | sort -u | wc -l
 }
 
-message "[+]%20Initiating%20scan%20%3A%20$1%20[+]"
+message "[%3B]%20Initiating%20scan%20%3A%20$1%20[%3B]"
 date
 
 echo "[+] AMASS SCANNING [+]"
@@ -144,7 +144,6 @@ if [ ! -f ~/recon/$1/$1-dnsgen.txt ] && [ ! -z $(which dnsgen) ] && [ ! -z $(whi
 	cat ~/recon/$1/$1-final.txt | tok | sort -u > ~/recon/$1/$1-final.tmp
 	cat ~/recon/$1/$1-final.txt | dnsgen -w ~/recon/$1/$1-final.tmp - | massdns -r ~/tools/massdns/lists/resolvers.txt -o J --flush 2>/dev/null | jq -r .query_name | sort -u | tee -a ~/recon/$1/$1-dnsgen.tmp
 	cat ~/recon/$1/$1-dnsgen.tmp | sed 's/-\.//g' | sed 's/-\.//g' | sed 's/-\-\-\-//g' | sort -u > ~/recon/$1/$1-dnsgen.txt
-	sleep 3
 	dnsgens=`scanned ~/recon/$1/$1-dnsgen.txt`
 	message "DNSGEN%20generates%20$dnsgens%20subdomain(s)%20for%20$1"
 	echo "[+] DNSGEN generate $dnsgens subdomains"
@@ -192,7 +191,7 @@ else
 fi
 sleep 5
 
-cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $2":"$5'} | awk -F '/' {'print $1'} | sort -u > ~/recon/$1/$1-open-ports.txt  
+cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $2":"$5'} | awk -F '/' {'print $1'} | sed 's/:80$//g' | sed 's/:443$//g' | sort -u > ~/recon/$1/$1-open-ports.txt  
 cat ~/recon/$1/$1-open-ports.txt ~/recon/$1/$1-final.txt > ~/recon/$1/$1-all.txt
 
 echo "[+] HTTProbe Scanning Alive Hosts [+]"
@@ -270,7 +269,7 @@ echo "[+] COLLECTING ENDPOINTS FROM GITHUB [+]"
 if [ ! -z $(cat ~/tools/.tokens) ] && [ -e ~/tools/.tokens ]; then
 	for url in `cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort -u`; do 
 		python3 ~/tools/github-endpoints.py -d $url -s -r > ~/recon/$1/github-endpoints/$url.txt
-		sleep 3
+		sleep 5
 	done
 	message "Done%20collecting%20endpoint%20in%20$1"
 	echo "[+] Done collecting endpoint"
@@ -335,14 +334,17 @@ else
 fi
 sleep 5
 
-echo "[+] WHATWEB SCANNING FOR FINGERPRINTING [+]"
-if [ ! -z $(which whatweb) ]; then
-	for d in `cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $2":"$5'} | awk -F "/" {'print $1'}`;do whatweb $d | sed 's/, /  \r\n/g' >> ~/recon/$1/whatweb/$d-whatweb.txt; done
-	for d in `cat ~/recon/$1/$1-alive.txt`; do whatweb $d | sed 's/, /  \r\n/g' >> ~/recon/$1/whatweb/$d-whatweb.txt; done
-	message "Done%20whatweb%20for%20fingerprinting%20$1"
-	echo "[+] Done whatweb for fingerprinting the assets!"
+echo "[+] WEBANALYZE SCANNING FOR FINGERPRINTING [+]"
+if [ ! -z $(which webanalyze) ]; then
+	[ ! -f ~/tools/apps.json ] && wget "https://raw.githubusercontent.com/AliasIO/Wappalyzer/master/src/apps.json" -O ~/tools/apps.json
+	for target in `cat ~/recon/$1/$1-httprobe.txt`; do
+		filename=`echo $target | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g'`
+		webanalyze -host $target -apps ~/tools/apps.json > ~/recon/$1/webanalyze/$filename.txt
+	done
+	message "Done%20webanalyze%20for%20fingerprinting%20$1"
+	echo "[+] Done webanalyze for fingerprinting the assets!"
 else
-	message "[-]%20Skipping%20whatweb%20for%20fingerprinting%20$1"
+	message "[-]%20Skipping%20webanalyze%20for%20fingerprinting%20$1"
 	echo "[!] Skipping ..."
 fi
 sleep 5
