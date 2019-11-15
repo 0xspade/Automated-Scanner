@@ -22,7 +22,7 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 >https://github.com/phspade/Project_Sonar_R7
 * [CRT.SH](https://crt.sh/)
 * [GoBuster](https://github.com/OJ/gobuster) using Jason Haddix's [all.txt](https://gist.githubusercontent.com/jhaddix/86a06c5dc309d08580a018c66354a056/raw/96f4e51d96b2203f19f6381c8c545b278eaa0837/all.txt) wordlist
-* [DNSGen](https://github.com/ProjectAnte/dnsgen)
+* [DNSGen](https://github.com/ProjectAnte/dnsgen) / [tok](https://github.com/tomnomnom/hacks/tree/f2c5197ff4e0c09c84e1e11733dfa6549c4a407c/tok)
 >changing altdns to dnsgen. it's faster than altdns
 
 **Scan All Alive Hosts with [filter-resolved](https://github.com/tomnomnom/hacks/tree/master/filter-resolved) and [Httprobe](https://github.com/tomnomnom/httprobe)**
