@@ -51,7 +51,7 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 * NMAP
 * [Masscan](https://github.com/robertdavidgraham/masscan)
 
-**[Whatweb](https://github.com/urbanadventurer/WhatWeb) for Fingerprinting assets**
+**[Webanalyze](https://github.com/rverton/webanalyze) for Fingerprinting assets**
 
 **[Default Credential](https://github.com/ztgrace/changeme) Scanning**
 >Scanning default credentials for all protocols and services
