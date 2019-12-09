@@ -41,6 +41,8 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 **Collecting Endpoints thru [Github](https://github.com/gwen001/github-search/blob/master/github-endpoints.py)**
 >make sure to create `.tokens` file *(containing your github token)* together with `github-endpoints.py` (probably in ~/tools folder).
 
+**[HTTP Request Smuggler](https://github.com/gwen001/pentest-tools/blob/master/smuggler.py)**
+
 **[Massdns](https://github.com/blechschmidt/massdns)**
 
 **[Shodan](https://cli.shodan.io/)**
