@@ -14,6 +14,7 @@ passwordx=$(cat ~/tools/.creds | grep password | awk {'print $3'})
 [ ! -f ~/recon/$1/github-endpoints ] && mkdir ~/recon/$1/github-endpoints
 [ ! -f ~/recon/$1/otxurls ] && mkdir ~/recon/$1/otxurls
 [ ! -f ~/recon/$1/waybackurls ] && mkdir ~/recon/$1/waybackurls
+[ ! -f ~/recon/$1/http-desync ] && mkdir ~/recon/$1/http-desync 
 sleep 5
 
 message () {
@@ -222,10 +223,9 @@ sleep 5
 diff --new-line-format="" --unchanged-line-format="" <(cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort) <(sort ~/recon/$1/$1-alive.txt) > ~/recon/$1/$1-diff.txt
 
 echo "[+] TKO-SUBS for Subdomain TKO [+]"
-if [ ! -f ~/recon/$1/$1-subover.txt ] && [ ! -z $(which tko-subs) ]; then
+if [ ! -f ~/recon/$1/$1-tkosubs.txt ] && [ ! -z $(which tko-subs) ]; then
 	[ ! -f ~/tools/providers-data.csv ] && wget "https://raw.githubusercontent.com/anshumanbh/tko-subs/master/providers-data.csv" -O ~/tools/providers-data.csv
 	tko-subs -domains=recon/$1/$1-alive.txt -data=tools/providers-data.csv -output=recon/$1/$1-tkosubs.txt
-	rm ~/recon/$1/$1-subtemp.txt ~/recon/$1/$1-subtmp.txt
 	message "TKO-Subs%20scanner%20done%20for%20$1"
 	echo "[+] TKO-Subs scanner is done"
 else
@@ -275,6 +275,17 @@ if [ ! -z $(cat ~/tools/.tokens) ] && [ -e ~/tools/.tokens ]; then
 	echo "[+] Done collecting endpoint"
 else
 	message "Skipping%20github-endpoint%20script%20in%20$1"
+	echo "[!] Skipping ..."
+fi
+sleep 5
+
+echo "[+] HTTP SMUGGLING SCANNING [+]"
+if [ -e ~/tools/smuggler.py ]; then
+	cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort -u | xargs -P10 -I % sh -c "python3 ~/tools/smuggler.py -o % -v 1 >> ~/recon/$1/http-desync/%.txt"
+	message "Done%20scanning%20of%20request%20smuggling%20in%20$1"
+	echo "[+] Done scanning of request smuggling"
+else
+	message "Skipping%20scanning%20of%20request%20smuggling%20in%20$1"
 	echo "[!] Skipping ..."
 fi
 sleep 5
@@ -368,10 +379,10 @@ sleep 5
 echo "[+] Scanning for Virtual Hosts Resolution [+]"
 if [ ! -z $(which ffuf) ]; then
 	[ ! -f ~/tools/virtual-host-scanning.txt ] && wget "https://raw.githubusercontent.com/codingo/VHostScan/master/VHostScan/wordlists/virtual-host-scanning.txt" -O ~/tools/virtual-host-scanning.txt
-	cat ~/recon/$1/$1-final.txt ~/recon/$1/$1-dnsgen.tmp ~/recon/$1/$1-final.tmp ~/recon/$1/$1-diff.txt ~/tools/virtual-host-scanning.txt | sed "s/\%s/$1/g" | sort -u >> ~/recon/$1/$1-temp-vhost-wordlist.txt
+	cat ~/recon/$1/$1-open-ports.txt ~/recon/$1/$1-final.txt ~/recon/$1/$1-dnsgen.tmp ~/recon/$1/$1-final.tmp ~/recon/$1/$1-diff.txt ~/tools/virtual-host-scanning.txt | sed "s/\%s/$1/g" | sort -u >> ~/recon/$1/$1-temp-vhost-wordlist.txt
 	path=$(pwd)
-	ffuf -c -w "$path/recon/$1/$1-temp-vhost-wordlist.txt:HOSTS" -w "$path/recon/$1/$1-open-ports.txt:TARGETS" -u http://TARGETS -k -H "Host: HOSTS" -mc all -fc 500-599 -o ~/recon/$1/virtual-hosts/$1.txt
-	ffuf -c -w "$path/recon/$1/$1-temp-vhost-wordlist.txt:HOSTS" -w "$path/recon/$1/$1-open-ports.txt:TARGETS" -u https://TARGETS -k -H "Host: HOSTS" -mc all -fc 500-599 -o ~/recon/$1/virtual-hosts/$1-ssl.txt
+	ffuf -c -w "$path/recon/$1/$1-temp-vhost-wordlist.txt:HOSTS" -w "$path/recon/$1/$1-alive.txt:TARGETS" -u http://TARGETS -k -H "Host: HOSTS" -H "Cache-Control: no-transform" -mc all -fc 500-599 -o ~/recon/$1/virtual-hosts/$1.txt
+	ffuf -c -w "$path/recon/$1/$1-temp-vhost-wordlist.txt:HOSTS" -w "$path/recon/$1/$1-alive.txt:TARGETS" -u https://TARGETS -k -H "Host: HOSTS" -H "Cache-Control: no-transform" -mc all -fc 500-599 -o ~/recon/$1/virtual-hosts/$1-ssl.txt
 	message "Virtual%20Host(s)%20done%20for%20$1"
 	rm ~/recon/$1/$1-dnsgen.tmp ~/recon/$1/$1-final.tmp ~/recon/$1/$1-diff.txt
 	echo "[+] Done ffuf for scanning virtual hosts"
