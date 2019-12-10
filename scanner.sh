@@ -28,7 +28,7 @@ scanned () {
 	cat $1 | sort -u | wc -l
 }
 
-message "[%3B]%20Initiating%20scan%20%3A%20$1%20[%3B]"
+message "[%2B]%20Initiating%20scan%20%3A%20$1%20[%2B]"
 date
 
 echo "[+] AMASS SCANNING [+]"
@@ -268,7 +268,7 @@ sleep 5
 echo "[+] COLLECTING ENDPOINTS FROM GITHUB [+]"
 if [ ! -z $(cat ~/tools/.tokens) ] && [ -e ~/tools/.tokens ]; then
 	for url in `cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort -u`; do 
-		python3 ~/tools/github-endpoints.py -d $url -s -r > ~/recon/$1/github-endpoints/$url.txt
+		python3 ~/tools/github-endpoints.py -d $url -s -r -t $(cat ~/tools/.tokens) > ~/recon/$1/github-endpoints/$url.txt
 		sleep 5
 	done
 	message "Done%20collecting%20endpoint%20in%20$1"
@@ -333,24 +333,12 @@ else
 fi
 sleep 5
 
-echo "[+] DEFAULT CREDENTIAL SCANNING [+]"
-if [ -e ~/tools/changeme/changeme.py ] && [ "active" == `systemctl is-active redis` ]; then
-	for targets in `cat ~/recon/$1/$1-open-ports.txt`;do python3 ~/tools/changeme/changeme.py --redishost redis --all --threads 20 --portoverride $targets -d --fresh -v --ssl --timeout 25 -o ~/recon/$1/default-credential/$targets-changeme.csv; done
-	message "Default%20Credential%20done%20for%20$1"
-	echo "[+] Done changeme for scanning default credentials"
-	for process in `ps aux | grep changeme | awk {'print $2'}`; do kill -9 $process > /dev/null; done
-else
-	message "[-]%20Skipping%20Default%20Credential%20Scanning%20for%20$1"
-	echo "[!] Skipping ..."
-fi
-sleep 5
-
 echo "[+] WEBANALYZE SCANNING FOR FINGERPRINTING [+]"
 if [ ! -z $(which webanalyze) ]; then
 	[ ! -f ~/tools/apps.json ] && wget "https://raw.githubusercontent.com/AliasIO/Wappalyzer/master/src/apps.json" -O ~/tools/apps.json
 	for target in `cat ~/recon/$1/$1-httprobe.txt`; do
 		filename=`echo $target | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g'`
-		webanalyze -host $target -apps ~/tools/apps.json > ~/recon/$1/webanalyze/$filename.txt
+		webanalyze -host $target -apps ~/tools/apps.json -output json > ~/recon/$1/webanalyze/$filename.txt
 	done
 	message "Done%20webanalyze%20for%20fingerprinting%20$1"
 	echo "[+] Done webanalyze for fingerprinting the assets!"
@@ -381,8 +369,8 @@ if [ ! -z $(which ffuf) ]; then
 	[ ! -f ~/tools/virtual-host-scanning.txt ] && wget "https://raw.githubusercontent.com/codingo/VHostScan/master/VHostScan/wordlists/virtual-host-scanning.txt" -O ~/tools/virtual-host-scanning.txt
 	cat ~/recon/$1/$1-open-ports.txt ~/recon/$1/$1-final.txt ~/recon/$1/$1-dnsgen.tmp ~/recon/$1/$1-final.tmp ~/recon/$1/$1-diff.txt ~/tools/virtual-host-scanning.txt | sed "s/\%s/$1/g" | sort -u >> ~/recon/$1/$1-temp-vhost-wordlist.txt
 	path=$(pwd)
-	ffuf -c -w "$path/recon/$1/$1-temp-vhost-wordlist.txt:HOSTS" -w "$path/recon/$1/$1-alive.txt:TARGETS" -u http://TARGETS -k -H "Host: HOSTS" -H "Cache-Control: no-transform" -mc all -fc 500-599 -o ~/recon/$1/virtual-hosts/$1.txt
-	ffuf -c -w "$path/recon/$1/$1-temp-vhost-wordlist.txt:HOSTS" -w "$path/recon/$1/$1-alive.txt:TARGETS" -u https://TARGETS -k -H "Host: HOSTS" -H "Cache-Control: no-transform" -mc all -fc 500-599 -o ~/recon/$1/virtual-hosts/$1-ssl.txt
+	ffuf -c -w "$path/recon/$1/$1-temp-vhost-wordlist.txt:HOSTS" -w "$path/recon/$1/$1-alive.txt:TARGETS" -u http://TARGETS -k -r -H "Host: HOSTS" -H "Cache-Control: no-transform" -mc all -fc 500-599 -of html -o ~/recon/$1/virtual-hosts/$1.txt
+	ffuf -c -w "$path/recon/$1/$1-temp-vhost-wordlist.txt:HOSTS" -w "$path/recon/$1/$1-alive.txt:TARGETS" -u https://TARGETS -k -r -H "Host: HOSTS" -H "Cache-Control: no-transform" -mc all -fc 500-599 -of html -o ~/recon/$1/virtual-hosts/$1-ssl.txt
 	message "Virtual%20Host(s)%20done%20for%20$1"
 	rm ~/recon/$1/$1-dnsgen.tmp ~/recon/$1/$1-final.tmp ~/recon/$1/$1-diff.txt
 	echo "[+] Done ffuf for scanning virtual hosts"
@@ -398,7 +386,19 @@ cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | 
 echo "[+] Done dirsearch for file and directory scanning"
 sleep 5
 
-[ ! -f ~/$1.out ] && mv $1.out ~/recon/$1/ 
+echo "[+] DEFAULT CREDENTIAL SCANNING [+]"
+if [ -e ~/tools/changeme/changeme.py ] && [ "active" == `systemctl is-active redis` ]; then
+	for targets in `cat ~/recon/$1/$1-open-ports.txt`;do python3 ~/tools/changeme/changeme.py --redishost redis --all --threads 20 --portoverride $targets -d --fresh -v --ssl --timeout 25 -o ~/recon/$1/default-credential/$targets-changeme.csv; done
+	message "Default%20Credential%20done%20for%20$1"
+	echo "[+] Done changeme for scanning default credentials"
+	for process in `ps aux | grep changeme | awk {'print $2'}`; do kill -9 $process > /dev/null; done
+else
+	message "[-]%20Skipping%20Default%20Credential%20Scanning%20for%20$1"
+	echo "[!] Skipping ..."
+fi
+sleep 5
+
+[ ! -f ~/$1.out ] && mv ~/$1.out ~/recon/$1/ 
 message "Scanner%20Done%20for%20$1"
 date
 echo "[+] Done scanner :)"
