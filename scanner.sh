@@ -110,7 +110,7 @@ sleep 5
 echo "[+] CRT.SH SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-crt.txt ]; then
 	crtsh=$(curl "https://crt.sh/?q=%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u)
-	for target in $crtsh; do curl "https://crt.sh/?q=%25.$crtsh&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/recon/$1/$1-crt.txt; done
+	for target in $crtsh; do curl "https://crt.sh/?q=%25.$target&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/recon/$1/$1-crt.txt; done
 	crt=`scanned ~/recon/$1/$1-crt.txt`
 	message "CRT.SH%20Found%20$crt%20subdomain(s)%20for%20$1"
 	echo "[+] CRT.sh Found $crt subdomains"
