@@ -28,7 +28,7 @@ scanned () {
 	cat $1 | sort -u | wc -l
 }
 
-message "[%2B]%20Initiating%20scan%20%3A%20$1%20[%2B]"
+message "[%3B]%20Initiating%20scan%20%3A%20$1%20[%3B]"
 date
 
 echo "[+] AMASS SCANNING [+]"
@@ -109,7 +109,8 @@ sleep 5
 
 echo "[+] CRT.SH SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-crt.txt ]; then
-	curl "https://crt.sh/?q=%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/recon/$1/$1-crt.txt
+	crtsh=$(curl "https://crt.sh/?q=%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u)
+	for target in $crtsh; do curl "https://crt.sh/?q=%25.$crtsh&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/recon/$1/$1-crt.txt; done
 	crt=`scanned ~/recon/$1/$1-crt.txt`
 	message "CRT.SH%20Found%20$crt%20subdomain(s)%20for%20$1"
 	echo "[+] CRT.sh Found $crt subdomains"
@@ -142,7 +143,7 @@ sleep 5
 
 echo "[+] DNSGEN & TOK SUBDOMAIN PERMUTATION [+]"
 if [ ! -f ~/recon/$1/$1-dnsgen.txt ] && [ ! -z $(which dnsgen) ] && [ ! -z $(which tok) ]; then
-	cat ~/recon/$1/$1-final.txt | tok | sort -u > ~/recon/$1/$1-final.tmp
+	cat ~/recon/$1/$1-final.txt | sed 's/\.$//g' | tok | sort -u > ~/recon/$1/$1-final.tmp
 	cat ~/recon/$1/$1-final.txt | dnsgen -w ~/recon/$1/$1-final.tmp - | massdns -r ~/tools/massdns/lists/resolvers.txt -o J --flush 2>/dev/null | jq -r .query_name | sort -u | tee -a ~/recon/$1/$1-dnsgen.tmp
 	cat ~/recon/$1/$1-dnsgen.tmp | sed 's/-\.//g' | sed 's/-\.//g' | sed 's/-\-\-\-//g' | sort -u > ~/recon/$1/$1-dnsgen.txt
 	dnsgens=`scanned ~/recon/$1/$1-dnsgen.txt`
