@@ -143,7 +143,7 @@ sleep 5
 
 echo "[+] DNSGEN & TOK SUBDOMAIN PERMUTATION [+]"
 if [ ! -f ~/recon/$1/$1-dnsgen.txt ] && [ ! -z $(which dnsgen) ] && [ ! -z $(which tok) ]; then
-	cat ~/recon/$1/$1-final.txt | sed 's/\.$//g' | tok | sort -u > ~/recon/$1/$1-final.tmp
+	cat ~/recon/$1/$1-final.txt | tok | sort -u > ~/recon/$1/$1-final.tmp
 	cat ~/recon/$1/$1-final.txt | dnsgen -w ~/recon/$1/$1-final.tmp - | massdns -r ~/tools/massdns/lists/resolvers.txt -o J --flush 2>/dev/null | jq -r .query_name | sort -u | tee -a ~/recon/$1/$1-dnsgen.tmp
 	cat ~/recon/$1/$1-dnsgen.tmp | sed 's/-\.//g' | sed 's/-\.//g' | sed 's/-\-\-\-//g' | sort -u > ~/recon/$1/$1-dnsgen.txt
 	dnsgens=`scanned ~/recon/$1/$1-dnsgen.txt`
@@ -155,7 +155,7 @@ else
 fi
 sleep 5
 
-cat ~/recon/$1/$1-dnsgen.txt ~/recon/$1/$1-final.txt | sort -u >> ~/recon/$1/$1-fin.txt
+cat ~/recon/$1/$1-dnsgen.txt ~/recon/$1/$1-final.txt | sed 's/\.$//g' | sort -u >> ~/recon/$1/$1-fin.txt
 rm ~/recon/$1/$1-final.txt && mv ~/recon/$1/$1-fin.txt ~/recon/$1/$1-final.txt
 all=`scanned ~/recon/$1/$1-final.txt`
 message "Almost%20$all%20Collected%20Subdomains%20for%20$1"
