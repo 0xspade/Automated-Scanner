@@ -28,7 +28,7 @@ scanned () {
 	cat $1 | sort -u | wc -l
 }
 
-message "[%3B]%20Initiating%20scan%20%3A%20$1%20[%3B]"
+message "[%2B]%20Initiating%20scan%20%3A%20$1%20[%2B]"
 date
 
 echo "[+] AMASS SCANNING [+]"
@@ -143,8 +143,8 @@ sleep 5
 
 echo "[+] DNSGEN & TOK SUBDOMAIN PERMUTATION [+]"
 if [ ! -f ~/recon/$1/$1-dnsgen.txt ] && [ ! -z $(which dnsgen) ] && [ ! -z $(which tok) ]; then
-	cat ~/recon/$1/$1-final.txt | tok | sort -u > ~/recon/$1/$1-final.tmp
-	cat ~/recon/$1/$1-final.txt | dnsgen -w ~/recon/$1/$1-final.tmp - | massdns -r ~/tools/massdns/lists/resolvers.txt -o J --flush 2>/dev/null | jq -r .query_name | sort -u | tee -a ~/recon/$1/$1-dnsgen.tmp
+	cat ~/recon/$1/$1-final.txt | sed 's/\.$//g' | tok | sort -u > ~/recon/$1/$1-final.tmp
+	cat ~/recon/$1/$1-final.txt | sed 's/\.$//g' | dnsgen -w ~/recon/$1/$1-final.tmp - | massdns -r ~/tools/massdns/lists/resolvers.txt -o J --flush 2>/dev/null | jq -r .query_name | sort -u | tee -a ~/recon/$1/$1-dnsgen.tmp
 	cat ~/recon/$1/$1-dnsgen.tmp | sed 's/-\.//g' | sed 's/-\.//g' | sed 's/-\-\-\-//g' | sort -u > ~/recon/$1/$1-dnsgen.txt
 	dnsgens=`scanned ~/recon/$1/$1-dnsgen.txt`
 	message "DNSGEN%20generates%20$dnsgens%20subdomain(s)%20for%20$1"
@@ -282,7 +282,9 @@ sleep 5
 
 echo "[+] HTTP SMUGGLING SCANNING [+]"
 if [ -e ~/tools/smuggler.py ]; then
-	cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort -u | xargs -P10 -I % sh -c "python3 ~/tools/smuggler.py -o % -v 1 >> ~/recon/$1/http-desync/%.txt"
+	for url in `cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort -u`; do
+		python3 ~/tools/smuggler.py -u $url -v 1 >> ~/recon/$1/http-desync/$url.txt
+	done
 	message "Done%20scanning%20of%20request%20smuggling%20in%20$1"
 	echo "[+] Done scanning of request smuggling"
 else
