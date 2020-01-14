@@ -1,3 +1,4 @@
 password = password123 ##changeme ofcourse
 telegram_bot = mytelegrambot ##changeme ofcourse
 telegram_id = 123456
+dns_server = myserver.xyz
