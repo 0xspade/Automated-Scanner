@@ -1,6 +1,7 @@
 #!/bin/bash
 
 passwordx=$(cat ~/tools/.creds | grep password | awk {'print $3'})
+dns_server=$(cat ~/tools/.creds | grep 'dns_server' | awk {'print $3'})
 
 [ ! -f ~/recon ] && mkdir ~/recon
 [ ! -f ~/recon/$1 ] && mkdir ~/recon/$1
@@ -169,16 +170,46 @@ cat ~/recon/$1/$1-ipf.txt | sort -u > ~/recon/$1/$1-ipz.txt
 rm ~/recon/$1/$1-ipf.txt ~/recon/$1/$1-dnsgen.txt
 
 ## segregating cloudflare IP from non-cloudflare IP
-## non-sense if I scan cloudflare IP. :(
+## non-sense if I scan cloudflare,sucuri,akamai and incapsula IP. :(
 iprange="173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 141.101.64.0/18 108.162.192.0/18 190.93.240.0/20 188.114.96.0/20 197.234.240.0/22 198.41.128.0/17 162.158.0.0/15 104.16.0.0/12 172.64.0.0/13 131.0.72.0/22"
 for ip in `cat ~/recon/$1/$1-ipz.txt`; do
-	grepcidr "$iprange" <(echo "$ip") >/dev/null && echo "[!] $ip is cloudflare" || echo "$ip" >> ~/recon/$1/$1-ip.txt
+	grepcidr "$iprange" <(echo "$ip") >/dev/null && echo "[!] $ip is cloudflare" || echo "$ip" >> ~/recon/$1/$1-ip4.txt
 done
-ipz=`scanned ~/recon/$1/$1-ip.txt`
+ipz=`scanned ~/recon/$1/$1-ip4.txt`
 ip_old=`scanned ~/recon/$1/$1-ipz.txt`
 message "$ipz%20non-cloudflare%20IPs%20has%20been%20$collected%20in%20$1%20out%20of%20$ip_old%20IPs"
 echo "[+] $ipz non-cloudflare IPs has been collected out of $ip_old IPs!"
-rm ~/recon/$1/$1-ipz.txt ~/recon/$1/$1-ips.txt
+rm ~/recon/$1/$1-ipz.txt
+sleep 5
+
+incapsula="199.83.128.0/21 198.143.32.0/19 149.126.72.0/21 103.28.248.0/22 45.64.64.0/22 185.11.124.0/22 192.230.64.0/18 107.154.0.0/16 45.60.0.0/16 45.223.0.0/16"
+for ip in `cat ~/recon/$1/$1-ip4.txt`; do
+	grepcidr "$incapsula" <(echo "$ip") >/dev/null && echo "[!] $ip is Incapsula" || echo "$ip" >> ~/recon/$1/$1-ip3.txt
+done
+ipz=`scanned ~/recon/$1/$1-ip3.txt`
+ip_old=`scanned ~/recon/$1/$1-ip4.txt`
+message "$ipz%20non-incapsula%20IPs%20has%20been%20$collected%20in%20$1%20out%20of%20$ip_old%20IPs"
+rm ~/recon/$1/$1-ip4.txt
+sleep 5
+
+sucuri="185.93.228.0/24 185.93.229.0/24 185.93.230.0/24 185.93.231.0/24 192.124.249.0/24 192.161.0.0/24 192.88.134.0/24 192.88.135.0/24 193.19.224.0/24 193.19.225.0/24 66.248.200.0/24 66.248.201.0/24 66.248.202.0/24 66.248.203.0/24"
+for ip in `cat ~/recon/$1/$1-ip3.txt`; do
+	grepcidr "$sucuri" <(echo "$ip") >/dev/null && echo "[!] $ip is Sucuri" || echo "$ip" >> ~/recon/$1/$1-ip2.txt
+done
+ipz=`scanned ~/recon/$1/$1-ip2.txt`
+ip_old=`scanned ~/recon/$1/$1-ip3.txt`
+message "$ipz%20non-sucuri%20IPs%20has%20been%20$collected%20in%20$1%20out%20of%20$ip_old%20IPs"
+rm ~/recon/$1/$1-ip3.txt
+sleep 5
+
+akamai="104.101.221.0/24 184.51.125.0/24 184.51.154.0/24 184.51.157.0/24 184.51.33.0/24 2.16.36.0/24 2.16.37.0/24 2.22.226.0/24 2.22.227.0/24 2.22.60.0/24 23.15.12.0/24 23.15.13.0/24 23.209.105.0/24 23.62.225.0/24 23.74.29.0/24 23.79.224.0/24 23.79.225.0/24 23.79.226.0/24 23.79.227.0/24 23.79.229.0/24 23.79.230.0/24 23.79.231.0/24 23.79.232.0/24 23.79.233.0/24 23.79.235.0/24 23.79.237.0/24 23.79.238.0/24 23.79.239.0/24 63.208.195.0/24 72.246.0.0/24 72.246.1.0/24 72.246.116.0/24 72.246.199.0/24 72.246.2.0/24 72.247.150.0/24 72.247.151.0/24 72.247.216.0/24 72.247.44.0/24 72.247.45.0/24 80.67.64.0/24 80.67.65.0/24 80.67.70.0/24 80.67.73.0/24 88.221.208.0/24 88.221.209.0/24 96.6.114.0/24"
+for ip in `cat ~/recon/$1/$1-ip2.txt`; do
+	grepcidr "$akamai" <(echo "$ip") >/dev/null && echo "[!] $ip is Akamai" || echo "$ip" >> ~/recon/$1/$1-ip.txt
+done
+ipz=`scanned ~/recon/$1/$1-ip.txt`
+ip_old=`scanned ~/recon/$1/$1-ip2.txt`
+message "$ipz%20non-akamai%20IPs%20has%20been%20$collected%20in%20$1%20out%20of%20$ip_old%20IPs"
+rm ~/recon/$1/$1-ip2.txt
 sleep 5
 
 echo "[+] MASSCAN PORT SCANNING [+]"
@@ -222,6 +253,7 @@ fi
 sleep 5
 
 diff --new-line-format="" --unchanged-line-format="" <(cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort) <(sort ~/recon/$1/$1-alive.txt) > ~/recon/$1/$1-diff.txt
+diff --new-line-format="" --unchanged-line-format="" <(sort ~/recon/$1/$1-alive.txt) <(cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort) >> ~/recon/$1/$1-diff.txt
 
 echo "[+] TKO-SUBS for Subdomain TKO [+]"
 if [ ! -f ~/recon/$1/$1-tkosubs.txt ] && [ ! -z $(which tko-subs) ]; then
@@ -259,7 +291,7 @@ for urlz in `cat ~/recon/$1/$1-httprobe.txt`; do
 			python3 ~/tools/LinkFinder/linkfinder.py -i $linx -o cli > ~/recon/$1/endpoints/$filename-result.txt
 		done
 	else
-		echo "------ :) ------"
+		python ~/tools/LinkFinder/linkfinder.py -i $urlz -d -o cli > ~/recon/$1/endpoints/$filename-result.txt
 	fi
 done
 message "Done%20collecting%20endpoint%20in%20$1"
@@ -325,7 +357,7 @@ echo "[+] NMAP PORT SCANNING [+]"
 big_ports=`cat ~/recon/$1/$1-masscan.txt | grep 'Host:' | awk {'print $5'} | awk -F '/' {'print $1'} | sort -u | paste -s -d ','`
 if [ ! -f ~/recon/$1/$1-nmap.txt ] && [ ! -z $(which nmap) ]; then
 	[ ! -f ~/tools/nmap-bootstrap.xsl ] && wget "https://raw.githubusercontent.com/honze-net/nmap-bootstrap-xsl/master/nmap-bootstrap.xsl" -O ~/tools/nmap-bootstrap.xsl
-	echo $passwordx | sudo -S nmap -sSVC -A -O -Pn -p$big_ports -iL ~/recon/$1/$1-ip.txt --script http-enum,http-title --stylesheet ~/tools/nmap-bootstrap.xsl -oA ~/recon/$1/$1-nmap
+	echo $passwordx | sudo -S nmap -sSVC -A -O -Pn -p$big_ports -iL ~/recon/$1/$1-ip.txt --script http-enum,http-title --data-length=50 --stylesheet ~/tools/nmap-bootstrap.xsl -oA ~/recon/$1/$1-nmap
 	nmaps=`scanned ~/recon/$1/$1-ip.txt`
 	xsltproc -o ~/recon/$1/$1-nmap.html ~/tools/nmap-bootstrap.xsl ~/recon/$1/$1-nmap.xml
 	message "Nmap%20Scanned%20$nmaps%20IPs%20for%20$1"
@@ -341,7 +373,7 @@ if [ ! -z $(which webanalyze) ]; then
 	[ ! -f ~/tools/apps.json ] && wget "https://raw.githubusercontent.com/AliasIO/Wappalyzer/master/src/apps.json" -O ~/tools/apps.json
 	for target in `cat ~/recon/$1/$1-httprobe.txt`; do
 		filename=`echo $target | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g'`
-		webanalyze -host $target -apps ~/tools/apps.json -output json > ~/recon/$1/webanalyze/$filename.txt
+		webanalyze -host $target -apps ~/tools/apps.json -output json | jq > ~/recon/$1/webanalyze/$filename.txt
 	done
 	message "Done%20webanalyze%20for%20fingerprinting%20$1"
 	echo "[+] Done webanalyze for fingerprinting the assets!"
@@ -353,7 +385,7 @@ sleep 5
 
 echo "[+] OTXURL Scanning for Archived Endpoints [+]"
 for u in `cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort -u`;do echo $u | otxurls | grep "$u" >> ~/recon/$1/otxurls/tmp-$u.txt; done
-cat ~/recon/$1/otxurls/* | sort -u >> ~/recon/$1/otxurls/$1-otxurl.txt 
+cat ~/recon/$1/otxurls/* | sort -u | get-title >> ~/recon/$1/otxurls/$1-otxurl.txt 
 rm ~/recon/$1/otxurls/tmp-*
 message "OTXURL%20Done%20for%20$1"
 echo "[+] Done otxurls for discovering useful endpoints"
@@ -361,7 +393,7 @@ sleep 5
 
 echo "[+] WAYBACKURLS Scanning for Archived Endpoints [+]"
 for u in `cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort -u`;do echo $u | waybackurls | grep "$u" >> ~/recon/$1/waybackurls/tmp-$u.txt; done
-cat ~/recon/$1/waybackurls/* | sort -u >> ~/recon/$1/waybackurls/$1-waybackurls.txt 
+cat ~/recon/$1/waybackurls/* | sort -u | get-title >> ~/recon/$1/waybackurls/$1-waybackurls.txt 
 rm ~/recon/$1/waybackurls/tmp-*
 message "WAYBACKURLS%20Done%20for%20$1"
 echo "[+] Done waybackurls for discovering useful endpoints"
@@ -372,8 +404,7 @@ if [ ! -z $(which ffuf) ]; then
 	[ ! -f ~/tools/virtual-host-scanning.txt ] && wget "https://raw.githubusercontent.com/codingo/VHostScan/master/VHostScan/wordlists/virtual-host-scanning.txt" -O ~/tools/virtual-host-scanning.txt
 	cat ~/recon/$1/$1-open-ports.txt ~/recon/$1/$1-final.txt ~/recon/$1/$1-dnsgen.tmp ~/recon/$1/$1-final.tmp ~/recon/$1/$1-diff.txt ~/tools/virtual-host-scanning.txt | sed "s/\%s/$1/g" | sort -u >> ~/recon/$1/$1-temp-vhost-wordlist.txt
 	path=$(pwd)
-	ffuf -c -w "$path/recon/$1/$1-temp-vhost-wordlist.txt:HOSTS" -w "$path/recon/$1/$1-alive.txt:TARGETS" -u http://TARGETS -k -r -H "Host: HOSTS" -H "Cache-Control: no-transform" -mc all -fc 500-599 -of html -o ~/recon/$1/virtual-hosts/$1.txt
-	ffuf -c -w "$path/recon/$1/$1-temp-vhost-wordlist.txt:HOSTS" -w "$path/recon/$1/$1-alive.txt:TARGETS" -u https://TARGETS -k -r -H "Host: HOSTS" -H "Cache-Control: no-transform" -mc all -fc 500-599 -of html -o ~/recon/$1/virtual-hosts/$1-ssl.txt
+	ffuf -c -w "$path/recon/$1/$1-temp-vhost-wordlist.txt:HOSTS" -w "$path/recon/$1/$1-alive.txt:TARGETS" -u http://TARGETS -k -r -H "Host: HOSTS" -H "X-Forwarded-For: TARGETS.override.$dns_server" -mc all -fc 500-599 -of html -o ~/recon/$1/virtual-hosts/$1.txt
 	message "Virtual%20Host(s)%20done%20for%20$1"
 	rm ~/recon/$1/$1-dnsgen.tmp ~/recon/$1/$1-final.tmp ~/recon/$1/$1-diff.txt
 	echo "[+] Done ffuf for scanning virtual hosts"
@@ -389,17 +420,17 @@ cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | 
 echo "[+] Done dirsearch for file and directory scanning"
 sleep 5
 
-echo "[+] DEFAULT CREDENTIAL SCANNING [+]"
-if [ -e ~/tools/changeme/changeme.py ] && [ "active" == `systemctl is-active redis` ]; then
-	for targets in `cat ~/recon/$1/$1-open-ports.txt`;do python3 ~/tools/changeme/changeme.py --redishost redis --all --threads 20 --portoverride $targets -d --fresh -v --ssl --timeout 25 -o ~/recon/$1/default-credential/$targets-changeme.csv; done
-	message "Default%20Credential%20done%20for%20$1"
-	echo "[+] Done changeme for scanning default credentials"
-	for process in `ps aux | grep changeme | awk {'print $2'}`; do kill -9 $process > /dev/null; done
-else
-	message "[-]%20Skipping%20Default%20Credential%20Scanning%20for%20$1"
-	echo "[!] Skipping ..."
-fi
-sleep 5
+# echo "[+] DEFAULT CREDENTIAL SCANNING [+]"
+# if [ -e ~/tools/changeme/changeme.py ] && [ "active" == `systemctl is-active redis` ]; then
+# 	for targets in `cat ~/recon/$1/$1-open-ports.txt`;do python3 ~/tools/changeme/changeme.py --redishost redis --all --threads 20 --portoverride $targets -d --fresh -v --ssl --timeout 25 -o ~/recon/$1/default-credential/$targets-changeme.csv; done
+# 	message "Default%20Credential%20done%20for%20$1"
+# 	echo "[+] Done changeme for scanning default credentials"
+# 	for process in `ps aux | grep changeme | awk {'print $2'}`; do kill -9 $process > /dev/null; done
+# else
+# 	message "[-]%20Skipping%20Default%20Credential%20Scanning%20for%20$1"
+# 	echo "[!] Skipping ..."
+# fi
+# sleep 5
 
 [ ! -f ~/$1.out ] && mv ~/$1.out ~/recon/$1/ 
 message "Scanner%20Done%20for%20$1"
