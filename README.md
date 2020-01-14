@@ -30,6 +30,7 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 
 **Separating Cloudflare, Incapsula, Sucuri, and Akamai IPs from collected IPs**
 >It's useless to scan Cloudflare, Incapsula, Sucuri, and Akamai IPs. *(Just like talking to a wall)*
+>
 >FYI, Install grepcidr first `apt-get install grepcidr`
 
 **Subdomain TakeOver**
@@ -39,7 +40,7 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 **Collecting Endpoints thru [Linkfinder](https://github.com/GerbenJavado/LinkFinder/)**
 
 **Collecting Endpoints thru [Github](https://github.com/gwen001/github-search/blob/master/github-endpoints.py)**
->make sure to create `.tokens` file *(containing your github token)* together with `github-endpoints.py` (probably in ~/tools folder).
+>make sure to create `.tokens` file *(containing your github token)* together with `github-endpoints.py` *(probably in ~/tools folder)*.
 
 **[HTTP Request Smuggler](https://github.com/gwen001/pentest-tools/blob/master/smuggler.py)**
 
