@@ -28,8 +28,8 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 **Scan All Alive Hosts with [filter-resolved](https://github.com/tomnomnom/hacks/tree/master/filter-resolved) and [Httprobe](https://github.com/tomnomnom/httprobe)**
 >The reason we implement this, Is filter-resolved has an output which httprobe doesn't have. We filter it using diff and include it to vhost scan's wordlist :)
 
-**Separating Cloudflare IPs to Non-Cloudflare IPs**
->It's useless to scan Cloudflare IPs.
+**Separating Cloudflare, Incapsula, Sucuri, and Akamai IPs from collected IPs**
+>It's useless to scan Cloudflare, Incapsula, Sucuri, and Akamai IPs. *(Just like talking to a wall)*
 >FYI, Install grepcidr first `apt-get install grepcidr`
 
 **Subdomain TakeOver**
@@ -55,16 +55,18 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 
 **[Webanalyze](https://github.com/rverton/webanalyze) for Fingerprinting assets**
 
-**[Default Credential](https://github.com/ztgrace/changeme) Scanning**
->Scanning default credentials for all protocols and services
->Need a redis server to properly run this tool.
+**~~[Default Credential](https://github.com/ztgrace/changeme) Scanning~~**
+>Disable for now until further updates in this tool.
 
 **File/Dir Discovery**
 * [otxurls](https://github.com/lc/otxurls)
 * [waybackurls](https://github.com/tomnomnom/waybackurls)
+>otxurls and waybackurls combine with Tomnomnom's [get-title](https://github.com/tomnomnom/hacks/tree/master/get-title) tool
+
 * [DirSearch](https://github.com/maurosoria/dirsearch)
 
 **[Virtual Hosts](https://github.com/ffuf/ffuf) Scan**
+>Added **X-Forwarded-For Header** *(you should [setup your own dns server](https://medium.com/@spade.com/a-noob-guide-to-setup-your-own-oob-dns-server-870d9e05b54a))* to check for IP Spoofing Attack.
 
 I hope that someone could help me to add more useful automated scanning technique :)
 
@@ -73,6 +75,9 @@ I hope that someone could help me to add more useful automated scanning techniqu
 For the installation of all the tools above. I linked all the github links, just make sure that its in the right directory PATH and your good to go. feel free to modify and feel free not to use it if you don't like it :)
 
 # Future Tools to be added
+* Basic Authentication Bruteforcer
+Since there is ffuf and the encoding is just Base64, I think me and [@sumgr0](https://twitter.com/sumgr0) will work on that.
+
 * Install Script
 >Thanks to [@sumgr0](https://twitter.com/sumgr0)
 
@@ -80,10 +85,7 @@ For the installation of all the tools above. I linked all the github links, just
 >Thinking about gobuster or codingo's VHost Scan
 
 * HTML Report
->HTML Reporting Yey :)
-
-* A Param Miner like tool
->A parameter bruteforcer, maybe [parameth](https://github.com/mak-/parameth) will do.
+>Just wait a little longer :D
 
 **ALL CREDIT GOES TO AMAZING CREATORS OF THIS WONDERFUL TOOLS :)**
 
