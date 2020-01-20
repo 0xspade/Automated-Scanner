@@ -17,7 +17,8 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 * [Findomain](https://github.com/Edu4rdSHL/findomain)
 * [Subfinder](https://github.com/subfinder/subfinder)
 * Aquatone (old) `gem install aquatone`
-* [Sublist3r](https://github.com/aboul3la/Sublist3r)
+* [Assetfinder](https://github.com/tomnomnom/assetfinder)
+>Changing Sublist3r to assetfinder
 * [Rapid7's Project Sonar](https://opendata.rapid7.com/sonar.fdns_v2/)
 >https://github.com/phspade/Project_Sonar_R7
 * [CRT.SH](https://crt.sh/)
