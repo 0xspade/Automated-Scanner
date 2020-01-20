@@ -84,14 +84,14 @@ else
 fi
 sleep 5
 
-echo "[+] SUBLIST3R SCANNING [+]"
-if [ ! -f ~/recon/$1/$1-sublist3r.txt ] && [ -e ~/tools/Sublist3r/sublist3r.py ]; then
-	python ~/tools/Sublist3r/sublist3r.py -b -d $1 -o ~/recon/$1/$1-sublist3r.txt
-	sublist3rscan=`scanned ~/recon/$1/$1-sublist3r.txt`
-	message "Sublist3r%20Found%20$sublist3rscan%20subdomain(s)%20for%20$1"
-	echo "[+] Sublist3r Found $sublist3rscan subdomains"
+echo "[+] ASSETFINDER SCANNING [+]"
+if [ ! -f ~/recon/$1/$1-assetfinder.txt ] && [ ! -z $(which assetfinder) ]; then
+	assetfinder -subs-only $1 > ~/recon/$1/$1-assetfinder.txt
+	assetfinderscan=`scanned ~/recon/$1/$1-assetfinder.txt`
+	message "Assetfinder%20Found%20$assetfinderscan%20subdomain(s)%20for%20$1"
+	echo "[+] Assetfinder Found $assetfinderscan subdomains"
 else
-	message "[-]%20Skipping%20Sublist3r%20Scanning%20for%20$1"
+	message "[-]%20Skipping%20Assetfinder%20Scanning%20for%20$1"
 	echo "[!] Skipping ..."
 fi
 sleep 5
@@ -137,8 +137,8 @@ fi
 sleep 5
 
 ## Deleting all the results to less disk usage
-cat ~/recon/$1/$1-amass.txt ~/recon/$1/$1-project-sonar.txt ~/recon/$1/$1-findomain.txt ~/recon/$1/$1-subfinder.txt ~/recon/$1/$1-aquatone.txt ~/recon/$1/$1-sublist3r.txt ~/recon/$1/$1-crt.txt ~/recon/$1/$1-gobuster.txt | sort -uf > ~/recon/$1/$1-final.txt
-rm ~/recon/$1/$1-amass.txt ~/recon/$1/$1-project-sonar.txt ~/recon/$1/$1-findomain.txt ~/recon/$1/$1-subfinder.txt ~/recon/$1/$1-aquatone.txt ~/recon/$1/$1-sublist3r.txt ~/recon/$1/$1-crt.txt ~/recon/$1/$1-gobuster.txt
+cat ~/recon/$1/$1-amass.txt ~/recon/$1/$1-project-sonar.txt ~/recon/$1/$1-findomain.txt ~/recon/$1/$1-subfinder.txt ~/recon/$1/$1-aquatone.txt ~/recon/$1/$1-assetfinder.txt ~/recon/$1/$1-crt.txt ~/recon/$1/$1-gobuster.txt | sort -uf > ~/recon/$1/$1-final.txt
+rm ~/recon/$1/$1-amass.txt ~/recon/$1/$1-project-sonar.txt ~/recon/$1/$1-findomain.txt ~/recon/$1/$1-subfinder.txt ~/recon/$1/$1-aquatone.txt ~/recon/$1/$1-assetfinder.txt ~/recon/$1/$1-crt.txt ~/recon/$1/$1-gobuster.txt
 touch ~/recon/$1/$1-ipz.txt
 sleep 5
 
@@ -416,7 +416,7 @@ rm ~/recon/$1/$1-temp-vhost-wordlist.txt
 sleep 5
 
 echo "[+] DirSearch Scanning for Sensitive Files [+]"
-cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort -u | xargs -P10 -I % sh -c "python3 ~/dirsearch/dirsearch.py -u % -e php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,old,gz,shtml,log,swp,yaml,yml,config,save,rsa,ppk -x 400,403,401,500,406,503,502 -t 100 --random-agents -b -F --plain-text-report ~/recon/$1/dirsearch/%-dirsearch.txt"
+cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort -u | xargs -P10 -I % sh -c "python3 ~/dirsearch/dirsearch.py -u % -e php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,old,gz,shtml,log,swp,yaml,yml,config,save,rsa,ppk -x 400,403,401,500,406,503,502 -t 100 --random-agents -b --plain-text-report ~/recon/$1/dirsearch/%-dirsearch.txt"
 echo "[+] Done dirsearch for file and directory scanning"
 sleep 5
 
