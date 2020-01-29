@@ -16,7 +16,8 @@ xss_hunter=$(cat ~/tools/.creds | grep 'xss_hunter' | awk {'print $3'})
 [ ! -f ~/recon/$1/github-endpoints ] && mkdir ~/recon/$1/github-endpoints
 [ ! -f ~/recon/$1/otxurls ] && mkdir ~/recon/$1/otxurls
 [ ! -f ~/recon/$1/waybackurls ] && mkdir ~/recon/$1/waybackurls
-[ ! -f ~/recon/$1/http-desync ] && mkdir ~/recon/$1/http-desync 
+[ ! -f ~/recon/$1/http-desync ] && mkdir ~/recon/$1/http-desync
+[ ! -f ~/recon/$1/401 ] && mkdir ~/recon/$1/401
 sleep 5
 
 message () {
@@ -287,7 +288,7 @@ sleep 5
 
 echo "[+] COLLECTING ENDPOINTS [+]"
 for urlz in `cat ~/recon/$1/$1-httprobe.txt`; do 
-	filename=`echo $urlz | sed 's/http\(.?*\)*:\/\///g'`
+	filename=`echo $urlz | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g'`
 	link=$(python ~/tools/LinkFinder/linkfinder.py -i $urlz -d -o cli | grep -E "*.js$" | grep "$1" | grep "Running against:" |awk {'print $3'})
 	if [ ! -z $link ]; then
 		for linx in $link; do
@@ -420,9 +421,10 @@ sleep 5
 echo "[+] 401 Scanning"
 [ ! -f ~/tools/basic_auth.txt ] && wget https://raw.githubusercontent.com/phspade/Combined-Wordlists/master/basic_auth.txt -O ~/tools/basic_auth.txt
 for i in `cat ~/recon/$1/$1-httprobe.txt`; do
+	filename=`echo $i | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g'`
 	stat_code=$(curl -s -o /dev/null -w "%{http_code}" "$i" --max-time 10)
 	if [ 401 == $stat_code ]; then
-		ffuf -c -w ~/tools/basic_auth.txt -u $i -k -r -H "Authorization: Basic FUZZ" -mc all -fc 500-599,401 -of html -o ~/recon/$1/$1-basic-auth.html 
+		ffuf -c -w ~/tools/basic_auth.txt -u $i -k -r -H "Authorization: Basic FUZZ" -mc all -fc 500-599,401 -of html -o ~/recon/$1/401/$filename-basic-auth.html 
 	else
 		echo "$stat_code >> $i"
 	fi
