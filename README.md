@@ -65,9 +65,14 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 * [waybackurls](https://github.com/tomnomnom/waybackurls)
 >otxurls and waybackurls combine with Tomnomnom's [get-title](https://github.com/tomnomnom/hacks/tree/master/get-title) tool
 
-* [DirSearch](https://github.com/maurosoria/dirsearch)
 
 **[Virtual Hosts](https://github.com/ffuf/ffuf) Scan**
+
+* 401 Basic Authorization Bruteforce with FFUF
+>Some subdomains has 401 authentication basic, so we need to bruteforce it with base64 credentials :)
+
+* [DirSearch](https://github.com/maurosoria/dirsearch)
+
 >Added **X-Forwarded-For Header** *(you should [setup your own dns server](https://medium.com/@spade.com/a-noob-guide-to-setup-your-own-oob-dns-server-870d9e05b54a))* to check for IP Spoofing Attack.
 
 I hope that someone could help me to add more useful automated scanning technique :)
@@ -77,9 +82,6 @@ I hope that someone could help me to add more useful automated scanning techniqu
 For the installation of all the tools above. I linked all the github links, just make sure that its in the right directory PATH and your good to go. feel free to modify and feel free not to use it if you don't like it :)
 
 # Future Tools to be added
-* Basic Authentication Bruteforcer
-Since there is ffuf and the encoding is just Base64, I think me and [@sumgr0](https://twitter.com/sumgr0) will work on that.
-
 * Install Script
 >Thanks to [@sumgr0](https://twitter.com/sumgr0)
 
