@@ -49,7 +49,7 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 
 **[Shodan](https://cli.shodan.io/)**
 
-**[Eyewitness](https://github.com/FortyNorthSecurity/EyeWitness)**
+**[Aquatone](https://github.com/michenriksen/aquatone)**
 
 **Port Scanning**
 * NMAP
