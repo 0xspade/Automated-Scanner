@@ -2,6 +2,9 @@
 [![Follow on Twitter](https://img.shields.io/twitter/follow/sumgr0.svg?logo=twitter)](https://twitter.com/sumgr0)
 # Automated-Scanner
 
+# We will rename the scanner into new one and we will update it that you can scan with a multiple domain in a txt file :D
+# Stay Tune :D
+
 Usage: `~$ bash scanner.sh example.com`
 
 Running in background in VPS using nohup
