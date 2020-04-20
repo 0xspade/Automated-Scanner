@@ -1,0 +1,42 @@
+name,cname,string,http
+github,github,There isn't a GitHub Pages site here.,false
+github,github,For root URLs (like http://example.com/) you must provide an index.html file,false
+heroku,heroku,There's nothing here,true
+heroku,heroku,No such app,true
+tumblr,tumblr.com,There's nothing here.,true
+tumblr,tumblr.com,Whatever you were looking for doesn't currently exist at this address,true
+shopify,myshopify.com,Only one step left!,false
+shopify,myshopify.com,"Sorry, this shop is currently unavailable.",false
+instapage,pageserve.co,You've Discovered A Missing Link. Our Apologies!,false
+tictail,tictail.com,Building a brand of your own?,true
+campaignmonitor,createsend.com,Trying to access your account?,false
+cargocollective,cargocollective.com,404 Not Found,false
+amazonaws,amazonaws.com,NoSuchBucket,false
+amazonaws,amazonaws.com,The specified bucket does not exist,false
+smartling,smartling.com,Domain is not configured,false
+acquia,acquia.com,If you are an Acquia Cloud customer and expect to see your site at this address,false
+fastly,fastly.net,Please check that this domain has been added to a service,false
+fastly,fastly.net,Fastly error: unknown domain:,false
+pantheon,pantheonsite.io,The gods are wise,false
+uservoice,uservoice.com,This UserVoice subdomain is currently available!,false
+ghost,ghost.io,The thing you were looking for is no longer here,false
+pingdom,stats.pingdom.com,pingdom,false
+feedpress,redirect.feedpress.me,The feed has not been found,false
+helpjuice,helpjuice.com,We could not find what you're looking for.,false
+surge,surge.sh,project not found,false
+surveygizmo-eu,privatedomain.surveygizmo.eu,data-html-name,false
+teamwork,teamwork.com,Oops - We didn't find your site.,false
+wordpress,wordpress,Domain mapping upgrade for this domain not found,false
+wordpress,wordpress,Do you want to register *.wordpress.com?,false
+bitbucket,bitbucket.io,Repository not found,true
+helpscout,helpscoutdocs.com,No settings were found for this company:,false
+jetbrains,myjetbrains.com,is not a registered InCloud YouTrack,false
+azure,azurewebsites.net,404 Web Site not found,false
+readme,readme.io,"Project doesnt exist... yet!",false
+kinsta,kinsta.com,No Site For Domain,false
+intercom,intercom.io,Uh oh. That page doesn't exist.,false
+launchrock,launchrock.com,It looks like you may have taken a wrong turn somewhere,false
+pantheon,pantheon.io,404 error unknown site,false
+strikingly,strikinglydns.com,page not found,false
+uptimerobot,uptimerobot.com,page not found,false
+fly,fly.io,404 Not Found,false
