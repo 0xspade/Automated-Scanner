@@ -12,9 +12,6 @@ Running in background in VPS using nohup
 Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 
 ----
-
-![flow](https://raw.githubusercontent.com/phspade/Automated-Scanner/master/Flow.png)
-
 **Subdomain Enumeration**
 * [Amass](https://github.com/OWASP/Amass) 
 * [Findomain](https://github.com/Edu4rdSHL/findomain)
