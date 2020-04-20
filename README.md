@@ -19,13 +19,10 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 * [Amass](https://github.com/OWASP/Amass) 
 * [Findomain](https://github.com/Edu4rdSHL/findomain)
 * [Subfinder](https://github.com/subfinder/subfinder)
-* Aquatone (old) `gem install aquatone`
 * [Assetfinder](https://github.com/tomnomnom/assetfinder)
->Changing Sublist3r to assetfinder
+
 * [Rapid7's Project Sonar](https://opendata.rapid7.com/sonar.fdns_v2/)
->https://github.com/phspade/Project_Sonar_R7
-* [CRT.SH](https://crt.sh/)
-* [GoBuster](https://github.com/OJ/gobuster) using Jason Haddix's [all.txt](https://gist.githubusercontent.com/jhaddix/86a06c5dc309d08580a018c66354a056/raw/96f4e51d96b2203f19f6381c8c545b278eaa0837/all.txt) wordlist
+>https://github.com/phspade/Project_Sonar_R7(https://gist.githubusercontent.com/jhaddix/86a06c5dc309d08580a018c66354a056/raw/96f4e51d96b2203f19f6381c8c545b278eaa0837/all.txt) wordlist
 * [DNSGen](https://github.com/ProjectAnte/dnsgen) / [tok](https://github.com/tomnomnom/hacks/tree/f2c5197ff4e0c09c84e1e11733dfa6549c4a407c/tok)
 >changing altdns to dnsgen. it's faster than altdns
 
@@ -64,9 +61,8 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 >Disable for now until further updates in this tool.
 
 **File/Dir Discovery**
-* [otxurls](https://github.com/lc/otxurls)
-* [waybackurls](https://github.com/tomnomnom/waybackurls)
->otxurls and waybackurls combine with Tomnomnom's [get-title](https://github.com/tomnomnom/hacks/tree/master/get-title) tool
+* [gau](https://github.com/lc/gau)
+>gau combine with my [getching](https://github.com/phspade/getching) tool
 
 
 **[Virtual Hosts](https://github.com/ffuf/ffuf) Scan**
