@@ -20,8 +20,7 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 
 * [Rapid7's Project Sonar](https://opendata.rapid7.com/sonar.fdns_v2/)
 >https://github.com/phspade/Project_Sonar_R7
-* [altdns](https://github.com/infosec-au/altdns)
->going back to altdns
+* [goaltdns](https://github.com/subfinder/goaltdns) + [massdns](https://github.com/blechschmidt/massdns)
 
 **Scan All Alive Hosts with [filter-resolved](https://github.com/tomnomnom/hacks/tree/master/filter-resolved) and [Httprobe](https://github.com/tomnomnom/httprobe)**
 >The reason we implement this, Is filter-resolved has an output which httprobe doesn't have. We filter it using diff and include it to vhost scan's wordlist :)
