@@ -22,9 +22,9 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 * [Assetfinder](https://github.com/tomnomnom/assetfinder)
 
 * [Rapid7's Project Sonar](https://opendata.rapid7.com/sonar.fdns_v2/)
->https://github.com/phspade/Project_Sonar_R7(https://gist.githubusercontent.com/jhaddix/86a06c5dc309d08580a018c66354a056/raw/96f4e51d96b2203f19f6381c8c545b278eaa0837/all.txt) wordlist
-* [DNSGen](https://github.com/ProjectAnte/dnsgen) / [tok](https://github.com/tomnomnom/hacks/tree/f2c5197ff4e0c09c84e1e11733dfa6549c4a407c/tok)
->changing altdns to dnsgen. it's faster than altdns
+>https://github.com/phspade/Project_Sonar_R7
+* [altdns](https://github.com/infosec-au/altdns)
+>going back to altdns
 
 **Scan All Alive Hosts with [filter-resolved](https://github.com/tomnomnom/hacks/tree/master/filter-resolved) and [Httprobe](https://github.com/tomnomnom/httprobe)**
 >The reason we implement this, Is filter-resolved has an output which httprobe doesn't have. We filter it using diff and include it to vhost scan's wordlist :)
@@ -45,7 +45,7 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 
 **[HTTP Request Smuggler](https://github.com/gwen001/pentest-tools/blob/master/smuggler.py)**
 
-**[Massdns](https://github.com/blechschmidt/massdns)**
+**[ZDNS](https://github.com/zmap/zdns)**
 
 **[Shodan](https://cli.shodan.io/)**
 
