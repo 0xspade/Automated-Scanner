@@ -37,7 +37,7 @@ date
 
 [ ! -f ~/tools/nameservers.txt ] && wget https://public-dns.info/nameservers.txt -O ~/tools/nameservers.txt
 
-if [! -f ~/recon/$1/$1-final.txt ]; then
+if [ ! -f ~/recon/$1/$1-final.txt ]; then
 	echo "[+] AMASS SCANNING [+]"
 	if [ ! -f ~/recon/$1/$1-amass.txt ] && [ ! -z $(which amass) ]; then
 		amass enum -passive -rf ~/tools/nameservers.txt -d $1 -o ~/recon/$1/$1-amass.txt
