@@ -269,6 +269,7 @@ if [ ! -f ~/tools/LinkFinder/linkfinder.py ]; then
 else
 	message "[-]%20Skipping%20linkfinder%20Scanning%20for%20$1"
 	echo "[!] Skipping ..."
+fi
 sleep 5
 
 echo "[+] COLLECTING ENDPOINTS FROM GITHUB [+]"
