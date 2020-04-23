@@ -25,6 +25,8 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 **Scan All Alive Hosts with [filter-resolved](https://github.com/tomnomnom/hacks/tree/master/filter-resolved) and [Httprobe](https://github.com/tomnomnom/httprobe)**
 >The reason we implement this, Is filter-resolved has an output which httprobe doesn't have. We filter it using diff and include it to vhost scan's wordlist :)
 
+* Getting All IP from the subdomains collected with [DNSProbe](https://github.com/projectdiscovery/dnsprobe)
+
 **Separating Cloudflare, Incapsula, Sucuri, and Akamai IPs from collected IPs**
 >It's useless to scan Cloudflare, Incapsula, Sucuri, and Akamai IPs. *(Just like talking to a wall)*
 >
@@ -49,7 +51,7 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 
 **Port Scanning**
 * NMAP
-* [Masscan](https://github.com/robertdavidgraham/masscan)
+* [Naabu](https://github.com/projectdiscovery/naabu)
 
 **[Webanalyze](https://github.com/rverton/webanalyze) for Fingerprinting assets**
 
@@ -57,9 +59,7 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 >Disable for now until further updates in this tool.
 
 **File/Dir Discovery**
-* [gau](https://github.com/lc/gau)
->gau combine with my [getching](https://github.com/phspade/getching) tool
-
+* [gau](https://github.com/lc/gau) + [getching](https://github.com/phspade/getching)
 
 **[Virtual Hosts](https://github.com/ffuf/ffuf) Scan**
 
@@ -70,21 +70,11 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 
 >Added **X-Forwarded-For Header** *(you should [setup your own dns server](https://medium.com/@spade.com/a-noob-guide-to-setup-your-own-oob-dns-server-870d9e05b54a))* to check for IP Spoofing Attack.
 
-I hope that someone could help me to add more useful automated scanning technique :)
+Feel free to modify it on your own if you don't feel about on how it works :)
 
 # Installation
 
 For the installation of all the tools above. I linked all the github links, just make sure that its in the right directory PATH and your good to go. feel free to modify and feel free not to use it if you don't like it :)
-
-# Future Tools to be added
-* Install Script
->Thanks to [@sumgr0](https://twitter.com/sumgr0)
-
-* Another Vhost Scanner
->Thinking about gobuster or codingo's VHost Scan
-
-* HTML Report
->Just wait a little longer :D
 
 **ALL CREDIT GOES TO AMAZING CREATORS OF THIS WONDERFUL TOOLS :)**
 
