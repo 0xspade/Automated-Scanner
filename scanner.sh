@@ -252,7 +252,7 @@ fi
 sleep 5
 
 echo "[+] COLLECTING ENDPOINTS [+]"
-if [ ! -f ~/tools/LinkFinder/linkfinder.py ]; then
+if [ -f ~/tools/LinkFinder/linkfinder.py ]; then
 	for urlz in `cat ~/recon/$1/$1-httprobe.txt`; do 
 		filename=`echo $urlz | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g'`
 		link=$(python ~/tools/LinkFinder/linkfinder.py -i $urlz -d -o cli | grep -E "*.js$" | grep "$1" | grep "Running against:" |awk {'print $3'})
