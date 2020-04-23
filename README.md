@@ -66,7 +66,7 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 * 401 Basic Authorization Bruteforce with FFUF
 >Some subdomains has 401 authentication basic, so we need to bruteforce it with base64 credentials :)
 
-* [DirSearch](https://github.com/maurosoria/dirsearch)
+* [FFUF](https://github.com/ffuf/ffuf)
 
 >Added **X-Forwarded-For Header** *(you should [setup your own dns server](https://medium.com/@spade.com/a-noob-guide-to-setup-your-own-oob-dns-server-870d9e05b54a))* to check for IP Spoofing Attack.
 
