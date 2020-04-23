@@ -306,6 +306,7 @@ if [ ! -z $(which zdns) ]; then
 else
 	message "Skipping%20scanning%20of%20ZDNS%20in%20$1"
 	echo "[!] Skipping ..."	
+fi
 sleep 5
 
 echo "[+] SHODAN HOST SCANNING [+]"
@@ -370,6 +371,7 @@ if [ ! -z $(which gau) ]; then
 else
 	message "[-]%20Skipping%20GAU%20for%20fingerprinting%20$1"
 	echo "[!] Skipping ..."
+fi
 sleep 5
 
 echo "[+] Scanning for Virtual Hosts Resolution [+]"
@@ -405,6 +407,7 @@ if [ ! -z $(which ffuf) ]; then
 else
 	message "[-]%20Skipping%20ffuf%20for%20401%20scanning"
 	echo "[!] Skipping ..."
+fi
 sleep 5
 
 echo "[+] Dir and Files Scanning for Sensitive Files [+]"
@@ -415,6 +418,7 @@ if [ ! -z $(which ffuf) ]; then
 else
 	message "[-]%20Skipping%20ffuf%20for%20dir%20and%20files%20scanning"
 	echo "[!] Skipping ..."
+fi	
 sleep 5
 
 [ ! -f ~/$1.out ] && mv ~/$1.out ~/recon/$1/ 
