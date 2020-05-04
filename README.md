@@ -2,9 +2,6 @@
 [![Follow on Twitter](https://img.shields.io/twitter/follow/sumgr0.svg?logo=twitter)](https://twitter.com/sumgr0)
 # Automated-Scanner
 
-# We will rename the scanner into new one and we will update it that you can scan with a multiple domain in a txt file :D
-# Stay Tune :D
-
 Usage: `~$ bash scanner.sh example.com`
 
 Running in background in VPS using nohup
@@ -17,13 +14,11 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 * [Findomain](https://github.com/Edu4rdSHL/findomain)
 * [Subfinder](https://github.com/subfinder/subfinder)
 * [Assetfinder](https://github.com/tomnomnom/assetfinder)
-
 * [Rapid7's Project Sonar](https://opendata.rapid7.com/sonar.fdns_v2/)
 >https://github.com/phspade/Project_Sonar_R7
 * [goaltdns](https://github.com/subfinder/goaltdns) + [massdns](https://github.com/blechschmidt/massdns)
 
-**Scan All Alive Hosts with [filter-resolved](https://github.com/tomnomnom/hacks/tree/master/filter-resolved) and [Httprobe](https://github.com/tomnomnom/httprobe)**
->The reason we implement this, Is filter-resolved has an output which httprobe doesn't have. We filter it using diff and include it to vhost scan's wordlist :)
+**Scan All Alive Hosts with [Httprobe](https://github.com/tomnomnom/httprobe)**
 
 * Getting All IP from the subdomains collected with [DNSProbe](https://github.com/projectdiscovery/dnsprobe)
 
@@ -38,8 +33,8 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 
 **Collecting Endpoints thru [Linkfinder](https://github.com/GerbenJavado/LinkFinder/)**
 
-**Collecting Endpoints thru [Github](https://github.com/gwen001/github-search/blob/master/github-endpoints.py)**
->make sure to create `.tokens` file *(containing your github token)* together with `github-endpoints.py` *(probably in ~/tools folder)*.
+**Collecting [Endpoints](https://github.com/gwen001/github-search/blob/master/github-endpoints.py) and [Secrets](https://github.com/gwen001/github-search/blob/master/github-secrets.py) in Github**
+>make sure to create `.tokens` file *(containing your github token)* together with `github-endpoints.py` and `github-secrets.py` *(probably in ~/tools folder)*.
 
 **[HTTP Request Smuggler](https://github.com/gwen001/pentest-tools/blob/master/smuggler.py)**
 
@@ -60,6 +55,9 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 
 **File/Dir Discovery**
 * [gau](https://github.com/lc/gau) + [getching](https://github.com/phspade/getching)
+
+**Potential XSS**
+* [kxss](https://github.com/tomnomnom/hacks/tree/master/kxss)
 
 **[Virtual Hosts](https://github.com/ffuf/ffuf) Scan**
 
