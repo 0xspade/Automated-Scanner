@@ -14,7 +14,9 @@ xss_hunter=$(cat ~/tools/.creds | grep 'xss_hunter' | awk {'print $3'})
 [ ! -f ~/recon/$1/virtual-hosts ] && mkdir ~/recon/$1/virtual-hosts
 [ ! -f ~/recon/$1/endpoints ] && mkdir ~/recon/$1/endpoints
 [ ! -f ~/recon/$1/github-endpoints ] && mkdir ~/recon/$1/github-endpoints
+[ ! -f ~/recon/$1/github-secrets ] && mkdir ~/recon/$1/github-secrets
 [ ! -f ~/recon/$1/gau ] && mkdir ~/recon/$1/gau
+[ ! -f ~/recon/$1/kxss ] && mkdir ~/recon/$1/kxss
 [ ! -f ~/recon/$1/http-desync ] && mkdir ~/recon/$1/http-desync
 [ ! -f ~/recon/$1/401 ] && mkdir ~/recon/$1/401
 sleep 5
@@ -64,7 +66,7 @@ if [ ! -f ~/recon/$1/$1-final.txt ]; then
 
 	echo "[+] SUBFINDER SCANNING [+]"
 	if [ ! -f ~/recon/$1/$1-subfinder.txt ] && [ ! -z $(which subfinder) ]; then
-		subfinder -d $1 -nW -silent -o ~/recon/$1/$1-subfinder.txt
+		subfinder -d $1 -nW -silent -rL ~/tools/nameservers.txt -o ~/recon/$1/$1-subfinder.txt
 		subfinderscan=$(scanned ~/recon/$1/$1-subfinder.txt)
 		message "SubFinder%20Found%20$subfinderscan%20subdomain(s)%20for%20$1"
 		echo "[+] Subfinder Found $subfinderscan subdomains"
@@ -88,7 +90,7 @@ if [ ! -f ~/recon/$1/$1-final.txt ]; then
 
 	echo "[+] SCANNING SUBDOMAINS WITH PROJECT SONAR [+]"
 	if [ ! -f ~/recon/$1/$1-project-sonar.txt ] && [ -e ~/tools/forward_dns.any.json.gz ]; then
-		zcat ~/tools/forward_dns.json.any.gz | grep -E "\.$1\"," | jq -r '.name' | sort -u >> ~/recon/$1/$1-project-sonar.txt
+		zcat ~/tools/forward_dns.any.json.gz | grep -E "\.$1\"," | jq -r '.name' | sort -u >> ~/recon/$1/$1-project-sonar.txt
 		projectsonar=$(scanned ~/recon/$1/$1-project-sonar.txt)
 		message "Project%20Sonar%20Found%20$projectsonar%20subdomain(s)%20for%20$1"
 		echo "[+] Project Sonar Found $projectsonar subdomains"
@@ -200,7 +202,7 @@ else
 fi
 sleep 5
 
-big_ports=`cat ~/recon/$1/$1-naabu.txt | awk -F ':' {'print $2'} | sort -u | paste -s -d ','`
+big_ports=$(cat ~/recon/$1/$1-naabu.txt | awk -F ':' {'print $2'} | sort -u | paste -s -d ',')
 cat ~/recon/$1/$1-naabu.txt | sed 's/:80$//g' | sed 's/:443$//g' | sort -u > ~/recon/$1/$1-open-ports.txt  
 cat ~/recon/$1/$1-open-ports.txt ~/recon/$1/$1-final.txt > ~/recon/$1/$1-all.txt
 
@@ -216,23 +218,7 @@ else
 fi
 sleep 5
 
-echo "[+] Scanning Alive Hosts [+]"
-if [ ! -f ~/recon/$1/$1-alive.txt ] && [ ! -z $(which filter-resolved) ]; then
-	cat ~/recon/$1/$1-all.txt | filter-resolved >> ~/recon/$1/$1-alive.txt
-	alivesu=$(scanned ~/recon/$1/$1-alive.txt)
-	rm ~/recon/$1/$1-all.txt
-	message "$alivesu%20alive%20domains%20out%20of%20$all%20domains%20in%20$1"
-	echo "[+] $alivesu alive domains out of $all domains/IPs using filter-resolved"
-else
-	message "[-]%20Skipping%20filter-resolved%20Scanning%20for%20$1"
-	echo "[!] Skipping ..."
-fi
-sleep 5
-
-diff --new-line-format="" --unchanged-line-format="" <(cat ~/recon/$1/$1-httprobe.txt | sed 's/http\(.?*\)*:\/\///g' | sort) <(sort ~/recon/$1/$1-alive.txt) > ~/recon/$1/$1-diff.txt
-cat ~/recon/$1/$1-diff.txt
-diff --new-line-format="" --unchanged-line-format="" <(sort ~/recon/$1/$1-alive.txt) <(cat ~/recon/$1/$1-httprobe.txt | sed 's/http\(.?*\)*:\/\///g' | sort) > ~/recon/$1/$1-diff2.txt
-cat ~/recon/$1/$1-diff2.txt
+cat ~/recon/$1/$1-httprobe.txt | sed 's/http\(.?*\)*:\/\///g' | sort -u > ~/recon/$1/$1-alive.txt
 
 echo "[+] TKO-SUBS for Subdomain TKO [+]"
 if [ ! -f ~/recon/$1/$1-tkosubs.txt ] && [ ! -z $(which tko-subs) ]; then
@@ -284,9 +270,9 @@ sleep 5
 
 echo "[+] COLLECTING ENDPOINTS FROM GITHUB [+]"
 if [ -e ~/tools/.tokens ] && [ -f ~/tools/.tokens ] && [ -f ~/tools/github-endpoints.py ]; then
-	for url in $(cat ~/recon/$1/$1-httprobe.txt | sed 's/http\(.?*\)*:\/\///g' | sort -u); do 
+	for url in $(cat ~/recon/$1/$1-alive.txt); do 
 		python3 ~/tools/github-endpoints.py -d $url -s -r -t $(cat ~/tools/.tokens) > ~/recon/$1/github-endpoints/$url.txt
-		sleep 5
+		sleep 7
 	done
 	message "Done%20collecting%20github%20endpoint%20in%20$1"
 	echo "[+] Done collecting github endpoint"
@@ -296,9 +282,24 @@ else
 fi
 sleep 5
 
+echo "[+] COLLECTING SECRETS FROM GITHUB [+]"
+if [ -e ~/tools/.tokens ] && [ -f ~/tools/.tokens ] && [ -f ~/tools/github-secrets.py ]; then
+	for url in $(cat ~/recon/$1/$1-alive.txt ); do 
+		u = $(echo $url | sed 's/\./\\./g');
+		python3 ~/tools/github-secrets.py -s $u -t $(cat ~/tools/.tokens) > ~/recon/$1/github-secrets/$url.txt
+		sleep 7
+	done
+	message "Done%20collecting%20github%20secrets%20in%20$1"
+	echo "[+] Done collecting github secrets"
+else
+	message "Skipping%20github-secrets%20script%20in%20$1"
+	echo "[!] Skipping ..."
+fi
+sleep 5
+
 echo "[+] HTTP SMUGGLING SCANNING [+]"
 if [ -f ~/tools/smuggler.py ]; then
-	for url in $(cat ~/recon/$1/$1-httprobe.txt | sed 's/http\(.?*\)*:\/\///g' | sort -u); do
+	for url in $(cat ~/recon/$1/$1-alive.txt); do
 		python3 ~/tools/smuggler.py -u $url -v 1 >> ~/recon/$1/http-desync/$url.txt
 	done
 	message "Done%20scanning%20of%20request%20smuggling%20in%20$1"
@@ -346,7 +347,7 @@ echo "[+] NMAP PORT SCANNING [+]"
 if [ ! -f ~/recon/$1/$1-nmap.txt ] && [ ! -z $(which nmap) ]; then
 	[ ! -f ~/tools/nmap-bootstrap.xsl ] && wget "https://raw.githubusercontent.com/honze-net/nmap-bootstrap-xsl/master/nmap-bootstrap.xsl" -O ~/tools/nmap-bootstrap.xsl
 	echo $passwordx | sudo -S nmap -sSVC -A -O -Pn -p$big_ports -iL ~/recon/$1/$1-ip.txt --script http-enum,http-title,ssh-brute --stylesheet ~/tools/nmap-bootstrap.xsl -oA ~/recon/$1/$1-nmap
-	nmaps=`scanned ~/recon/$1/$1-ip.txt`
+	nmaps=$(scanned ~/recon/$1/$1-ip.txt)
 	xsltproc -o ~/recon/$1/$1-nmap.html ~/tools/nmap-bootstrap.xsl ~/recon/$1/$1-nmap.xml
 	message "Nmap%20Scanned%20$nmaps%20IPs%20for%20$1"
 	echo "[+] Done nmap for scanning IPs"
@@ -374,13 +375,44 @@ sleep 5
 
 echo "[+] ALIENVAULT, WAYBACKURLS and COMMON CRAWL Scanning for Archived Endpoints [+]"
 if [ ! -z $(which gau) ]; then
-	for u in $(cat ~/recon/$1/$1-httprobe.txt | sed 's/http\(.?*\)*:\/\///g' | sort -u);do echo $u | gau | grep "$u" >> ~/recon/$1/gau/tmp-$u.txt; done
+	for u in $(cat ~/recon/$1/$1-alive.txt);do echo $u | gau | grep "$u" >> ~/recon/$1/gau/tmp-$u.txt; done
 	cat ~/recon/$1/gau/* | sort -u | getching >> ~/recon/$1/gau/$1-gau.txt 
-	rm ~/recon/$1/gau/tmp-*
 	message "GAU%20Done%20for%20$1"
 	echo "[+] Done gau for discovering useful endpoints"
 else
 	message "[-]%20Skipping%20GAU%20for%20fingerprinting%20$1"
+	echo "[!] Skipping ..."
+fi
+sleep 5
+
+echo "[+] KXSS for potential vulnerable xss"
+if [ ! -z $(which kxss) ]; then
+	 cat ~/recon/$1/gau/tmp-* | grep "=" | kxss | grep "is reflected and allows" | awk {'print $9'} | sort -u >> ~/recon/$1/kxss/$1-kxss.txt
+	 rm ~/recon/$1/gau/tmp-*
+	message "KXSS%20Done%20for%20$1"
+	echo "[+] Done kxss for potential xss"
+else
+	message "[-]%20Skipping%20KXSS%20for%20potential%20kxss%20in%20$1"
+	echo "[!] Skipping ..."	
+fi
+sleep 5
+
+echo "[+] 401 Scanning"
+[ ! -f ~/tools/basic_auth.txt ] && wget https://raw.githubusercontent.com/phspade/Combined-Wordlists/master/basic_auth.txt -O ~/tools/basic_auth.txt
+if [ ! -z $(which ffuf) ]; then
+	for i in $(cat ~/recon/$1/$1-httprobe.txt); do
+		filename=$(echo $i | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g')
+		stat_code=$(curl -s -o /dev/null -w "%{http_code}" "$i" --max-time 10)
+		if [ 401 == $stat_code ]; then
+			ffuf -c -w ~/tools/basic_auth.txt -u $i -k -r -H "Authorization: Basic FUZZ" -mc all -fc 500-599,401 -of html -o ~/recon/$1/401/$filename-basic-auth.html 
+		else
+			echo "$stat_code >> $i"
+		fi
+	done
+	message "401%20Scan%20Done%20for%20$1"
+	echo "[+] Done 401 Scanning for $1"
+else
+	message "[-]%20Skipping%20ffuf%20for%20401%20scanning"
 	echo "[!] Skipping ..."
 fi
 sleep 5
@@ -398,26 +430,6 @@ else
 	echo "[!] Skipping ..."
 fi
 rm ~/recon/$1/$1-temp-vhost-wordlist.txt
-sleep 5
-
-echo "[+] 401 Scanning"
-[ ! -f ~/tools/basic_auth.txt ] && wget https://raw.githubusercontent.com/phspade/Combined-Wordlists/master/basic_auth.txt -O ~/tools/basic_auth.txt
-if [ ! -z $(which ffuf) ]; then
-	for i in $(cat ~/recon/$1/$1-httprobe.txt); do
-		filename=`echo $i | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g'`
-		stat_code=$(curl -s -o /dev/null -w "%{http_code}" "$i" --max-time 10)
-		if [ 401 == $stat_code ]; then
-			ffuf -c -w ~/tools/basic_auth.txt -u $i -k -r -H "Authorization: Basic FUZZ" -mc all -fc 500-599,401 -of html -o ~/recon/$1/401/$filename-basic-auth.html 
-		else
-			echo "$stat_code >> $i"
-		fi
-	done
-	message "401%20Scan%20Done%20for%20$1"
-	echo "[+] Done 401 Scanning for $1"
-else
-	message "[-]%20Skipping%20ffuf%20for%20401%20scanning"
-	echo "[!] Skipping ..."
-fi
 sleep 5
 
 # echo "[+] Dir and Files Scanning for Sensitive Files [+]"
