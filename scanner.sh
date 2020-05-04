@@ -285,7 +285,7 @@ sleep 5
 echo "[+] COLLECTING SECRETS FROM GITHUB [+]"
 if [ -e ~/tools/.tokens ] && [ -f ~/tools/.tokens ] && [ -f ~/tools/github-secrets.py ]; then
 	for url in $(cat ~/recon/$1/$1-alive.txt ); do 
-		u = $(echo $url | sed 's/\./\\./g');
+		u=$(echo $url | sed 's/\./\\./g');
 		python3 ~/tools/github-secrets.py -s $u -t $(cat ~/tools/.tokens) > ~/recon/$1/github-secrets/$url.txt
 		sleep 7
 	done
