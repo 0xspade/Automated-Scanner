@@ -27,6 +27,8 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 >
 >FYI, Install grepcidr first `apt-get install grepcidr`
 
+* S3 Bucket scanner with [s3scanner](https://github.com/sa7mon/S3Scanner)
+
 **Subdomain TakeOver**
 * [tko-subs](https://github.com/anshumanbh/tko-subs)
 * [Subjack](https://github.com/haccer/subjack)
