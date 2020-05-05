@@ -4,21 +4,21 @@ passwordx=$(cat ~/tools/.creds | grep password | awk {'print $3'})
 dns_server=$(cat ~/tools/.creds | grep 'dns_server' | awk {'print $3'})
 xss_hunter=$(cat ~/tools/.creds | grep 'xss_hunter' | awk {'print $3'})
 
-[ ! -f ~/recon ] && mkdir ~/recon
-[ ! -f ~/recon/$1 ] && mkdir ~/recon/$1
-[ ! -f ~/recon/$1/webanalyze ] && mkdir ~/recon/$1/webanalyze
-[ ! -f ~/recon/$1/aquatone ] && mkdir ~/recon/$1/aquatone
-[ ! -f ~/recon/$1/shodan ] && mkdir ~/recon/$1/shodan
-[ ! -f ~/recon/$1/dirsearch ] && mkdir ~/recon/$1/dirsearch
-[ ! -f ~/recon/$1/default-credential ] && mkdir ~/recon/$1/default-credential
-[ ! -f ~/recon/$1/virtual-hosts ] && mkdir ~/recon/$1/virtual-hosts
-[ ! -f ~/recon/$1/endpoints ] && mkdir ~/recon/$1/endpoints
-[ ! -f ~/recon/$1/github-endpoints ] && mkdir ~/recon/$1/github-endpoints
-[ ! -f ~/recon/$1/github-secrets ] && mkdir ~/recon/$1/github-secrets
-[ ! -f ~/recon/$1/gau ] && mkdir ~/recon/$1/gau
-[ ! -f ~/recon/$1/kxss ] && mkdir ~/recon/$1/kxss
-[ ! -f ~/recon/$1/http-desync ] && mkdir ~/recon/$1/http-desync
-[ ! -f ~/recon/$1/401 ] && mkdir ~/recon/$1/401
+[ ! -f ~/recon ] && mkdir ~/recon  2&>1 
+[ ! -f ~/recon/$1 ] && mkdir ~/recon/$1  2&>1
+[ ! -f ~/recon/$1/webanalyze ] && mkdir ~/recon/$1/webanalyze  2&>1
+[ ! -f ~/recon/$1/aquatone ] && mkdir ~/recon/$1/aquatone  2&>1
+[ ! -f ~/recon/$1/shodan ] && mkdir ~/recon/$1/shodan  2&>1
+[ ! -f ~/recon/$1/dirsearch ] && mkdir ~/recon/$1/dirsearch  2&>1
+[ ! -f ~/recon/$1/default-credential ] && mkdir ~/recon/$1/default-credential  2&>1
+[ ! -f ~/recon/$1/virtual-hosts ] && mkdir ~/recon/$1/virtual-hosts  2&>1
+[ ! -f ~/recon/$1/endpoints ] && mkdir ~/recon/$1/endpoints  2&>1
+[ ! -f ~/recon/$1/github-endpoints ] && mkdir ~/recon/$1/github-endpoints  2&>1
+[ ! -f ~/recon/$1/github-secrets ] && mkdir ~/recon/$1/github-secrets  2&>1
+[ ! -f ~/recon/$1/gau ] && mkdir ~/recon/$1/gau  2&>1
+[ ! -f ~/recon/$1/kxss ] && mkdir ~/recon/$1/kxss  2&>1
+[ ! -f ~/recon/$1/http-desync ] && mkdir ~/recon/$1/http-desync  2&>1
+[ ! -f ~/recon/$1/401 ] && mkdir ~/recon/$1/401  2&>1
 sleep 5
 
 folder=$1
@@ -190,25 +190,25 @@ echo "[+] $ipz non-akamai IPs has been collected out of $ip_old IPs!"
 rm ~/recon/$1/$1-ip2.txt
 sleep 5
 
-echo "[+] NAABU PORT SCANNING [+]"
-if [ ! -f ~/recon/$1/$1-naabu.txt ] && [ ! -z $(which naabu) ]; then
-	echo $passwordx | sudo -S naabu -t 200 -ports full -verify -silent -hL ~/recon/$1/$1-ip.txt -o ~/recon/$1/$1-naabu.txt
-	mass=$(scanned ~/recon/$1/$1-ip.txt)
-	message "Naabu%20Scanned%20$mass%20IPs%20for%20$1"
-	echo "[+] Done naabu for scanning IPs"
+echo "[+] MASSCAN PORT SCANNING [+]"
+if [ ! -f ~/recon/$1/$1-masscan.txt ] && [ ! -z $(which masscan) ]; then
+	echo $passwordx | sudo -S masscan -p0-65535 -iL ~/recon/$1/$1-ip.txt --max-rate 1000 -oG ~/recon/$1/$1-masscan.txt
+	mass=$(cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $5'} | awk -F '/' {'print $1'} | sort -u | wc -l)
+	message "Masscan%20discovered%20$mass%20open%20port(s)%20for%20$1"
+	echo "[+] Done masscan for scanning port(s)"
 else
-	message "[-]%20Skipping%20Naabu%20Scanning%20for%20$1"
+	message "[-]%20Skipping%20Masscan%20Scanning%20for%20$1"
 	echo "[!] Skipping ..."
 fi
 sleep 5
 
-big_ports=$(cat ~/recon/$1/$1-naabu.txt | awk -F ':' {'print $2'} | sort -u | paste -s -d ',')
-cat ~/recon/$1/$1-naabu.txt | sed 's/:80$//g' | sed 's/:443$//g' | sort -u > ~/recon/$1/$1-open-ports.txt  
+big_ports=$(cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $5'} | awk -F '/' {'print $1'} | sort -u | paste -s -d ',')
+cat ~/recon/$1/$1-masscan.txt | grep "Host:" | awk {'print $2":"$5'} | awk -F '/' {'print $1'} | sed 's/:80$//g' | sed 's/:443$//g' | sort -u > ~/recon/$1/$1-open-ports.txt  
 cat ~/recon/$1/$1-open-ports.txt ~/recon/$1/$1-final.txt > ~/recon/$1/$1-all.txt
 
 echo "[+] HTTProbe Scanning Alive Hosts [+]"
 if [ ! -f ~/recon/$1/$1-httprobe.txt ] && [ ! -z $(which httprobe) ]; then
-	cat ~/recon/$1/$1-all.txt | httprobe -c 200 >> ~/recon/$1/$1-httprobe.txt
+	cat ~/recon/$1/$1-all.txt | httprobe -c 100 >> ~/recon/$1/$1-httprobe.txt
 	alivesu=$(scanned ~/recon/$1/$1-httprobe.txt)
 	message "$alivesu%20alive%20domains%20out%20of%20$all%20domains%20in%20$1"
 	echo "[+] $alivesu alive domains out of $all domains/IPs using httprobe"
@@ -219,6 +219,17 @@ fi
 sleep 5
 
 cat ~/recon/$1/$1-httprobe.txt | sed 's/http\(.?*\)*:\/\///g' | sort -u > ~/recon/$1/$1-alive.txt
+
+echo "[+] S3 Bucket Scanner [+]"
+if [ -f ~/tools/S3Scanner/s3scanner.py ]; then
+	python ~/tools/S3Scanner/s3scanner.py ~/recon/$1/$1-alive.txt &> ~/recon/$1/$1-s3scanner.txt
+	esthree=$(cat ~/recon/$1/$1-s3scanner.txt | grep "\[found\]" | wc -l)
+	message "S3Scanner%20found%20$esthree%20buckets%20for%20$1"
+	echo "[+] Done s3scanner for $1"
+else
+	message "[-]%20Skipping%20s3scanner%20Scanning%20for%20$1"
+	echo "[!] Skipping ..."
+fi
 
 echo "[+] TKO-SUBS for Subdomain TKO [+]"
 if [ ! -f ~/recon/$1/$1-tkosubs.txt ] && [ ! -z $(which tko-subs) ]; then
@@ -252,6 +263,7 @@ if [ -f ~/tools/LinkFinder/linkfinder.py ]; then
 	for urlz in $(cat ~/recon/$1/$1-httprobe.txt); do 
 		filename=$(echo $urlz | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g')
 		link=$(python ~/tools/LinkFinder/linkfinder.py -i $urlz -d -o cli | grep -E "*.js$" | grep "$1" | grep "Running against:" |awk {'print $3'})
+		echo "Running against: $urlz"
 		if [[ ! -z $link ]]; then
 			for linx in $link; do
 				python ~/tools/LinkFinder/linkfinder.py -i $linx -o cli > ~/recon/$1/endpoints/$filename-result.txt
@@ -271,6 +283,7 @@ sleep 5
 echo "[+] COLLECTING ENDPOINTS FROM GITHUB [+]"
 if [ -e ~/tools/.tokens ] && [ -f ~/tools/.tokens ] && [ -f ~/tools/github-endpoints.py ]; then
 	for url in $(cat ~/recon/$1/$1-alive.txt); do 
+		echo "Running against: $url"
 		python3 ~/tools/github-endpoints.py -d $url -s -r -t $(cat ~/tools/.tokens) > ~/recon/$1/github-endpoints/$url.txt
 		sleep 7
 	done
@@ -286,6 +299,7 @@ echo "[+] COLLECTING SECRETS FROM GITHUB [+]"
 if [ -e ~/tools/.tokens ] && [ -f ~/tools/.tokens ] && [ -f ~/tools/github-secrets.py ]; then
 	for url in $(cat ~/recon/$1/$1-alive.txt ); do 
 		u=$(echo $url | sed 's/\./\\./g');
+		echo "Running against: $url"
 		python3 ~/tools/github-secrets.py -s $u -t $(cat ~/tools/.tokens) > ~/recon/$1/github-secrets/$url.txt
 		sleep 7
 	done
@@ -300,7 +314,8 @@ sleep 5
 echo "[+] HTTP SMUGGLING SCANNING [+]"
 if [ -f ~/tools/smuggler.py ]; then
 	for url in $(cat ~/recon/$1/$1-alive.txt); do
-		python3 ~/tools/smuggler.py -u $url -v 1 >> ~/recon/$1/http-desync/$url.txt
+		echo "Running against: $url"
+		python3 ~/tools/smuggler.py -u $url -v 1 &> ~/recon/$1/http-desync/$url.txt
 	done
 	message "Done%20scanning%20of%20request%20smuggling%20in%20$1"
 	echo "[+] Done scanning of request smuggling"
@@ -363,7 +378,7 @@ if [ ! -z $(which webanalyze) ]; then
 	for target in $(cat ~/recon/$1/$1-httprobe.txt); do
 		filename=`echo $target | sed 's/http\(.?*\)*:\/\///g'`
 		webanalyze -host $target -apps ~/tools/apps.json -output csv > ~/recon/$1/webanalyze/$filename.txt
-		sleep 3
+		sleep 5
 	done
 	message "Done%20webanalyze%20for%20fingerprinting%20$1"
 	echo "[+] Done webanalyze for fingerprinting the assets!"
