@@ -10,7 +10,7 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 
 ----
 **Subdomain Enumeration**
-* [Amass](https://github.com/OWASP/Amass) 
+* [Amass](https://github.com/OWASP/Amass) brute with [wordlist](https://github.com/ZephrFish/Wordlists/blob/master/HugeDNS.7z)
 * [Findomain](https://github.com/Edu4rdSHL/findomain)
 * [Subfinder](https://github.com/subfinder/subfinder)
 * [Assetfinder](https://github.com/tomnomnom/assetfinder)
