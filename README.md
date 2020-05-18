@@ -48,18 +48,17 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 
 **Port Scanning**
 * NMAP
-* [Naabu](https://github.com/projectdiscovery/naabu)
+* masscan
 
 **[Webanalyze](https://github.com/rverton/webanalyze) for Fingerprinting assets**
-
-**~~[Default Credential](https://github.com/ztgrace/changeme) Scanning~~**
->Disable for now until further updates in this tool.
 
 **File/Dir Discovery**
 * [gau](https://github.com/lc/gau) + [getching](https://github.com/phspade/getching)
 
 **Potential XSS**
 * [kxss](https://github.com/tomnomnom/hacks/tree/master/kxss)
+
+* [dalfox](https://github.com/hahwul/dalfox)
 
 **[Virtual Hosts](https://github.com/ffuf/ffuf) Scan**
 
