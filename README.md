@@ -86,3 +86,48 @@ You can help me (slash) support me in this project by registering an account [he
 ## Contributor
 
 Big thanks to [@sumgr0](https://twitter.com/sumgr0) :)
+
+
+## List of tools to be installed
+
+golang
+- amass
+- subfinder
+- assetfinder
+- zcat
+- goaltdns
+- shuffledns
+- dnsprobe
+- ffuf
+- httprobe
+- tko-subs
+- subjack
+- zdns
+- aquatone
+- webanalyze
+- gau
+- getching
+- kxss
+- dalfox
+
+APT-GET
+- jq
+- grepcidr
+- nmap
+- masscan
+- brutespray
+
+Download Only
+- findomain
+- github-endpoints
+- github-secrets
+- smuggler
+
+GIT
+- massdns
+- S3Scanner
+- LinkFinder
+- defparam smuggler
+
+PIP
+- shodan
