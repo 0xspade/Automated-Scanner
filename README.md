@@ -1,12 +1,74 @@
 [![Follow on Twitter](https://img.shields.io/twitter/follow/phspades.svg?logo=twitter)](https://twitter.com/phspades)
 [![Follow on Twitter](https://img.shields.io/twitter/follow/sumgr0.svg?logo=twitter)](https://twitter.com/sumgr0)
-# Automated-Scanner
+
+# Installation 
+For the installation of all the tools below. I linked all the github links, just make sure that its in the right directory PATH and your good to go. feel free to modify and feel free not to use it if you don't like it :)
+
+**ALL CREDIT GOES TO AMAZING CREATORS OF THIS WONDERFUL TOOLS :)**
+
+<sup>cannot make to mention y'all co'z i'm too lazy to do that though :D (i'm being honest here)</sup>
+## List of tools to be installed
+
+golang
+- amass
+- subfinder
+- assetfinder
+- zcat
+- goaltdns
+- shuffledns
+- dnsprobe
+- ffuf
+- httprobe
+- tko-subs
+- subjack
+- zdns
+- aquatone
+- webanalyze
+- gau
+- getching
+- kxss
+- dalfox
+
+APT-GET
+- jq
+- grepcidr
+- nmap
+- masscan
+- brutespray
+
+Download Only
+- findomain
+- github-endpoints
+- github-secrets
+- smuggler
+
+GIT
+- massdns
+- S3Scanner
+- LinkFinder
+- defparam smuggler
+
+PIP
+- shodan
+
+# How to use
 
 Usage: `~$ bash scanner.sh example.com`
 
 Running in background in VPS using nohup
 
 Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
+
+
+### Need a Digitalocean?
+
+You can help me (slash) support me in this project by registering an account [here](https://m.do.co/c/9d633afb889b) *(with my referral code of course)* .
+
+## Contributor
+
+Big thanks to [@sumgr0](https://twitter.com/sumgr0) :)
+
+## Links 
 
 ----
 **Subdomain Enumeration**
@@ -71,63 +133,3 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 
 Feel free to modify it on your own if you don't feel about on how it works :)
 
-# Installation
-
-For the installation of all the tools above. I linked all the github links, just make sure that its in the right directory PATH and your good to go. feel free to modify and feel free not to use it if you don't like it :)
-
-**ALL CREDIT GOES TO AMAZING CREATORS OF THIS WONDERFUL TOOLS :)**
-
-<sup>cannot make to mention y'all co'z i'm too lazy to do that though :D (i'm being honest here)</sup>
-
-### Need a Digitalocean?
-
-You can help me (slash) support me in this project by registering an account [here](https://m.do.co/c/9d633afb889b) *(with my referral code of course)* .
-
-## Contributor
-
-Big thanks to [@sumgr0](https://twitter.com/sumgr0) :)
-
-
-## List of tools to be installed
-
-golang
-- amass
-- subfinder
-- assetfinder
-- zcat
-- goaltdns
-- shuffledns
-- dnsprobe
-- ffuf
-- httprobe
-- tko-subs
-- subjack
-- zdns
-- aquatone
-- webanalyze
-- gau
-- getching
-- kxss
-- dalfox
-
-APT-GET
-- jq
-- grepcidr
-- nmap
-- masscan
-- brutespray
-
-Download Only
-- findomain
-- github-endpoints
-- github-secrets
-- smuggler
-
-GIT
-- massdns
-- S3Scanner
-- LinkFinder
-- defparam smuggler
-
-PIP
-- shodan
