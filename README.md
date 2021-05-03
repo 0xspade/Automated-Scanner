@@ -62,7 +62,9 @@ Usage: `~$ nohup bash scanner.sh example.com &> example.out&`
 
 ### Need a Digitalocean?
 
-You can help me (slash) support me in this project by registering an account [here](https://m.do.co/c/9d633afb889b) *(with my referral code of course)* .
+Free $100 in DigitalOcean, just click the link below :D
+
+[![DigitalOcean Referral Badge](https://web-platforms.sfo2.cdn.digitaloceanspaces.com/WWW/Badge%201.svg)](https://www.digitalocean.com/?refcode=9d633afb889b&utm_campaign=Referral_Invite&utm_medium=Referral_Program&utm_source=badge)
 
 ## Contributor
 
